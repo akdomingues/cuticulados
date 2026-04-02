@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+             https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <persistence-unit name="cuticulados" transaction-type="RESOURCE_LOCAL">
+
+        <class>org.cuticulados.pm.model.Usuario</class>
+        <class>org.cuticulados.pm.model.Admin</class>
+        <class>org.cuticulados.pm.model.Profissional</class>
+        <class>org.cuticulados.pm.model.Cliente</class>
+        <class>org.cuticulados.pm.model.ClienteNovo</class>
+        <class>org.cuticulados.pm.model.ClienteFrequente</class>
+        <class>org.cuticulados.pm.model.Servico</class>
+        <class>org.cuticulados.pm.model.Produto</class>
+        <class>org.cuticulados.pm.model.Agendamento</class>
+        <class>org.cuticulados.pm.model.AgendamentoServico</class>
+        <class>org.cuticulados.pm.model.ServicoProduto</class>
+        <class>org.cuticulados.pm.model.VendaAvulsa</class>
+        <class>org.cuticulados.pm.model.TransacaoFinanceira</class>
+
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/cuticulados"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value="postgres"/>
+
+            <!--hibernate conversor, ele pega a nossa escrita tipo usuario e coloca na linguagem postgresql,
+            ele pega os comandos e fala o toma ai, transforme isso em sql so que para o postgresql, ja que,
+            postgresql e diferente do mysql e afins-->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <!--"none" pois o flyway vai criar os comandos, create table, alter table e afins-->
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
+            <property name="hibernate.show_sql" value="true"/> <!--colocar false depois para a apresentação-->
+        </properties>
+    </persistence-unit>
+</persistence>
