@@ -1,4 +1,4 @@
 package org.cuticulados.pm.model;
 
-public class TipoUsuario {
+public class Admin {
 }
