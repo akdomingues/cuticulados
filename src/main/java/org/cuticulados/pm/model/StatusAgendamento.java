@@ -1,4 +1,1 @@
-package org.cuticulados.pm.model;
-
-public class StatusAgendamento {
-}
+// jogar para agendamento

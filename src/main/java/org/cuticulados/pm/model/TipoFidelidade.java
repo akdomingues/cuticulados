@@ -1,4 +1,1 @@
-package org.cuticulados.pm.model;
-
-public class TipoFidelidade {
-}
+// jogar para dentro de cliente
