@@ -7,19 +7,16 @@
 
     <persistence-unit name="cuticulados" transaction-type="RESOURCE_LOCAL">
 
-        <class>org.cuticulados.pm.model.Usuario</class>
-        <class>org.cuticulados.pm.model.Admin</class>
-        <class>org.cuticulados.pm.model.Profissional</class>
-        <class>org.cuticulados.pm.model.Cliente</class>
-        <class>org.cuticulados.pm.model.ClienteNovo</class>
-        <class>org.cuticulados.pm.model.ClienteFrequente</class>
-        <class>org.cuticulados.pm.model.Servico</class>
-        <class>org.cuticulados.pm.model.Produto</class>
-        <class>org.cuticulados.pm.model.Agendamento</class>
-        <class>org.cuticulados.pm.model.AgendamentoServico</class>
-        <class>org.cuticulados.pm.model.ServicoProduto</class>
-        <class>org.cuticulados.pm.model.VendaAvulsa</class>
-        <class>org.cuticulados.pm.model.TransacaoFinanceira</class>
+        <class>org.cuticulados.pm.entity.Usuario</class>
+        <class>org.cuticulados.pm.entity.Profissional</class>
+        <class>org.cuticulados.pm.entity.Cliente</class>
+        <class>org.cuticulados.pm.entity.Servico</class>
+        <class>org.cuticulados.pm.entity.ServicoProduto</class>
+        <class>org.cuticulados.pm.entity.Produto</class>
+        <class>org.cuticulados.pm.entity.Agendamento</class>
+        <class>org.cuticulados.pm.entity.AgendamentoServico</class>
+        <class>org.cuticulados.pm.entity.VendaAvulsa</class>
+        <class>org.cuticulados.pm.entity.TransacaoFinanceira</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
@@ -35,7 +32,8 @@
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
             <!--"none" pois o flyway vai criar os comandos, create table, alter table e afins-->
             <property name="hibernate.hbm2ddl.auto" value="none"/>
-            <property name="hibernate.show_sql" value="true"/> <!--colocar false depois para a apresentação-->
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.connection.pool_size" value="5"/>
         </properties>
     </persistence-unit>
 </persistence>

@@ -1,4 +1,4 @@
-package org.cuticulados.pm.model;
+package org.cuticulados.pm.entity;
 
 public class Usuario {
 }
