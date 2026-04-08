@@ -19,47 +19,57 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+// entidade JPA
 @Entity
 @Table(name = "agendamento")
 public class Agendamento {
 
+    //o id e a chave primaria e o identity e o banco que gera automatico auto increment
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+ //datas do agendamento e horario
     @Column(name = "data_hora_inicio", nullable = false)
     private LocalDateTime dataHoraInicio;
 
     @Column(name = "data_hora_fim", nullable = false)
     private LocalDateTime dataHoraFim;
 
+    //status do agendamento
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusAgendamento status = StatusAgendamento.PENDENTE;
 
+    //valor final
     @Column(name = "valor_final", nullable = false)
     private Double valorFinal = 0.0;
 
+    //relacionamento com o cliente
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
+    //relacionamento com o profissional
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "profissional_id", nullable = false)
     private Profissional profissional;
 
+    //serviços de agendamento
     @OneToMany(mappedBy = "agendamento")
     private List<AgendamentoServico> servicos = new ArrayList<>();
 
     @OneToOne(mappedBy = "agendamento")
     private TransacaoFinanceira transacao;
 
+    //controle da criação e as atualizações
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    //hook automatico execurta antes de salvar no banco e preenche as datas no automatico
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -101,6 +111,7 @@ public class Agendamento {
     }
 }
 
+//o enum ele define o status possiveis do agendamento
 public enum StatusAgendamento {
     PENDENTE,
     CONCLUIDO,
