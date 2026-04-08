@@ -17,6 +17,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+//CRIA A TABELA NO BANCO
+
 @Entity
 @Table(name = "produto")
 public class Produto {
@@ -24,6 +26,8 @@ public class Produto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    //REGRAS DA TABELA
 
     @Column(nullable = false, length = 100)
     private String nome;
@@ -46,8 +50,12 @@ public class Produto {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    //RELACIONAMENTO UM PARA MTS
+
     @OneToMany(mappedBy = "produto")
     private List<ServicoProduto> servicosAssociados = new ArrayList<>();
+
+    //EXECUTA ANTES DE SALVAR
 
     @PrePersist
     protected void onCreate() {
@@ -59,6 +67,8 @@ public class Produto {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    //ACESSA OS DADOS
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -77,6 +87,8 @@ public class Produto {
     public List<ServicoProduto> getServicosAssociados() { return servicosAssociados; }
     public void setServicosAssociados(List<ServicoProduto> lista) { this.servicosAssociados = lista; }
 
+    //COMPARA OS OBJTS
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -84,6 +96,8 @@ public class Produto {
         Produto produto = (Produto) o;
         return Objects.equals(id, produto.id);
     }
+
+    //GERA UM NUMERO BASEADO NO ID
 
     @Override
     public int hashCode() {

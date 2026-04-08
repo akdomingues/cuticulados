@@ -1,5 +1,7 @@
 package org.cuticulados.pm.service;
 
+//CRUD DE PRODUTO
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +11,8 @@ import org.cuticulados.pm.repository.ProdutoRepository;
 public class ProdutoService {
 
     private final ProdutoRepository produtoRepo = new ProdutoRepository();
+
+//CADASTRO
 
     public void cadastrarProduto(Produto produto) {
         try {
@@ -45,6 +49,8 @@ public class ProdutoService {
         }
     }
 
+    //ATUALIZAR
+
     public void atualizarProduto(Produto produto) {
         try {
             Optional<Produto> existente = produtoRepo.buscarPorId(produto.getId());
@@ -57,6 +63,8 @@ public class ProdutoService {
             System.out.println("Erro ao atualizar produto: " + e.getMessage());
         }
     }
+
+    //REMOVER
 
     public void removerProduto(Long id) {
         try {
@@ -71,6 +79,7 @@ public class ProdutoService {
         }
     }
 
+    //BUSCA E VERIFICA O ESTOQUE
     public List<Produto> verificarEstoqueBaixo() {
         try {
             List<Produto> produtos = produtoRepo.buscarEstoqueBaixo();
