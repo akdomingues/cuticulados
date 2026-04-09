@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
+import org.cuticulados.pm.entity.Profissional;
 import org.cuticulados.pm.entity.VendaAvulsa;
 
 import jakarta.persistence.EntityManager;
@@ -12,8 +13,8 @@ import jakarta.persistence.EntityManager;
 /**
  * Repositório responsável pelo acesso e manipulação dos dados de {@link VendaAvulsa}.
  *
- * <p>Encapsula as operações de banco para vendas avulsas de produtos,
- * incluindo listagem com JOIN FETCH de produto e profissional.</p>
+ * <p>Além do CRUD básico, fornece consultas específicas por data e profissional,
+ * usadas no relatório de vendas do dia e no fechamento diário.</p>
  */
 public class VendaAvulsaRepository {
 
@@ -55,9 +56,7 @@ public class VendaAvulsaRepository {
     /**
      * Lista todas as vendas avulsas, carregando produto e profissional via JOIN FETCH.
      *
-     * <p>Ordenado por data de venda em ordem decrescente (mais recentes primeiro).</p>
-     *
-     * @return lista de todas as vendas avulsas
+     * @return lista de todas as vendas avulsas, ordenada por data decrescente
      */
     public List<VendaAvulsa> listarTodas() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -85,6 +84,8 @@ public class VendaAvulsaRepository {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT v FROM VendaAvulsa v " +
+                                    "JOIN FETCH v.produto " +
+                                    "JOIN FETCH v.profissional " +
                                     "WHERE v.dataVenda BETWEEN :inicio AND :fim " +
                                     "ORDER BY v.dataVenda",
                             VendaAvulsa.class)
@@ -94,6 +95,61 @@ public class VendaAvulsaRepository {
         } catch (Exception e) {
             System.err.println("Erro ao buscar vendas por periodo: " + e.getMessage());
             return List.of();
+        }
+    }
+
+    /**
+     * Busca todas as vendas de um profissional em um período específico que ainda NÃO foram fechadas.
+     *
+     * <p>Usada no fechamento de dia: retorna apenas as vendas em aberto
+     * ({@code fechado = false}) do profissional naquele dia.</p>
+     *
+     * @param profissional profissional cujas vendas serão buscadas
+     * @param inicio       início do período (normalmente 00:00 do dia)
+     * @param fim          fim do período (normalmente 23:59 do dia)
+     * @return lista de vendas abertas do profissional no período
+     */
+    public List<VendaAvulsa> buscarAbertasPorProfissionalEPeriodo(
+            Profissional profissional, LocalDateTime inicio, LocalDateTime fim) {
+        try (EntityManager em = JpaUtil.getEntityManager()) {
+            return em.createQuery(
+                            "SELECT v FROM VendaAvulsa v " +
+                                    "JOIN FETCH v.produto " +
+                                    "WHERE v.profissional = :prof " +
+                                    "AND v.dataVenda BETWEEN :inicio AND :fim " +
+                                    "AND v.fechado = false " +
+                                    "ORDER BY v.dataVenda",
+                            VendaAvulsa.class)
+                    .setParameter("prof", profissional)
+                    .setParameter("inicio", inicio)
+                    .setParameter("fim", fim)
+                    .getResultList();
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar vendas abertas: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Marca uma lista de vendas como fechadas ({@code fechado = true}).
+     *
+     * <p>Usada ao finalizar o dia do profissional. Cada venda é atualizada
+     * individualmente dentro de uma única transação para garantir consistência.</p>
+     *
+     * @param vendas lista de vendas a serem fechadas
+     */
+    public void fecharVendas(List<VendaAvulsa> vendas) {
+        if (vendas == null || vendas.isEmpty()) return;
+        try (EntityManager em = JpaUtil.getEntityManager()) {
+            em.getTransaction().begin();
+            for (VendaAvulsa v : vendas) {
+                v.setFechado(true);
+                em.merge(v);
+            }
+            em.getTransaction().commit();
+            System.out.println(vendas.size() + " venda(s) fechada(s) com sucesso.");
+        } catch (Exception e) {
+            System.err.println("Erro ao fechar vendas: " + e.getMessage());
         }
     }
 
