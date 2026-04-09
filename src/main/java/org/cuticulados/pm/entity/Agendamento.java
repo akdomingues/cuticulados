@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,94 +20,124 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
-// entidade JPA
+/**
+ * Entidade que representa um agendamento de atendimento no salão.
+ *
+ * <p>Um agendamento conecta um {@link Cliente} a um {@link Profissional}
+ * em um intervalo de tempo definido. Dentro de um agendamento podem ser
+ * realizados um ou mais serviços ({@link AgendamentoServico}).</p>
+ *
+ * <p>Fluxo de status: {@code PENDENTE} → {@code CONCLUIDO} ou {@code CANCELADO}.
+ * As regras de transição são controladas pelo {@code AgendamentoService}.</p>
+ *
+ * <p>Ao ser concluído, gera automaticamente uma {@link TransacaoFinanceira}
+ * de entrada no caixa do salão.</p>
+ */
 @Entity
 @Table(name = "agendamento")
 public class Agendamento {
 
-    //o id e a chave primaria e o identity e o banco que gera automatico auto increment
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+   /** Identificador único gerado automaticamente pelo banco (auto-increment). */
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private Long id;
 
- //datas do agendamento e horario
-    @Column(name = "data_hora_inicio", nullable = false)
-    private LocalDateTime dataHoraInicio;
+   /** Data e hora de início do atendimento. */
+   @Column(name = "data_hora_inicio", nullable = false)
+   private LocalDateTime dataHoraInicio;
 
-    @Column(name = "data_hora_fim", nullable = false)
-    private LocalDateTime dataHoraFim;
+   /** Data e hora de término previsto do atendimento. */
+   @Column(name = "data_hora_fim", nullable = false)
+   private LocalDateTime dataHoraFim;
 
-    //status do agendamento
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private StatusAgendamento status = StatusAgendamento.PENDENTE;
+   /**
+    * Situação atual do agendamento.
+    * Gravado como texto no banco (ex: "PENDENTE", "CONCLUIDO").
+    */
+   @Enumerated(EnumType.STRING)
+   @Column(nullable = false)
+   private StatusAgendamento status = StatusAgendamento.PENDENTE;
 
-    //valor final
-    @Column(name = "valor_final", nullable = false)
-    private Double valorFinal = 0.0;
+   /** Valor total calculado para este agendamento, com descontos aplicados. */
+   @Column(name = "valor_final", nullable = false)
+   private Double valorFinal = 0.0;
 
-    //relacionamento com o cliente
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente;
+   /**
+    * Cliente que será atendido.
+    * Muitos agendamentos podem pertencer a um mesmo cliente.
+    */
+   @ManyToOne(fetch = FetchType.EAGER)
+   @JoinColumn(name = "cliente_id", nullable = false)
+   private Cliente cliente;
 
-    //relacionamento com o profissional
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "profissional_id", nullable = false)
-    private Profissional profissional;
+   /**
+    * Profissional responsável pelo atendimento.
+    * Muitos agendamentos podem ser de um mesmo profissional.
+    */
+   @ManyToOne(fetch = FetchType.EAGER)
+   @JoinColumn(name = "profissional_id", nullable = false)
+   private Profissional profissional;
 
-    //serviços de agendamento
-    @OneToMany(mappedBy = "agendamento")
-    private List<AgendamentoServico> servicos = new ArrayList<>();
+   /** Lista de serviços incluídos neste agendamento. */
+   @OneToMany(mappedBy = "agendamento")
+   private List<AgendamentoServico> servicos = new ArrayList<>();
 
-    @OneToOne(mappedBy = "agendamento")
-    private TransacaoFinanceira transacao;
+   /**
+    * Transação financeira gerada quando este agendamento é concluído.
+    * Relacionamento um-para-um: cada agendamento gera no máximo uma transação.
+    */
+   @OneToOne(mappedBy = "agendamento")
+   private TransacaoFinanceira transacao;
 
-    //controle da criação e as atualizações
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+   /** Data e hora de criação do registro. Não é atualizado após a inserção. */
+   @Column(name = "created_at", nullable = false, updatable = false)
+   private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+   /** Data e hora da última atualização do registro. */
+   @Column(name = "updated_at", nullable = false)
+   private LocalDateTime updatedAt;
 
-    //hook automatico execurta antes de salvar no banco e preenche as datas no automatico
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+   /**
+    * Executado automaticamente pelo JPA antes de inserir o registro.
+    * Preenche os campos de data de criação e atualização.
+    */
+   @PrePersist
+   protected void onCreate() {
+      this.createdAt = LocalDateTime.now();
+      this.updatedAt = LocalDateTime.now();
+   }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public LocalDateTime getDataHoraInicio() { return dataHoraInicio; }
-    public void setDataHoraInicio(LocalDateTime d) { this.dataHoraInicio = d; }
-    public LocalDateTime getDataHoraFim() { return dataHoraFim; }
-    public void setDataHoraFim(LocalDateTime d) { this.dataHoraFim = d; }
-    public StatusAgendamento getStatus() { return status; }
-    public void setStatus(StatusAgendamento status) { this.status = status; }
-    public Double getValorFinal() { return valorFinal; }
-    public void setValorFinal(Double valor) { this.valorFinal = valor; }
-    public Cliente getCliente() { return cliente; }
-    public void setCliente(Cliente cliente) { this.cliente = cliente; }
-    public Profissional getProfissional() { return profissional; }
-    public void setProfissional(Profissional p) { this.profissional = p; }
-    public List<AgendamentoServico> getServicos() { return servicos; }
-    public void setServicos(List<AgendamentoServico> servicos) { this.servicos = servicos; }
-    public TransacaoFinanceira getTransacao() { return transacao; }
-    public void setTransacao(TransacaoFinanceira t) { this.transacao = t; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+   public Long getId() { return id; }
+   public void setId(Long id) { this.id = id; }
+   public LocalDateTime getDataHoraInicio() { return dataHoraInicio; }
+   public void setDataHoraInicio(LocalDateTime d) { this.dataHoraInicio = d; }
+   public LocalDateTime getDataHoraFim() { return dataHoraFim; }
+   public void setDataHoraFim(LocalDateTime d) { this.dataHoraFim = d; }
+   public StatusAgendamento getStatus() { return status; }
+   public void setStatus(StatusAgendamento status) { this.status = status; }
+   public Double getValorFinal() { return valorFinal; }
+   public void setValorFinal(Double valor) { this.valorFinal = valor; }
+   public Cliente getCliente() { return cliente; }
+   public void setCliente(Cliente cliente) { this.cliente = cliente; }
+   public Profissional getProfissional() { return profissional; }
+   public void setProfissional(Profissional p) { this.profissional = p; }
+   public List<AgendamentoServico> getServicos() { return servicos; }
+   public void setServicos(List<AgendamentoServico> servicos) { this.servicos = servicos; }
+   public TransacaoFinanceira getTransacao() { return transacao; }
+   public void setTransacao(TransacaoFinanceira t) { this.transacao = t; }
+   public LocalDateTime getCreatedAt() { return createdAt; }
+   public LocalDateTime getUpdatedAt() { return updatedAt; }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Agendamento a = (Agendamento) o;
-        return Objects.equals(id, a.id);
-    }
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      Agendamento a = (Agendamento) o;
+      return Objects.equals(id, a.id);
+   }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+   @Override
+   public int hashCode() {
+      return Objects.hash(id);
+   }
 }

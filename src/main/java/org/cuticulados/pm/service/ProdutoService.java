@@ -1,19 +1,29 @@
 package org.cuticulados.pm.service;
 
-//CRUD DE PRODUTO
-
 import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.entity.Produto;
 import org.cuticulados.pm.repository.ProdutoRepository;
 
+/**
+ * Serviço responsável pelas regras de negócio relacionadas a produtos do estoque.
+ *
+ * <p>Além do CRUD básico, fornece a verificação de estoque mínimo,
+ * que alerta quando um produto precisa ser reposto.</p>
+ */
 public class ProdutoService {
 
+    /** Repositório para acesso aos dados de produto no banco. */
     private final ProdutoRepository produtoRepo = new ProdutoRepository();
 
-//CADASTRO
-
+    /**
+     * Cadastra um novo produto com validações obrigatórias.
+     *
+     * <p>Verifica se o nome foi informado e se o preço de venda é positivo.</p>
+     *
+     * @param produto objeto com os dados do produto a ser cadastrado
+     */
     public void cadastrarProduto(Produto produto) {
         try {
             if (produto.getNome() == null || produto.getNome().isBlank()) {
@@ -31,6 +41,12 @@ public class ProdutoService {
         }
     }
 
+    /**
+     * Busca um produto pelo ID.
+     *
+     * @param id identificador do produto
+     * @return {@code Optional} com o produto, ou vazio se não encontrado
+     */
     public Optional<Produto> buscarPorId(Long id) {
         try {
             return produtoRepo.buscarPorId(id);
@@ -40,6 +56,11 @@ public class ProdutoService {
         }
     }
 
+    /**
+     * Lista todos os produtos cadastrados no estoque.
+     *
+     * @return lista de produtos
+     */
     public List<Produto> listarTodos() {
         try {
             return produtoRepo.listarTodos();
@@ -49,8 +70,11 @@ public class ProdutoService {
         }
     }
 
-    //ATUALIZAR
-
+    /**
+     * Atualiza os dados de um produto existente.
+     *
+     * @param produto objeto com os dados atualizados (deve ter ID preenchido)
+     */
     public void atualizarProduto(Produto produto) {
         try {
             Optional<Produto> existente = produtoRepo.buscarPorId(produto.getId());
@@ -64,8 +88,11 @@ public class ProdutoService {
         }
     }
 
-    //REMOVER
-
+    /**
+     * Remove um produto pelo ID.
+     *
+     * @param id identificador do produto a ser removido
+     */
     public void removerProduto(Long id) {
         try {
             if (produtoRepo.buscarPorId(id).isEmpty()) {
@@ -79,7 +106,15 @@ public class ProdutoService {
         }
     }
 
-    //BUSCA E VERIFICA O ESTOQUE
+    /**
+     * Verifica e exibe os produtos com estoque abaixo do mínimo configurado.
+     *
+     * <p>Regra de negócio: um produto está com estoque baixo quando
+     * {@code quantidadeEstoque <= quantidadeMinima}. Esses produtos
+     * precisam de reposição para que os serviços continuem sendo realizados.</p>
+     *
+     * @return lista de produtos com estoque baixo
+     */
     public List<Produto> verificarEstoqueBaixo() {
         try {
             List<Produto> produtos = produtoRepo.buscarEstoqueBaixo();
@@ -87,8 +122,8 @@ public class ProdutoService {
                 System.out.println("Nenhum produto com estoque baixo.");
             } else {
                 for (Produto p : produtos) {
-                    System.out.println(p.getNome() + " | estoque: " + p.getQuantidadeEstoque() + " | minimo: " +
-                            p.getQuantidadeMinima());
+                    System.out.println(p.getNome() + " | estoque: " + p.getQuantidadeEstoque()
+                            + " | minimo: " + p.getQuantidadeMinima());
                 }
             }
             return produtos;

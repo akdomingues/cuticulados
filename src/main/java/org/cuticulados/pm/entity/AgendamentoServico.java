@@ -11,44 +11,73 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
-/**entidade responsável pra repesentar um agendamento
- e os serviços realizados dentro dele.
-*/
+/**
+ * Entidade de associação entre {@link Agendamento} e {@link Servico}.
+ *
+ * <p>Representa um serviço específico realizado dentro de um agendamento,
+ * armazenando o preço cobrado no momento da execução e o desconto aplicado.
+ * Isso garante que alterações futuras no preço base do serviço não afetem
+ * o histórico financeiro.</p>
+ */
 @Entity
 @Table(name = "agendamento_servico")
 public class AgendamentoServico {
 
-    // ID unico gerado automaticamente pelo banco
+    /** Identificador único gerado automaticamente pelo banco. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // relacionamento com o agendamento
+    /**
+     * Agendamento ao qual este serviço pertence.
+     * Relacionamento muitos-para-um.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "agendamento_id", nullable = false)
     private Agendamento agendamento;
 
-    // relacionamento com o servico
+    /**
+     * Serviço realizado neste item do agendamento.
+     * Relacionamento muitos-para-um.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "servico_id", nullable = false)
     private Servico servico;
 
+    /** Quantidade de vezes que este serviço foi realizado no agendamento. */
     @Column(nullable = false)
     private Integer quantidade = 1;
 
+    /** Preço cobrado no momento do agendamento (pode diferir do valor base atual). */
     @Column(name = "preco_aplicado", nullable = false)
     private Double precoAplicado;
 
+    /** Percentual de desconto aplicado sobre o preço (0 a 100). */
     @Column(name = "desconto_aplicado", nullable = false)
     private Double descontoAplicado = 0.0;
 
+    /** Tempo real de execução do serviço em minutos (preenchido ao concluir). */
     @Column(name = "tempo_real")
     private Integer tempoReal;
 
+    /** Data e hora de criação do registro. */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+//=====
+    /**
+     * Executado automaticamente pelo JPA antes de inserir o registro.
+     * Preenche o campo {@code createdAt} com a data/hora atual,
+     * evitando erro de constraint NOT NULL no banco.
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+//=====
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -67,7 +96,6 @@ public class AgendamentoServico {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime c) { this.createdAt = c; }
 
-    // igualdade baseada no ID
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

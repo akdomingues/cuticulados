@@ -1,18 +1,29 @@
 package org.cuticulados.pm.service;
 
-//CRUD DE SERVICO
-
 import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.entity.Servico;
 import org.cuticulados.pm.repository.ServicoRepository;
 
+/**
+ * Serviço responsável pelas regras de negócio relacionadas aos serviços do salão.
+ *
+ * <p>Encapsula o CRUD de serviços com validações de negócio,
+ * como obrigatoriedade da descrição e valor base maior que zero.</p>
+ */
 public class ServicoService {
 
+    /** Repositório para acesso aos dados de serviço no banco. */
     private final ServicoRepository servicoRepo = new ServicoRepository();
 
-    //CADASTRO
+    /**
+     * Cadastra um novo serviço com validações obrigatórias.
+     *
+     * <p>Verifica se a descrição foi informada e se o valor base é positivo.</p>
+     *
+     * @param servico objeto com os dados do serviço a ser cadastrado
+     */
     public void cadastrarServico(Servico servico) {
         try {
             if (servico.getDescricao() == null || servico.getDescricao().isBlank()) {
@@ -30,8 +41,12 @@ public class ServicoService {
         }
     }
 
-    //BUSCA
-
+    /**
+     * Busca um serviço pelo ID.
+     *
+     * @param id identificador do serviço
+     * @return {@code Optional} com o serviço, ou vazio se não encontrado
+     */
     public Optional<Servico> buscarPorId(Long id) {
         try {
             return servicoRepo.buscarPorId(id);
@@ -41,7 +56,11 @@ public class ServicoService {
         }
     }
 
-    //LISTAR
+    /**
+     * Lista todos os serviços cadastrados.
+     *
+     * @return lista de serviços
+     */
     public List<Servico> listarTodos() {
         try {
             return servicoRepo.listarTodos();
@@ -51,8 +70,11 @@ public class ServicoService {
         }
     }
 
-    //ATUALIZAR
-
+    /**
+     * Atualiza os dados de um serviço existente.
+     *
+     * @param servico objeto com os dados atualizados (deve ter ID preenchido)
+     */
     public void atualizarServico(Servico servico) {
         try {
             if (servicoRepo.buscarPorId(servico.getId()).isEmpty()) {
@@ -65,7 +87,11 @@ public class ServicoService {
         }
     }
 
-    //DELETE
+    /**
+     * Remove um serviço pelo ID.
+     *
+     * @param id identificador do serviço a ser removido
+     */
     public void removerServico(Long id) {
         try {
             if (servicoRepo.buscarPorId(id).isEmpty()) {
@@ -79,8 +105,12 @@ public class ServicoService {
         }
     }
 
-    //BUSCA
-
+    /**
+     * Busca serviços pela descrição usando busca parcial (LIKE).
+     *
+     * @param termo texto a ser pesquisado na descrição
+     * @return lista de serviços que contêm o termo na descrição
+     */
     public List<Servico> buscarPorTermo(String termo) {
         try {
             return servicoRepo.buscarPorDescricao(termo);

@@ -14,38 +14,61 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
+/**
+ * Entidade que representa a venda avulsa de um produto para um cliente.
+ *
+ * <p>Diferente do agendamento, a venda avulsa ocorre quando o cliente
+ * compra um produto diretamente (ex: esmalte, base) sem contratar
+ * um serviço de manicure.</p>
+ *
+ * <p>Ao ser registrada, uma {@link TransacaoFinanceira} de entrada
+ * é criada automaticamente pelo {@code VendaAvulsaService}.</p>
+ */
 @Entity
 @Table(name = "venda_avulsa")
 public class VendaAvulsa {
 
-    //ID da venda
+    /** Identificador único gerado automaticamente pelo banco. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //produto vendido
+    /**
+     * Produto vendido.
+     * Muitas vendas podem referenciar o mesmo produto.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
 
+    /** Quantidade de unidades vendidas. */
     @Column(nullable = false)
     private Integer quantidade;
 
+    /** Preço unitário cobrado no momento da venda. */
     @Column(name = "preco_unitario", nullable = false)
     private Double precoUnitario;
 
+    /** Valor total da venda (quantidade × preço unitário). */
     @Column(nullable = false)
     private Double total;
 
+    /** Data e hora em que a venda foi realizada. */
     @Column(name = "data_venda", nullable = false, updatable = false)
     private LocalDateTime dataVenda;
 
-    // profissional
+    /**
+     * Profissional que realizou a venda.
+     * Muitas vendas podem ser atribuídas ao mesmo profissional.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "profissional_id", nullable = false)
     private Profissional profissional;
 
-    //transação financeira
+    /**
+     * Transação financeira gerada por esta venda.
+     * Relacionamento um-para-um.
+     */
     @OneToOne(mappedBy = "vendaAvulsa")
     private TransacaoFinanceira transacao;
 

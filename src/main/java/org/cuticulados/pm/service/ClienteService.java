@@ -4,15 +4,28 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Usuario;
 import org.cuticulados.pm.repository.ClienteRepository;
 
+/**
+ * Serviço responsável pelas regras de negócio relacionadas a clientes.
+ *
+ * <p>Além do CRUD básico, implementa a verificação de fidelidade do cliente,
+ * que classifica o cliente como "frequente" quando ele atinge 3 ou mais
+ * atendimentos no mês — regra que também dá direito a desconto nos agendamentos.</p>
+ */
 public class ClienteService {
 
+    /** Repositório para acesso aos dados de cliente no banco. */
     private final ClienteRepository clienteRepo = new ClienteRepository();
 
-    // --- CRUD basico ---
-
+    /**
+     * Cadastra um novo cliente aplicando validações obrigatórias.
+     *
+     * <p>Verifica se o CPF foi informado e se já não existe outro cliente
+     * com o mesmo CPF. Novos clientes iniciam com tipo "novo" e zero atendimentos.</p>
+     *
+     * @param cliente objeto com os dados do cliente a ser cadastrado
+     */
     public void cadastrarCliente(Cliente cliente) {
         try {
             if (cliente.getCpf() == null || cliente.getCpf().isBlank()) {
@@ -33,6 +46,12 @@ public class ClienteService {
         }
     }
 
+    /**
+     * Busca um cliente pelo ID.
+     *
+     * @param id identificador do cliente
+     * @return {@code Optional} com o cliente, ou vazio se não encontrado
+     */
     public Optional<Cliente> buscarPorId(Long id) {
         try {
             return clienteRepo.buscarPorId(id);
@@ -42,6 +61,11 @@ public class ClienteService {
         }
     }
 
+    /**
+     * Lista todos os clientes cadastrados.
+     *
+     * @return lista de clientes
+     */
     public List<Cliente> listarTodos() {
         try {
             return clienteRepo.listarTodos();
@@ -51,6 +75,11 @@ public class ClienteService {
         }
     }
 
+    /**
+     * Atualiza os dados de um cliente existente.
+     *
+     * @param cliente objeto com os dados atualizados (deve ter ID preenchido)
+     */
     public void atualizarCliente(Cliente cliente) {
         try {
             Optional<Cliente> existente = clienteRepo.buscarPorId(cliente.getId());
@@ -65,6 +94,11 @@ public class ClienteService {
         }
     }
 
+    /**
+     * Remove um cliente pelo ID.
+     *
+     * @param id identificador do cliente a ser removido
+     */
     public void removerCliente(Long id) {
         try {
             Optional<Cliente> existente = clienteRepo.buscarPorId(id);
@@ -79,7 +113,16 @@ public class ClienteService {
         }
     }
 
-    // --- regra de negocio 1: verificar fidelidade (sem ser CRUD) ---
+    /**
+     * Verifica e retorna o nível de fidelidade do cliente com base nos atendimentos do mês.
+     *
+     * <p>Regra de negócio: clientes com 3 ou mais atendimentos no mês são
+     * classificados como "frequente" e têm direito a 10% de desconto.
+     * Clientes com menos de 3 atendimentos permanecem como "novo".</p>
+     *
+     * @param cliente o cliente a ser avaliado
+     * @return {@code "frequente"} se tiver 3 ou mais atendimentos, {@code "novo"} caso contrário
+     */
     public String verificarFidelidade(Cliente cliente) {
         try {
             Integer atendimentos = cliente.getTotalAtendimentosMes();
@@ -94,4 +137,3 @@ public class ClienteService {
         }
     }
 }
-

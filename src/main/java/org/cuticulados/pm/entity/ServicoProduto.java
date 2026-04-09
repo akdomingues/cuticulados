@@ -1,6 +1,5 @@
 package org.cuticulados.pm.entity;
 
-//CLASSE E TABELA ServicoProduto
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -14,35 +13,44 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-//CRIA A TABELA NO BANCO
-
+/**
+ * Entidade de associação entre {@link Servico} e {@link Produto}.
+ *
+ * <p>Representa quais produtos são utilizados na execução de cada serviço.
+ * Por exemplo: o serviço "manicure" utiliza "esmalte" e "acetona".</p>
+ *
+ * <p>É uma tabela intermediária que implementa o relacionamento
+ * muitos-para-muitos entre serviços e produtos de forma explícita,
+ * permitindo adicionar campos extras no futuro se necessário.</p>
+ */
 @Entity
 @Table(name = "servico_produto")
 public class ServicoProduto {
 
+    /** Identificador único gerado automaticamente pelo banco. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //RELACIONAMENTO MTS PARA UM
-    //RELACIONA COM SERVICO
-
+    /**
+     * Serviço ao qual este produto está associado.
+     * Relacionamento muitos-para-um: vários registros podem referenciar o mesmo serviço.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "servico_id", nullable = false)
     private Servico servico;
 
-    //RELACIONA COM PRODUTO
-
+    /**
+     * Produto utilizado neste serviço.
+     * Relacionamento muitos-para-um: vários registros podem referenciar o mesmo produto.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
 
-    //REGRAS DA TABELA
-
+    /** Data e hora de criação da associação. */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    //ACESSA OS DADOS
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -53,8 +61,6 @@ public class ServicoProduto {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime c) { this.createdAt = c; }
 
-    //COMPARA OS OBJTS
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -62,8 +68,6 @@ public class ServicoProduto {
         ServicoProduto sp = (ServicoProduto) o;
         return Objects.equals(id, sp.id);
     }
-
-    //GERA UM NUMERO BASEADO NO ID
 
     @Override
     public int hashCode() {

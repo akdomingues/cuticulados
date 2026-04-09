@@ -1,7 +1,5 @@
 package org.cuticulados.pm.repository;
 
-//RELAÇÃO DE PRODUTO COM BANCO
-
 import java.util.List;
 import java.util.Optional;
 
@@ -11,10 +9,19 @@ import org.cuticulados.pm.entity.Produto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
+/**
+ * Repositório responsável pelo acesso e manipulação dos dados de {@link Produto}.
+ *
+ * <p>Encapsula as operações de banco relacionadas ao estoque de produtos,
+ * incluindo busca por nome e alertas de estoque baixo.</p>
+ */
 public class ProdutoRepository {
 
-    //SALVAR
-
+    /**
+     * Salva ou atualiza um produto no banco de dados.
+     *
+     * @param produto objeto a ser persistido
+     */
     public void salvar(Produto produto) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
@@ -29,8 +36,12 @@ public class ProdutoRepository {
         }
     }
 
-    //BUSCAR
-
+    /**
+     * Busca um produto pelo ID.
+     *
+     * @param id identificador do produto
+     * @return {@code Optional} com o produto encontrado, ou vazio se não existir
+     */
     public Optional<Produto> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             Produto p = em.find(Produto.class, id);
@@ -41,10 +52,17 @@ public class ProdutoRepository {
         }
     }
 
+    /**
+     * Busca um produto pelo nome (sem diferenciar maiúsculas e minúsculas).
+     *
+     * @param nome nome do produto a ser pesquisado
+     * @return {@code Optional} com o produto encontrado, ou vazio se não existir
+     */
     public Optional<Produto> buscarPorNome(String nome) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             Produto p = em.createQuery(
-                            "SELECT p FROM Produto p WHERE LOWER(p.nome) = LOWER(:nome)", Produto.class)
+                            "SELECT p FROM Produto p WHERE LOWER(p.nome) = LOWER(:nome)",
+                            Produto.class)
                     .setParameter("nome", nome)
                     .getSingleResult();
             return Optional.ofNullable(p);
@@ -56,8 +74,11 @@ public class ProdutoRepository {
         }
     }
 
-    //LISTAR
-
+    /**
+     * Lista todos os produtos cadastrados no estoque.
+     *
+     * @return lista de todos os produtos
+     */
     public List<Produto> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery("FROM Produto", Produto.class).getResultList();
@@ -67,10 +88,20 @@ public class ProdutoRepository {
         }
     }
 
+    /**
+     * Busca produtos cujo estoque atual é menor ou igual ao estoque mínimo.
+     *
+     * <p>Usada pelo {@code ProdutoService} para alertar sobre itens
+     * que precisam de reposição.</p>
+     *
+     * @return lista de produtos com estoque baixo
+     */
     public List<Produto> buscarEstoqueBaixo() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT p FROM Produto p WHERE p.quantidadeEstoque <= p.quantidadeMinima", Produto.class)
+                            "SELECT p FROM Produto p " +
+                                    "WHERE p.quantidadeEstoque <= p.quantidadeMinima",
+                            Produto.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao buscar estoque baixo: " + e.getMessage());
@@ -78,8 +109,11 @@ public class ProdutoRepository {
         }
     }
 
-    //DELETAR
-
+    /**
+     * Remove um produto do banco de dados pelo ID.
+     *
+     * @param id identificador do produto a ser removido
+     */
     public void deletar(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
@@ -93,4 +127,3 @@ public class ProdutoRepository {
         }
     }
 }
-

@@ -1,7 +1,5 @@
 package org.cuticulados.pm.entity;
 
-//CLASSE E TABELA PRODUTO
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,58 +15,74 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
-//CRIA A TABELA NO BANCO
-
+/**
+ * Entidade que representa um produto do estoque do salão.
+ *
+ * <p>Produtos são utilizados durante os serviços (ex: esmalte, acetona, gel UV)
+ * e também podem ser vendidos avulsamente para clientes.</p>
+ *
+ * <p>O controle de estoque é feito pelos campos {@code quantidadeEstoque}
+ * e {@code quantidadeMinima}. Quando o estoque atinge o mínimo, o produto
+ * aparece nos alertas gerados pelo {@code ProdutoService}.</p>
+ */
 @Entity
 @Table(name = "produto")
 public class Produto {
 
+    /** Identificador único gerado automaticamente pelo banco. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //REGRAS DA TABELA
-
+    /** Nome do produto (ex: "esmalte vermelho", "gel uv"). */
     @Column(nullable = false, length = 100)
     private String nome;
 
+    /** Quantidade atual disponível no estoque. Não pode ser negativa. */
     @Column(name = "quantidade_estoque", nullable = false)
     private Integer quantidadeEstoque = 0;
 
+    /** Quantidade mínima aceitável no estoque antes de gerar alerta. */
     @Column(name = "quantidade_minima", nullable = false)
     private Integer quantidadeMinima = 0;
 
+    /** Preço de custo do produto (quanto o salão paga ao fornecedor). */
     @Column(name = "preco_custo", nullable = false)
     private Double precoCusto;
 
+    /** Preço de venda do produto (quanto o cliente paga). */
     @Column(name = "preco_venda", nullable = false)
     private Double precoVenda;
 
+    /** Data e hora de cadastro do produto. */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /** Data e hora da última atualização do produto. */
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    //RELACIONAMENTO UM PARA MTS
-
+    /** Relação com os serviços que utilizam este produto. */
     @OneToMany(mappedBy = "produto")
     private List<ServicoProduto> servicosAssociados = new ArrayList<>();
 
-    //EXECUTA ANTES DE SALVAR
-
+    /**
+     * Executado automaticamente pelo JPA antes de inserir o registro.
+     * Preenche os campos de data de criação e atualização.
+     */
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Executado automaticamente pelo JPA antes de atualizar o registro.
+     */
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    //ACESSA OS DADOS
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -87,8 +101,6 @@ public class Produto {
     public List<ServicoProduto> getServicosAssociados() { return servicosAssociados; }
     public void setServicosAssociados(List<ServicoProduto> lista) { this.servicosAssociados = lista; }
 
-    //COMPARA OS OBJTS
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -96,8 +108,6 @@ public class Produto {
         Produto produto = (Produto) o;
         return Objects.equals(id, produto.id);
     }
-
-    //GERA UM NUMERO BASEADO NO ID
 
     @Override
     public int hashCode() {

@@ -1,23 +1,23 @@
--- 1. Remove os valores padrão que estão segurando a dependência dos Enums antigos
-ALTER TABLE usuario ALTER COLUMN tipo DROP DEFAULT;
-ALTER TABLE cliente ALTER COLUMN tipo_cliente DROP DEFAULT;
-ALTER TABLE agendamento ALTER COLUMN status DROP DEFAULT;
+-- Migration corretiva: converte os enums do PostgreSQL (lowercase)
+-- para varchar em maiúsculas, compatível com @Enumerated(EnumType.STRING) do JPA.
 
--- 2. Converte a coluna de enum customizado para varchar
--- e atualiza os valores para maiúsculo (compatível com o enum Java)
-ALTER TABLE usuario
-ALTER COLUMN tipo TYPE varchar(20) USING upper(tipo::text);
+-- Passo 1: remove os valores padrão que dependem dos tipos enum antigos
+alter table usuario    alter column tipo         drop default;
+alter table cliente    alter column tipo_cliente  drop default;
+alter table agendamento alter column status       drop default;
 
-ALTER TABLE cliente
-ALTER COLUMN tipo_cliente TYPE varchar(20) USING upper(tipo_cliente::text);
+-- Passo 2: converte as colunas de enum para varchar e aplica upper()
+-- para garantir compatibilidade com os ENUMs Java (ADMIN, PENDENTE, etc.)
+alter table usuario
+alter column tipo type varchar(20) using upper(tipo::text);
 
-ALTER TABLE agendamento
-ALTER COLUMN status TYPE varchar(20) USING upper(status::text);
+alter table cliente
+alter column tipo_cliente type varchar(20) using upper(tipo_cliente::text);
 
--- 3. Remove os tipos enum do PostgreSQL que não são mais necessários
-DROP TYPE IF EXISTS tipo_usuario;
-DROP TYPE IF EXISTS tipo_cliente_enum;
-DROP TYPE IF EXISTS status_agendamento;
+alter table agendamento
+alter column status type varchar(20) using upper(status::text);
 
--- (Opcional) Retorna um valor padrão como VARCHAR, se você precisar.
--- Exemplo: ALTER TABLE cliente ALTER COLUMN tipo_cliente SET DEFAULT 'COMUM';
+-- Passo 3: remove os tipos enum do PostgreSQL que não são mais necessários
+drop type if exists tipo_usuario;
+drop type if exists tipo_cliente_enum;
+drop type if exists status_agendamento;
