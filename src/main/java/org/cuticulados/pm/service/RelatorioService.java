@@ -97,19 +97,20 @@ public class RelatorioService {
             System.out.println("Erro ao gerar relatorio de estoque: " + e.getMessage());
         }
     }
-}
 
-public void imprimirSaldo() {
-    try {
-        Double entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
-        Double saidas   = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
-        Double saldo    = entradas - saidas;
+    public void imprimirSaldo() {
+        try {
+            Double entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
+            Double saidas   = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
+            Double saldo    = entradas - saidas;
 
-        System.out.println("=== Saldo Geral ===");
-        System.out.printf(" Total entradas: R$ %.2f%n", entradas);
-        System.out.printf(" Total saidas:   R$ %.2f%n", saidas);
-        System.out.printf(" Saldo atual:    R$ %.2f%n", saldo);
-    } catch (Exception e) {
-        System.out.println("Erro ao calcular saldo: " + e.getMessage());
+            System.out.println("=== Saldo Geral ===");
+            System.out.printf(" Total entradas: R$ %.2f%n", entradas);
+            System.out.printf(" Total saidas:   R$ %.2f%n", saidas);
+            System.out.printf(" Saldo atual:    R$ %.2f%n", saldo);
+        } catch (Exception e) {
+            System.out.println("Erro ao calcular saldo: " + e.getMessage());
+        }
     }
 }
+

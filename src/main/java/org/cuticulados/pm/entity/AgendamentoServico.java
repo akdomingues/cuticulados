@@ -38,10 +38,10 @@ public class AgendamentoServico {
     @Column(nullable = false)
     private Integer quantidade = 1;
 
-    @Column(name = "preco_aplicado", nullable = false, precision = 10, scale = 2)
+    @Column(name = "preco_aplicado", nullable = false)
     private Double precoAplicado;
 
-    @Column(name = "desconto_aplicado", nullable = false, precision = 10, scale = 2)
+    @Column(name = "desconto_aplicado", nullable = false)
     private Double descontoAplicado = 0.0;
 
     @Column(name = "tempo_real")

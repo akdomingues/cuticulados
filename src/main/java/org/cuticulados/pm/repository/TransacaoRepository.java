@@ -88,17 +88,3 @@ public class TransacaoRepository {
         }
     }
 }
-
-public Double somarPorTipo(TipoTransacao tipo) {
-    EntityManager em = JpaUtil.getEntityManager();
-    try {
-        Double resultado = em.createQuery(
-                        "SELECT SUM(t.valor) FROM TransacaoFinanceira t WHERE t.tipo = :tipo",
-                        Double.class)
-                .setParameter("tipo", tipo)
-                .getSingleResult();
-        return resultado != null ? resultado : 0.0;
-    } finally {
-        em.close();
-    }
-}
