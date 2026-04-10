@@ -1,5 +1,7 @@
 package org.cuticulados.pm.repository;
 
+//RELAÇÃO DE PRODUTO COM BANCO
+
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +12,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 public class ProdutoRepository {
+
+    //SALVAR
 
     public void salvar(Produto produto) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -24,6 +28,8 @@ public class ProdutoRepository {
             System.err.println("Erro ao salvar produto: " + e.getMessage());
         }
     }
+
+    //BUSCAR
 
     public Optional<Produto> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -50,6 +56,8 @@ public class ProdutoRepository {
         }
     }
 
+    //LISTAR
+
     public List<Produto> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery("FROM Produto", Produto.class).getResultList();
@@ -69,6 +77,8 @@ public class ProdutoRepository {
             return List.of();
         }
     }
+
+    //DELETAR
 
     public void deletar(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {

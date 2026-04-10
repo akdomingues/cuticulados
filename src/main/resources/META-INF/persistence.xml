@@ -6,7 +6,7 @@
              version="3.0">
 
     <persistence-unit name="cuticulados" transaction-type="RESOURCE_LOCAL">
-
+        <!-- lista das entidades jpa do projeto -->
         <class>org.cuticulados.pm.entity.Usuario</class>
         <class>org.cuticulados.pm.entity.Profissional</class>
         <class>org.cuticulados.pm.entity.Cliente</class>
@@ -21,6 +21,7 @@
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
         <properties>
+            <!-- driver do postgreesql e url, user e senha para conexão com o banco de dados local-->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/cuticulados"/>
             <property name="jakarta.persistence.jdbc.user" value="postgres"/>
@@ -28,7 +29,7 @@
 
             <!--hibernate conversor, ele pega a nossa escrita tipo usuario e coloca na linguagem postgresql,
             ele pega os comandos e fala o toma ai, transforme isso em sql so que para o postgresql, ja que,
-            postgresql e diferente do mysql e afins-->
+            postgresql é diferente do mysql e afins-->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
             <!--"none" pois o flyway vai criar os comandos, create table, alter table e afins-->
             <property name="hibernate.hbm2ddl.auto" value="none"/>
