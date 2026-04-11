@@ -1,186 +1,145 @@
 package org.cuticulados.pm.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 
 import org.cuticulados.pm.entity.Agendamento;
-import org.cuticulados.pm.entity.AgendamentoServico;
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Profissional;
-import org.cuticulados.pm.entity.Servico;
-import org.cuticulados.pm.entity.StatusAgendamento;
+import org.cuticulados.pm.entity.Produto;
+import org.cuticulados.pm.entity.TipoTransacao;
+import org.cuticulados.pm.entity.TransacaoFinanceira;
 import org.cuticulados.pm.repository.AgendamentoRepository;
+import org.cuticulados.pm.repository.ProdutoRepository;
+import org.cuticulados.pm.repository.TransacaoRepository;
 
-public class AgendamentoService {
+/**
+ * Gera relatórios do salão: agendamentos por período, financeiro e estoque.
+ * Também calcula o saldo do caixa com base nas entradas e saídas registradas.
+ */
+public class RelatorioService {
 
+    /**
+     * Repositório de agendamentos para consultas do relatório.
+     */
     private final AgendamentoRepository agendamentoRepo = new AgendamentoRepository();
 
-    // --- CRUD basico ---
+    /**
+     * Repositório de transações para cálculo financeiro.
+     */
+    private final TransacaoRepository transacaoRepo = new TransacaoRepository();
 
-    public void criarAgendamento(Agendamento agendamento) {
+    /**
+     * Repositório de produtos para relatório de estoque.
+     */
+    private final ProdutoRepository produtoRepo = new ProdutoRepository();
+
+    /**
+     * Gera e exibe no terminal o relatório de agendamentos de um período.
+     *
+     * @param inicio data de início do período
+     * @param fim    data de fim do período
+     */
+    public void gerarRelatorioAgendamentos(LocalDate inicio, LocalDate fim) {
         try {
-            if (agendamento.getCliente() == null || agendamento.getProfissional() == null) {
-                System.out.println("Cliente e profissional sao obrigatorios.");
+            List<Agendamento> lista = agendamentoRepo.buscarPorPeriodo(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
+            if (lista.isEmpty()) {
+                System.out.println("Nenhum agendamento no periodo.");
                 return;
             }
-
-            // regra 1: conflito de horario
-            boolean conflita = agendamentoRepo.existeConflito(
-                    agendamento.getProfissional(),
-                    agendamento.getDataHoraInicio(),
-                    agendamento.getDataHoraFim());
-            if (conflita) {
-                System.out.println("Conflito de horario! O profissional ja tem atendimento nesse periodo.");
-                return;
+            System.out.println("=== Agendamentos de " + inicio + " ate " + fim + " ===");
+            for (Agendamento a : lista) {
+                System.out.printf(" #%d | %s | %s | %s | R$ %.2f%n", a.getId(), a.getDataHoraInicio(), a.getCliente().getNome(), a.getProfissional().getNome(), a.getValorFinal());
             }
-
-            calcularValorFinal(agendamento);
-            agendamento.setStatus(StatusAgendamento.PENDENTE);
-            agendamentoRepo.salvar(agendamento);
-            System.out.println("Agendamento criado com sucesso.");
         } catch (Exception e) {
-            System.out.println("Erro ao criar agendamento: " + e.getMessage());
+            System.out.println("Erro ao gerar relatorio de agendamentos: " + e.getMessage());
         }
     }
 
-    public Optional<Agendamento> buscarPorId(Long id) {
+    /**
+     * Calcula o saldo atual do salão (entradas - saídas).
+     *
+     * @return saldo atual
+     */
+    public Double calcularSaldo() {
         try {
-            return agendamentoRepo.buscarPorId(id);
+            Double entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
+            Double saidas = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
+            return entradas - saidas;
         } catch (Exception e) {
-            System.out.println("Erro ao buscar agendamento: " + e.getMessage());
-            return Optional.empty();
+            System.out.println("Erro ao calcular saldo: " + e.getMessage());
+            return 0.0;
         }
     }
 
-    public List<Agendamento> listarTodos() {
+    /**
+     * Exibe o relatório financeiro do período com todas as transações e os totais de entradas, saídas e saldo.
+     *
+     * @param inicio data de início
+     * @param fim    data de fim
+     */
+    public void gerarRelatorioFinanceiro(LocalDate inicio, LocalDate fim) {
         try {
-            return agendamentoRepo.listarTodos();
-        } catch (Exception e) {
-            System.out.println("Erro ao listar agendamentos: " + e.getMessage());
-            return List.of();
-        }
-    }
+            LocalDateTime dtInicio = inicio.atStartOfDay();
+            LocalDateTime dtFim = fim.atTime(23, 59, 59);
+            List<TransacaoFinanceira> transacoes = transacaoRepo.buscarPorPeriodo(dtInicio, dtFim);
 
-    public void atualizarAgendamento(Agendamento agendamento) {
-        try {
-            if (agendamentoRepo.buscarPorId(agendamento.getId()).isEmpty()) {
-                System.out.println("Agendamento nao encontrado.");
-                return;
-            }
-            agendamentoRepo.salvar(agendamento);
-            System.out.println("Agendamento atualizado.");
-        } catch (Exception e) {
-            System.out.println("Erro ao atualizar agendamento: " + e.getMessage());
-        }
-    }
+            double totalEntradas = 0;
+            double totalSaidas = 0;
 
-    public void removerAgendamento(Long id) {
-        try {
-            Optional<Agendamento> existente = agendamentoRepo.buscarPorId(id);
-            if (existente.isEmpty()) {
-                System.out.println("Agendamento nao encontrado.");
-                return;
-            }
-            Agendamento a = existente.get();
-            if (a.getStatus() == StatusAgendamento.CONCLUIDO) {
-                System.out.println("Nao e permitido remover agendamento concluido.");
-                return;
-            }
-            agendamentoRepo.deletar(id);
-            System.out.println("Agendamento removido.");
-        } catch (Exception e) {
-            System.out.println("Erro ao remover agendamento: " + e.getMessage());
-        }
-    }
-
-    // --- regra de negocio 2: calcular valor final com desconto de fidelidade ---
-    public void calcularValorFinal(Agendamento agendamento) {
-        try {
-            double total = 0.0;
-            if (agendamento.getServicos() != null) {
-                for (AgendamentoServico as : agendamento.getServicos()) {
-                    double parcial = as.getPrecoAplicado() * as.getQuantidade();
-                    parcial -= (parcial * as.getDescontoAplicado() / 100.0);
-                    total += parcial;
+            System.out.println("=== Relatorio Financeiro ===");
+            for (TransacaoFinanceira t : transacoes) {
+                System.out.printf(" %s | %s | %s | R$ %.2f%n", t.getDataTransacao(), t.getTipo(), t.getDescricao(), t.getValor());
+                if (t.getTipo() == TipoTransacao.ENTRADA) {
+                    totalEntradas += t.getValor();
+                } else {
+                    totalSaidas += t.getValor();
                 }
             }
 
-            // desconto de fidelidade: cliente frequente ganha 10% off
-            Cliente cliente = agendamento.getCliente();
-            if (cliente != null && "frequente".equals(cliente.getTipoCliente())) {
-                total *= 0.9;
-            }
-
-            agendamento.setValorFinal(total);
+            System.out.printf("%nTotal entradas: R$ %.2f%n", totalEntradas);
+            System.out.printf("Total saidas:   R$ %.2f%n", totalSaidas);
+            System.out.printf("Saldo:          R$ %.2f%n", totalEntradas - totalSaidas);
         } catch (Exception e) {
-            System.out.println("Erro ao calcular valor final: " + e.getMessage());
-            agendamento.setValorFinal(0.0);
+            System.out.println("Erro ao gerar relatorio financeiro: " + e.getMessage());
         }
     }
 
-    // --- regra de negocio 3: concluir agendamento ---
-    public void concluirAgendamento(Long id) {
+    /**
+     * Gera e exibe no terminal o relatório de estoque atual, sinalizando
+     * os produtos com quantidade abaixo do mínimo configurado.
+     */
+    public void gerarRelatorioEstoque() {
         try {
-            Optional<Agendamento> op = agendamentoRepo.buscarPorId(id);
-            if (op.isEmpty()) {
-                System.out.println("Agendamento nao encontrado.");
-                return;
+            List<Produto> produtos = produtoRepo.listarTodos();
+            System.out.println("=== Estoque Atual ===");
+            for (Produto p : produtos) {
+                String status = p.getQuantidadeEstoque() <= p.getQuantidadeMinima() ? " [BAIXO]" : "";
+                System.out.printf(" %s | estoque: %d | minimo: %d | preco venda: R$ %.2f%s%n", p.getNome(), p.getQuantidadeEstoque(), p.getQuantidadeMinima(), p.getPrecoVenda(), status);
             }
-            Agendamento a = op.get();
-            if (a.getStatus() == StatusAgendamento.CONCLUIDO) {
-                System.out.println("Agendamento ja esta concluido.");
-                return;
-            }
-            if (a.getStatus() == StatusAgendamento.CANCELADO) {
-                System.out.println("Nao e possivel concluir um agendamento cancelado.");
-                return;
-            }
-            a.setStatus(StatusAgendamento.CONCLUIDO);
-            agendamentoRepo.salvar(a);
-            System.out.println("Agendamento #" + id + " concluido.");
         } catch (Exception e) {
-            System.out.println("Erro ao concluir agendamento: " + e.getMessage());
+            System.out.println("Erro ao gerar relatorio de estoque: " + e.getMessage());
         }
     }
 
-    // --- regra de negocio 4: cancelar agendamento ---
-    public void cancelarAgendamento(Long id) {
-        try {
-            Optional<Agendamento> op = agendamentoRepo.buscarPorId(id);
-            if (op.isEmpty()) {
-                System.out.println("Agendamento nao encontrado.");
-                return;
-            }
-            Agendamento a = op.get();
-            if (a.getStatus() == StatusAgendamento.CONCLUIDO) {
-                System.out.println("Nao e possivel cancelar um agendamento concluido.");
-                return;
-            }
-            a.setStatus(StatusAgendamento.CANCELADO);
-            agendamentoRepo.salvar(a);
-            System.out.println("Agendamento #" + id + " cancelado.");
-        } catch (Exception e) {
-            System.out.println("Erro ao cancelar agendamento: " + e.getMessage());
-        }
-    }
+//=====
 
-    public List<Agendamento> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+    /**
+     * Exibe o saldo geral do caixa com totais de entradas, saídas e saldo final.
+     * Reutiliza {@link #calcularSaldo()} para evitar duplicação.
+     */
+    public void imprimirSaldo() {
         try {
-            return agendamentoRepo.buscarPorPeriodo(inicio, fim);
-        } catch (Exception e) {
-            System.out.println("Erro ao buscar agendamentos por periodo: " + e.getMessage());
-            return List.of();
-        }
-    }
+            Double entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
+            Double saidas = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
+            Double saldo = calcularSaldo(); // reutiliza o metodo existente
 
-    public List<Agendamento> buscarPorStatus(StatusAgendamento status) {
-        try {
-            return agendamentoRepo.buscarPorStatus(status);
+            System.out.println("=== Saldo Geral ===");
+            System.out.printf(" Total entradas: R$ %.2f%n", entradas);
+            System.out.printf(" Total saidas:   R$ %.2f%n", saidas);
+            System.out.printf(" Saldo atual:    R$ %.2f%n", saldo);
         } catch (Exception e) {
-            System.out.println("Erro ao buscar agendamentos por status: " + e.getMessage());
-            return List.of();
+            System.out.println("Erro ao imprimir saldo: " + e.getMessage());
         }
     }
+//=====
 }
