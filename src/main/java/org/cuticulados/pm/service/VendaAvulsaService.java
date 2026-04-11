@@ -5,17 +5,16 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.entity.Produto;
+import org.cuticulados.pm.entity.Profissional;
 import org.cuticulados.pm.entity.VendaAvulsa;
 import org.cuticulados.pm.repository.ProdutoRepository;
 import org.cuticulados.pm.repository.VendaAvulsaRepository;
 
 public class VendaAvulsaService {
 
-    //repositórios para o acesso de dados
     private final VendaAvulsaRepository vendaRepo = new VendaAvulsaRepository();
     private final ProdutoRepository produtoRepo = new ProdutoRepository();
 
-    //registra uma venda com  validação de estoque
     public void registrarVenda(VendaAvulsa venda) {
         try {
             Optional<Produto> opProduto = produtoRepo.buscarPorId(venda.getProduto().getId());
@@ -26,20 +25,17 @@ public class VendaAvulsaService {
 
             Produto produto = opProduto.get();
 
-            //verifica se tem o estoque suficiente
             if (produto.getQuantidadeEstoque() < venda.getQuantidade()) {
                 System.out.println("Estoque insuficiente. Disponivel: " + produto.getQuantidadeEstoque());
                 return;
             }
 
-            //define os valores da venda
             venda.setPrecoUnitario(produto.getPrecoVenda());
             venda.setTotal(venda.getPrecoUnitario() * venda.getQuantidade());
             venda.setDataVenda(LocalDateTime.now());
 
             vendaRepo.salvar(venda);
 
-            //atualizar o estoque
             produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - venda.getQuantidade());
             produtoRepo.salvar(produto);
 
@@ -49,7 +45,6 @@ public class VendaAvulsaService {
         }
     }
 
-    //lista de todas as vendas
     public List<VendaAvulsa> listarTodas() {
         try {
             return vendaRepo.listarTodas();
@@ -59,7 +54,6 @@ public class VendaAvulsaService {
         }
     }
 
-    //remove a venda pelo ID
     public void removerVenda(Long id) {
         try {
             if (vendaRepo.buscarPorId(id).isEmpty()) {
@@ -70,6 +64,47 @@ public class VendaAvulsaService {
             System.out.println("Venda removida.");
         } catch (Exception e) {
             System.out.println("Erro ao remover venda: " + e.getMessage());
+        }
+    }
+
+    public void relatorioVendasDoDia() {
+        try {
+            LocalDateTime inicio = LocalDateTime.now().toLocalDate().atStartOfDay();
+            LocalDateTime fim = inicio.plusDays(1);
+            List<VendaAvulsa> vendas = vendaRepo.listarTodas().stream()
+                    .filter(v -> !v.getDataVenda().isBefore(inicio) && v.getDataVenda().isBefore(fim))
+                    .toList();
+            if (vendas.isEmpty()) {
+                System.out.println("Nenhuma venda registrada hoje.");
+                return;
+            }
+            vendas.forEach(v -> System.out.printf(
+                    " [%d] %s | %dx %s | R$ %.2f | %s%n",
+                    v.getId(), v.getDataVenda(),
+                    v.getQuantidade(), v.getProduto().getNome(),
+                    v.getTotal(), v.isFechado() ? "FECHADO" : "ABERTO"));
+        } catch (Exception e) {
+            System.out.println("Erro ao gerar relatorio: " + e.getMessage());
+        }
+    }
+
+    public void fecharDia(Profissional profissional) {
+        try {
+            LocalDateTime inicio = LocalDateTime.now().toLocalDate().atStartOfDay();
+            LocalDateTime fim = inicio.plusDays(1);
+            List<VendaAvulsa> vendas = vendaRepo.listarTodas().stream()
+                    .filter(v -> v.getProfissional().equals(profissional)
+                            && !v.getDataVenda().isBefore(inicio)
+                            && v.getDataVenda().isBefore(fim)
+                            && !v.isFechado())
+                    .toList();
+            vendas.forEach(v -> {
+                v.setFechado(true);
+                vendaRepo.salvar(v);
+            });
+            System.out.println("Dia fechado. Vendas encerradas: " + vendas.size());
+        } catch (Exception e) {
+            System.out.println("Erro ao fechar dia: " + e.getMessage());
         }
     }
 }

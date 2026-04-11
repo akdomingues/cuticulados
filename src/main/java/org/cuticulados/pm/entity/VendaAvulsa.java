@@ -18,12 +18,10 @@ import jakarta.persistence.Table;
 @Table(name = "venda_avulsa")
 public class VendaAvulsa {
 
-    //ID da venda
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //produto vendido
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
@@ -40,14 +38,15 @@ public class VendaAvulsa {
     @Column(name = "data_venda", nullable = false, updatable = false)
     private LocalDateTime dataVenda;
 
-    // profissional
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "profissional_id", nullable = false)
     private Profissional profissional;
 
-    //transação financeira
     @OneToOne(mappedBy = "vendaAvulsa")
     private TransacaoFinanceira transacao;
+
+    @Column(nullable = false)
+    private boolean fechado = false;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -65,6 +64,8 @@ public class VendaAvulsa {
     public void setProfissional(Profissional p) { this.profissional = p; }
     public TransacaoFinanceira getTransacao() { return transacao; }
     public void setTransacao(TransacaoFinanceira t) { this.transacao = t; }
+    public boolean isFechado() { return fechado; }
+    public void setFechado(boolean fechado) { this.fechado = fechado; }
 
     @Override
     public boolean equals(Object o) {
