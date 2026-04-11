@@ -10,10 +10,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 /**
- * Repositório responsável pelo acesso e manipulação dos dados de {@link Produto}.
- *
- * <p>Encapsula as operações de banco relacionadas ao estoque de produtos,
- * incluindo busca por nome e alertas de estoque baixo.</p>
+ * Repositório de {@link Produto}: CRUD, busca por nome e consulta de estoque baixo.
  */
 public class ProdutoRepository {
 
@@ -89,10 +86,8 @@ public class ProdutoRepository {
     }
 
     /**
-     * Busca produtos cujo estoque atual é menor ou igual ao estoque mínimo.
-     *
-     * <p>Usada pelo {@code ProdutoService} para alertar sobre itens
-     * que precisam de reposição.</p>
+     * Busca produtos com estoque atual menor ou igual ao mínimo configurado.
+     * Usada pelo ProdutoService para alertar sobre itens que precisam de reposição.
      *
      * @return lista de produtos com estoque baixo
      */

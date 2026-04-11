@@ -15,12 +15,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**
- * Entidade de associação entre {@link Agendamento} e {@link Servico}.
+ * Associação entre {@link Agendamento} e {@link Servico}.
  *
- * <p>Representa um serviço específico realizado dentro de um agendamento,
- * armazenando o preço cobrado no momento da execução e o desconto aplicado.
- * Isso garante que alterações futuras no preço base do serviço não afetem
- * o histórico financeiro.</p>
+ * Representa um serviço realizado dentro de um agendamento, guardando o preço
+ * e o desconto aplicados no momento. Assim, alterações futuras no preço do serviço
+ * não afetam o histórico financeiro.
  */
 @Entity
 @Table(name = "agendamento_servico")
@@ -69,9 +68,7 @@ public class AgendamentoServico {
 
 //=====
     /**
-     * Executado automaticamente pelo JPA antes de inserir o registro.
-     * Preenche o campo {@code createdAt} com a data/hora atual,
-     * evitando erro de constraint NOT NULL no banco.
+     * Preenche {@code createdAt} antes de inserir o registro, evitando erro de NOT NULL.
      */
     @PrePersist
     protected void onCreate() {

@@ -7,10 +7,8 @@ import org.cuticulados.pm.entity.Produto;
 import org.cuticulados.pm.repository.ProdutoRepository;
 
 /**
- * Serviço responsável pelas regras de negócio relacionadas a produtos do estoque.
- *
- * <p>Além do CRUD básico, fornece a verificação de estoque mínimo,
- * que alerta quando um produto precisa ser reposto.</p>
+ * Regras de negócio de produtos do estoque.
+ * Além do CRUD, alerta quando um produto atinge o estoque mínimo e precisa ser reposto.
  */
 public class ProdutoService {
 
@@ -18,11 +16,9 @@ public class ProdutoService {
     private final ProdutoRepository produtoRepo = new ProdutoRepository();
 
     /**
-     * Cadastra um novo produto com validações obrigatórias.
+     * Cadastra um produto verificando se o nome foi informado e se o preço de venda é positivo.
      *
-     * <p>Verifica se o nome foi informado e se o preço de venda é positivo.</p>
-     *
-     * @param produto objeto com os dados do produto a ser cadastrado
+     * @param produto objeto com os dados do produto
      */
     public void cadastrarProduto(Produto produto) {
         try {
@@ -107,13 +103,9 @@ public class ProdutoService {
     }
 
     /**
-     * Verifica e exibe os produtos com estoque abaixo do mínimo configurado.
+     * Lista e exibe produtos com estoque abaixo do mínimo (quantidadeEstoque <= quantidadeMinima).
      *
-     * <p>Regra de negócio: um produto está com estoque baixo quando
-     * {@code quantidadeEstoque <= quantidadeMinima}. Esses produtos
-     * precisam de reposição para que os serviços continuem sendo realizados.</p>
-     *
-     * @return lista de produtos com estoque baixo
+     * @return lista de produtos que precisam de reposição
      */
     public List<Produto> verificarEstoqueBaixo() {
         try {

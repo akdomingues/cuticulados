@@ -11,13 +11,10 @@ import jakarta.persistence.Table;
 /**
  * Entidade que representa um cliente do salão.
  *
- * <p>Herda os dados básicos de {@link Usuario} (nome, login, senha, etc.)
- * e adiciona informações específicas do cliente: CPF, telefone e
- * controle de fidelidade.</p>
+ * Herda os dados de {@link Usuario} e adiciona CPF, telefone e controle de fidelidade.
  *
- * <p>O campo {@code tipoCliente} ("novo" ou "frequente") é atualizado
- * automaticamente pela trigger {@code trg_promove_cliente} no banco
- * e também verificado pelo {@code ClienteService}.</p>
+ * O campo {@code tipoCliente} ("novo" ou "frequente") pode ser atualizado pela trigger
+ * {@code trg_promove_cliente} no banco ou pelo ClienteService.
  */
 @Entity
 @Table(name = "cliente")

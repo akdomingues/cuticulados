@@ -15,13 +15,11 @@ import org.cuticulados.pm.repository.TransacaoRepository;
 import org.cuticulados.pm.repository.VendaAvulsaRepository;
 
 /**
- * Serviço responsável pelas regras de negócio relacionadas a vendas avulsas de produtos.
+ * Regras de negócio de vendas avulsas de produtos.
  *
- * <p>Controla o processo completo de uma venda: validação de estoque,
- * cálculo do total, registro da venda e criação da transação financeira correspondente.</p>
- *
- * <p>Também gerencia o fechamento de dia do profissional, marcando as vendas
- * do dia como fechadas para evitar recontagem em fechamentos futuros.</p>
+ * Controla o processo completo: validação de estoque, cálculo do total,
+ * registro da venda e criação da transação financeira correspondente.
+ * Também gerencia o fechamento de dia do profissional.
  */
 public class VendaAvulsaService {
 
@@ -29,28 +27,15 @@ public class VendaAvulsaService {
     private final ProdutoRepository     produtoRepo    = new ProdutoRepository();
 
     /**
-     * Repositório de transações: usado para registrar a entrada financeira
-     * gerada por cada venda avulsa.
-     *
-     * <p>CORREÇÃO DO RELATÓRIO ZERADO: anteriormente, ao registrar uma venda,
-     * nenhuma TransacaoFinanceira era criada. Por isso os relatórios financeiros
-     * sempre retornavam zero. Agora cada venda gera automaticamente uma transação
-     * de ENTRADA no caixa.</p>
+     * Repositório de transações: registra a entrada financeira gerada por cada venda.
+     * Correção do relatório zerado — antes nenhuma TransacaoFinanceira era criada,
+     * então os relatórios sempre retornavam zero.
      */
     private final TransacaoRepository   transacaoRepo  = new TransacaoRepository();
 
     /**
-     * Registra uma nova venda avulsa de produto.
-     *
-     * <p>Regras aplicadas:</p>
-     * <ol>
-     *   <li>Verifica se o produto existe</li>
-     *   <li>Valida estoque suficiente</li>
-     *   <li>Calcula preço unitário e total</li>
-     *   <li>Salva a venda no banco</li>
-     *   <li>Debita do estoque</li>
-     *   <li>Cria uma {@link TransacaoFinanceira} de ENTRADA (corrige relatório zerado)</li>
-     * </ol>
+     * Registra uma venda avulsa: valida produto e estoque, calcula o total,
+     * salva a venda, debita o estoque e cria uma {@link TransacaoFinanceira} de ENTRADA.
      *
      * @param venda objeto com produto, quantidade e profissional preenchidos
      */
@@ -130,13 +115,9 @@ public class VendaAvulsaService {
     }
 
     /**
-     * Realiza o fechamento de dia para um profissional.
-     *
-     * <p>Busca todas as vendas em aberto ({@code fechado = false}) do profissional
-     * no dia atual, exibe um resumo e marca todas como fechadas.</p>
-     *
-     * <p>Após o fechamento, essas vendas não aparecerão em próximos fechamentos,
-     * mas continuam visíveis nos relatórios históricos normais.</p>
+     * Fecha o dia do profissional: busca as vendas em aberto do dia, exibe o resumo
+     * e as marca como fechadas. Elas não aparecem em fechamentos futuros,
+     * mas continuam visíveis nos relatórios históricos.
      *
      * @param profissional profissional que está encerrando o expediente
      */
@@ -181,14 +162,8 @@ public class VendaAvulsaService {
     }
 
     /**
-     * Gera e exibe o relatório de vendas do dia atual.
-     *
-     * <p>Consulta {@link VendaAvulsa} diretamente pela data de hoje,
-     * independente do status de fechamento. Assim funciona mesmo que
-     * as {@link TransacaoFinanceira} não tenham sido criadas anteriormente.</p>
-     *
-     * <p>IMPORTANTE: este método é a correção principal para o relatório zerado.
-     * Ele não depende de TransacaoFinanceira — lê diretamente as vendas.</p>
+     * Exibe o relatório de vendas do dia atual, lendo diretamente de {@link VendaAvulsa}.
+     * Não depende de TransacaoFinanceira — funciona independente do status de fechamento.
      */
     public void relatorioVendasDoDia() {
         try {

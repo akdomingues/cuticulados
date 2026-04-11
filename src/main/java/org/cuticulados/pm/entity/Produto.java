@@ -18,12 +18,11 @@ import jakarta.persistence.Table;
 /**
  * Entidade que representa um produto do estoque do salão.
  *
- * <p>Produtos são utilizados durante os serviços (ex: esmalte, acetona, gel UV)
- * e também podem ser vendidos avulsamente para clientes.</p>
+ * Produtos são usados durante os serviços (esmalte, acetona, gel UV, etc.)
+ * e também podem ser vendidos avulsamente.
  *
- * <p>O controle de estoque é feito pelos campos {@code quantidadeEstoque}
- * e {@code quantidadeMinima}. Quando o estoque atinge o mínimo, o produto
- * aparece nos alertas gerados pelo {@code ProdutoService}.</p>
+ * Quando {@code quantidadeEstoque} atinge {@code quantidadeMinima},
+ * o produto aparece nos alertas do ProdutoService.
  */
 @Entity
 @Table(name = "produto")

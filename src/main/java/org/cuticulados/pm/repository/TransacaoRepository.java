@@ -11,11 +11,8 @@ import org.cuticulados.pm.entity.TransacaoFinanceira;
 import jakarta.persistence.EntityManager;
 
 /**
- * Repositório responsável pelo acesso e manipulação dos dados de {@link TransacaoFinanceira}.
- *
- * <p>Fornece métodos para registrar movimentações financeiras e calcular
- * totais por tipo (entrada/saída), usados pelo {@code RelatorioService}
- * para gerar o saldo do caixa.</p>
+ * Repositório de {@link TransacaoFinanceira}: registra movimentações e calcula
+ * totais por tipo, usados pelo RelatorioService para gerar o saldo do caixa.
  */
 public class TransacaoRepository {
 
@@ -116,13 +113,11 @@ public class TransacaoRepository {
     }
 
     /**
-     * Soma o valor total de todas as transações de um determinado tipo.
+     * Soma o valor total das transações do tipo informado.
+     * Retorna 0.0 se não houver registros.
      *
-     * <p>Usado para calcular o total de entradas e o total de saídas
-     * separadamente, permitindo ao {@code RelatorioService} calcular o saldo.</p>
-     *
-     * @param tipo tipo da transação (ENTRADA ou SAIDA)
-     * @return soma dos valores; retorna 0.0 se não houver transações
+     * @param tipo ENTRADA ou SAIDA
+     * @return soma dos valores
      */
     public Double somarPorTipo(TipoTransacao tipo) {
         try (EntityManager em = JpaUtil.getEntityManager()) {

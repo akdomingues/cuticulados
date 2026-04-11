@@ -12,21 +12,13 @@ import org.cuticulados.pm.entity.StatusAgendamento;
 import jakarta.persistence.EntityManager;
 
 /**
- * Repositório responsável pelo acesso e manipulação dos dados de {@link Agendamento}.
- *
- * <p>Encapsula todas as operações de banco relacionadas a agendamentos,
- * incluindo CRUD básico e consultas personalizadas com JOIN.</p>
- *
- * <p>Cada método abre e fecha seu próprio {@code EntityManager},
- * seguindo o padrão ensinado em aula.</p>
+ * Repositório de {@link Agendamento}: CRUD e consultas com JOIN.
+ * Cada método abre e fecha seu próprio EntityManager.
  */
 public class AgendamentoRepository {
 
     /**
-     * Salva ou atualiza um agendamento no banco de dados.
-     *
-     * <p>Se o ID for nulo, insere um novo registro ({@code persist}).
-     * Caso contrário, atualiza o registro existente ({@code merge}).</p>
+     * Salva ou atualiza um agendamento. Usa persist para novos e merge para existentes.
      *
      * @param agendamento objeto a ser persistido
      */
@@ -45,13 +37,10 @@ public class AgendamentoRepository {
     }
 
     /**
-     * Busca um agendamento pelo ID, carregando também seus serviços e cliente.
-     *
-     * <p>Utiliza {@code LEFT JOIN FETCH} para evitar consultas adicionais
-     * ao acessar as listas de serviços e dados do cliente.</p>
+     * Busca um agendamento pelo ID carregando serviços e cliente via LEFT JOIN FETCH.
      *
      * @param id identificador do agendamento
-     * @return {@code Optional} com o agendamento encontrado, ou vazio se não existir
+     * @return Optional com o agendamento, ou vazio se não existir
      */
     public Optional<Agendamento> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -71,10 +60,7 @@ public class AgendamentoRepository {
     }
 
     /**
-     * Lista todos os agendamentos, carregando cliente e profissional de cada um.
-     *
-     * <p>Utiliza {@code LEFT JOIN FETCH} para carregar os dados relacionados
-     * em uma única consulta ao banco.</p>
+     * Lista todos os agendamentos com cliente e profissional carregados via LEFT JOIN FETCH.
      *
      * @return lista de todos os agendamentos cadastrados
      */
@@ -114,15 +100,12 @@ public class AgendamentoRepository {
     }
 
     /**
-     * Busca agendamentos dentro de um período de tempo, usando INNER JOIN.
-     *
-     * <p>Demonstra o uso de {@code JOIN} (inner join) entre Agendamento,
-     * Cliente e Profissional, retornando apenas registros que possuem
-     * cliente e profissional associados.</p>
+     * Busca agendamentos no período usando INNER JOIN com Cliente e Profissional.
+     * Retorna apenas registros que têm ambos associados.
      *
      * @param inicio data/hora de início do período
      * @param fim    data/hora de fim do período
-     * @return lista de agendamentos no período informado, ordenada por data
+     * @return lista de agendamentos no período, ordenada por data
      */
     public List<Agendamento> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -143,15 +126,12 @@ public class AgendamentoRepository {
     }
 
     /**
-     * Verifica se um profissional já possui agendamento no horário solicitado.
-     *
-     * <p>Regra de negócio de conflito de horário: retorna {@code true} se
-     * houver sobreposição de horários para o profissional informado.</p>
+     * Verifica se o profissional já tem agendamento sobreposto no horário informado.
      *
      * @param profissional profissional a verificar
-     * @param inicio       início do intervalo a checar
-     * @param fim          fim do intervalo a checar
-     * @return {@code true} se houver conflito de horário
+     * @param inicio       início do intervalo
+     * @param fim          fim do intervalo
+     * @return true se houver conflito de horário
      */
     public boolean existeConflito(Profissional profissional, LocalDateTime inicio, LocalDateTime fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {

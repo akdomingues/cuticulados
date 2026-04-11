@@ -14,13 +14,10 @@ import jakarta.persistence.Table;
 /**
  * Entidade que representa um profissional do salão.
  *
- * <p>Herda os dados comuns de {@link Usuario} e adiciona a especialidade
- * do profissional (ex: "nail designer", "manicure").</p>
+ * Herda os dados de {@link Usuario} e adiciona a especialidade (ex: "nail designer").
  *
- * <p>Possui relacionamento {@code @ManyToMany} com {@link Servico}:
- * um profissional pode realizar vários serviços, e um serviço pode ser
- * executado por vários profissionais. A tabela intermediária no banco
- * é {@code profissional_servico}.</p>
+ * Tem relacionamento ManyToMany com {@link Servico}: um profissional pode realizar
+ * vários serviços e vice-versa. A tabela intermediária é {@code profissional_servico}.
  */
 @Entity
 @Table(name = "profissional")
@@ -36,14 +33,8 @@ public class Profissional extends Usuario {
 
 //===== adicionado (muitos para muitos)
     /**
-     * Lista de serviços que este profissional está habilitado a realizar.
-     *
-     * <p>Relacionamento muitos-para-muitos com {@link Servico}:
-     * um profissional pode realizar vários serviços e um serviço pode
-     * ser realizado por vários profissionais.</p>
-     *
-     * <p>A anotação {@code @JoinTable} define o nome da tabela intermediária
-     * e as colunas de chave estrangeira que ligam as duas entidades.</p>
+     * Serviços que este profissional está habilitado a realizar.
+     * A anotação @JoinTable define a tabela intermediária {@code profissional_servico}.
      */
     @ManyToMany
     @JoinTable(

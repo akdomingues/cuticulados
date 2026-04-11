@@ -11,10 +11,8 @@ import org.cuticulados.pm.entity.VendaAvulsa;
 import jakarta.persistence.EntityManager;
 
 /**
- * Repositório responsável pelo acesso e manipulação dos dados de {@link VendaAvulsa}.
- *
- * <p>Além do CRUD básico, fornece consultas específicas por data e profissional,
- * usadas no relatório de vendas do dia e no fechamento diário.</p>
+ * Repositório de {@link VendaAvulsa}: CRUD e consultas por data e profissional
+ * usadas no relatório e no fechamento do dia.
  */
 public class VendaAvulsaRepository {
 
@@ -99,10 +97,8 @@ public class VendaAvulsaRepository {
     }
 
     /**
-     * Busca todas as vendas de um profissional em um período específico que ainda NÃO foram fechadas.
-     *
-     * <p>Usada no fechamento de dia: retorna apenas as vendas em aberto
-     * ({@code fechado = false}) do profissional naquele dia.</p>
+     * Busca vendas abertas (fechado = false) de um profissional em um período.
+     * Usada no fechamento de dia.
      *
      * @param profissional profissional cujas vendas serão buscadas
      * @param inicio       início do período (normalmente 00:00 do dia)
@@ -131,10 +127,8 @@ public class VendaAvulsaRepository {
     }
 
     /**
-     * Marca uma lista de vendas como fechadas ({@code fechado = true}).
-     *
-     * <p>Usada ao finalizar o dia do profissional. Cada venda é atualizada
-     * individualmente dentro de uma única transação para garantir consistência.</p>
+     * Marca todas as vendas da lista como fechadas. Todas são atualizadas
+     * em uma única transação para garantir consistência.
      *
      * @param vendas lista de vendas a serem fechadas
      */

@@ -16,43 +16,50 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**
- * Entidade que representa a venda avulsa de um produto para um cliente.
+ * Entidade que representa a venda avulsa de um produto.
  *
- * <p>Diferente do agendamento, a venda avulsa ocorre quando um produto
- * é vendido diretamente (ex: esmalte, base) sem um serviço de manicure.</p>
+ * Ocorre quando um produto (esmalte, base, etc.) é vendido diretamente,
+ * sem estar vinculado a um agendamento de serviço.
  *
- * <p>O campo {@code fechado} indica se esta venda já foi incluída no
- * fechamento de dia do profissional. Vendas fechadas não aparecem
- * novamente em relatórios de fechamento futuro.</p>
+ * O campo {@code fechado} indica se a venda já entrou no fechamento de dia
+ * do profissional — vendas fechadas não reaparecem em fechamentos futuros.
  */
 @Entity
 @Table(name = "venda_avulsa")
 public class VendaAvulsa {
 
+    /** Identificador único gerado automaticamente pelo banco. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Produto vendido nesta transação avulsa. */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
 
+    /** Quantidade de unidades vendidas. */
     @Column(nullable = false)
     private Integer quantidade;
 
+    /** Preço unitário cobrado no momento da venda (cópia do preço de venda do produto). */
     @Column(name = "preco_unitario", nullable = false)
     private Double precoUnitario;
 
+    /** Valor total da venda ({@code precoUnitario * quantidade}). */
     @Column(nullable = false)
     private Double total;
 
+    /** Data e hora em que a venda foi realizada. */
     @Column(name = "data_venda", nullable = false, updatable = false)
     private LocalDateTime dataVenda;
 
+    /** Profissional que realizou a venda. */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "profissional_id", nullable = false)
     private Profissional profissional;
 
+    /** Transação financeira gerada por esta venda (relacionamento um-para-um). */
     @OneToOne(mappedBy = "vendaAvulsa")
     private TransacaoFinanceira transacao;
 

@@ -1,14 +1,12 @@
 package org.cuticulados.pm.entity;
 
 /**
- * Enumeração que classifica o tipo de uma transação financeira.
- *
- * <p>Utilizada na entidade {@code TransacaoFinanceira} para diferenciar
- * receitas de despesas no fluxo de caixa do salão.</p>
+ * Classifica o tipo de uma transação financeira.
+ * Usada em {@link TransacaoFinanceira} para diferenciar receitas de despesas no caixa.
  */
 public enum TipoTransacao {
-    /** uma receita (pagamento por seriço ou venda)*/
+    /** Receita: pagamento recebido por serviço ou venda de produto. */
     ENTRADA,
-    /** uma despesa (investimento...)*/
+    /** Despesa: saída de dinheiro do caixa (compra de produto, investimento, etc.). */
     SAIDA
 }

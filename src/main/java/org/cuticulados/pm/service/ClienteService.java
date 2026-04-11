@@ -7,11 +7,10 @@ import org.cuticulados.pm.entity.Cliente;
 import org.cuticulados.pm.repository.ClienteRepository;
 
 /**
- * Serviço responsável pelas regras de negócio relacionadas a clientes.
+ * Regras de negócio de clientes.
  *
- * <p>Além do CRUD básico, implementa a verificação de fidelidade do cliente,
- * que classifica o cliente como "frequente" quando ele atinge 3 ou mais
- * atendimentos no mês — regra que também dá direito a desconto nos agendamentos.</p>
+ * Além do CRUD, classifica o cliente como "frequente" ao atingir 3 ou mais
+ * atendimentos no mês — o que também dá direito a desconto nos agendamentos.
  */
 public class ClienteService {
 
@@ -19,12 +18,10 @@ public class ClienteService {
     private final ClienteRepository clienteRepo = new ClienteRepository();
 
     /**
-     * Cadastra um novo cliente aplicando validações obrigatórias.
+     * Cadastra um cliente verificando se o CPF foi informado e se não está duplicado.
+     * Novos clientes iniciam com tipo "novo" e zero atendimentos no mês.
      *
-     * <p>Verifica se o CPF foi informado e se já não existe outro cliente
-     * com o mesmo CPF. Novos clientes iniciam com tipo "novo" e zero atendimentos.</p>
-     *
-     * @param cliente objeto com os dados do cliente a ser cadastrado
+     * @param cliente objeto com os dados do cliente
      */
     public void cadastrarCliente(Cliente cliente) {
         try {
@@ -114,14 +111,11 @@ public class ClienteService {
     }
 
     /**
-     * Verifica e retorna o nível de fidelidade do cliente com base nos atendimentos do mês.
-     *
-     * <p>Regra de negócio: clientes com 3 ou mais atendimentos no mês são
-     * classificados como "frequente" e têm direito a 10% de desconto.
-     * Clientes com menos de 3 atendimentos permanecem como "novo".</p>
+     * Retorna o nível de fidelidade do cliente baseado nos atendimentos do mês.
+     * Com 3 ou mais atendimentos retorna "frequente" (10% de desconto); abaixo disso, "novo".
      *
      * @param cliente o cliente a ser avaliado
-     * @return {@code "frequente"} se tiver 3 ou mais atendimentos, {@code "novo"} caso contrário
+     * @return "frequente" ou "novo"
      */
     public String verificarFidelidade(Cliente cliente) {
         try {

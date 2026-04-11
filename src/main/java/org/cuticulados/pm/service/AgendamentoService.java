@@ -11,20 +11,11 @@ import org.cuticulados.pm.entity.StatusAgendamento;
 import org.cuticulados.pm.repository.AgendamentoRepository;
 
 /**
- * Serviço responsável pelas regras de negócio relacionadas a agendamentos.
+ * Regras de negócio de agendamentos.
  *
- * <p>Este serviço encapsula toda a lógica que vai além do simples CRUD,
- * como verificação de conflito de horário, cálculo de valor com desconto
- * de fidelidade e controle das transições de status.</p>
- *
- * <p>Regras de negócio implementadas:</p>
- * <ul>
- *   <li>RN1: Verificação de conflito de horário do profissional</li>
- *   <li>RN2: Desconto de 10% para clientes frequentes</li>
- *   <li>RN3: Impede concluir agendamento já cancelado</li>
- *   <li>RN4: Impede cancelar agendamento já concluído</li>
- *   <li>RN5: Impede remover agendamento já concluído</li>
- * </ul>
+ * Além do CRUD, controla: conflito de horário (RN1), desconto de 10% para
+ * clientes frequentes (RN2), e transições de status — não conclui cancelado (RN3),
+ * não cancela concluído (RN4), não remove concluído (RN5).
  */
 public class AgendamentoService {
 
@@ -32,12 +23,10 @@ public class AgendamentoService {
     private final AgendamentoRepository agendamentoRepo = new AgendamentoRepository();
 
     /**
-     * Cria um novo agendamento aplicando as regras de negócio.
+     * Cria um agendamento validando cliente, profissional, conflito de horário
+     * e calculando o valor final antes de persistir.
      *
-     * <p>Valida se cliente e profissional estão preenchidos, verifica
-     * conflito de horário e calcula o valor final antes de persistir.</p>
-     *
-     * @param agendamento objeto com os dados do agendamento a ser criado
+     * @param agendamento objeto com os dados do agendamento
      */
     public void criarAgendamento(Agendamento agendamento) {
         try {
@@ -114,11 +103,9 @@ public class AgendamentoService {
 
     /**
      * Remove um agendamento pelo ID.
+     * RN5: não permite remover agendamentos concluídos para preservar o histórico financeiro.
      *
-     * <p>RN5: Não é permitido remover agendamentos já concluídos,
-     * pois isso afetaria o histórico financeiro.</p>
-     *
-     * @param id identificador do agendamento a ser removido
+     * @param id identificador do agendamento
      */
     public void removerAgendamento(Long id) {
         try {
@@ -140,10 +127,8 @@ public class AgendamentoService {
     }
 
     /**
-     * Calcula o valor final do agendamento somando os serviços e aplicando descontos.
-     *
-     * <p>RN2: Se o cliente for do tipo "frequente" (≥ 3 atendimentos no mês),
-     * recebe 10% de desconto sobre o valor total dos serviços.</p>
+     * Calcula o valor final somando os serviços e aplicando descontos.
+     * RN2: clientes "frequentes" (≥ 3 atendimentos no mês) recebem 10% de desconto.
      *
      * @param agendamento agendamento com a lista de serviços preenchida
      */
@@ -172,11 +157,10 @@ public class AgendamentoService {
     }
 
     /**
-     * Conclui um agendamento, alterando seu status para CONCLUIDO.
+     * Muda o status do agendamento para CONCLUIDO.
+     * RN3: não é possível concluir um agendamento já cancelado.
      *
-     * <p>RN3: Não é possível concluir um agendamento já cancelado.</p>
-     *
-     * @param id identificador do agendamento a ser concluído
+     * @param id identificador do agendamento
      */
     public void concluirAgendamento(Long id) {
         try {
@@ -203,11 +187,10 @@ public class AgendamentoService {
     }
 
     /**
-     * Cancela um agendamento, alterando seu status para CANCELADO.
+     * Muda o status do agendamento para CANCELADO.
+     * RN4: não é possível cancelar um agendamento já concluído.
      *
-     * <p>RN4: Não é possível cancelar um agendamento que já foi concluído.</p>
-     *
-     * @param id identificador do agendamento a ser cancelado
+     * @param id identificador do agendamento
      */
     public void cancelarAgendamento(Long id) {
         try {

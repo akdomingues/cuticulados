@@ -10,10 +10,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 /**
- * Repositório responsável pelo acesso e manipulação dos dados de {@link Usuario}.
- *
- * <p>Inclui suporte a soft delete (exclusão lógica via {@code deletedAt})
- * e busca por login para autenticação.</p>
+ * Repositório de {@link Usuario}: CRUD, busca por login e soft delete via {@code deletedAt}.
  */
 public class UsuarioRepository {
 
@@ -53,14 +50,11 @@ public class UsuarioRepository {
     }
 
     /**
-     * Busca um usuário pelo login para autenticação.
-     *
-     * <p>Retorna vazio se o login não existir ou se ocorrer algum erro na consulta.
-     * O tratamento de {@code NoResultException} é feito separadamente para
-     * não imprimir mensagem de erro em situações normais.</p>
+     * Busca um usuário pelo login. NoResultException é tratado separadamente
+     * para não imprimir erro em situações normais (login inexistente).
      *
      * @param login login do usuário
-     * @return {@code Optional} com o usuário encontrado, ou vazio se não existir
+     * @return Optional com o usuário, ou vazio se não existir
      */
     public Optional<Usuario> buscarPorLogin(String login) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -79,12 +73,9 @@ public class UsuarioRepository {
     }
 
     /**
-     * Lista todos os usuários ativos (que não foram excluídos logicamente).
+     * Lista usuários ativos, ou seja, onde {@code deletedAt} é nulo.
      *
-     * <p>Filtra apenas registros onde {@code deletedAt} é nulo,
-     * ignorando usuários que sofreram exclusão lógica.</p>
-     *
-     * @return lista de usuários ativos
+     * @return lista de usuários que não foram excluídos logicamente
      */
     public List<Usuario> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -99,12 +90,10 @@ public class UsuarioRepository {
     }
 
     /**
-     * Realiza a exclusão lógica de um usuário, preenchendo o campo {@code deletedAt}.
+     * Realiza soft delete: preenche {@code deletedAt} sem remover o registro.
+     * O histórico de agendamentos e transações do usuário é preservado.
      *
-     * <p>O registro não é removido do banco; apenas a data de exclusão é registrada.
-     * Assim o histórico de agendamentos e transações é preservado.</p>
-     *
-     * @param id identificador do usuário a ser excluído logicamente
+     * @param id identificador do usuário
      */
     public void deletarLogico(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {

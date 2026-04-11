@@ -23,15 +23,13 @@ import jakarta.persistence.Table;
 /**
  * Entidade que representa um agendamento de atendimento no salão.
  *
- * <p>Um agendamento conecta um {@link Cliente} a um {@link Profissional}
- * em um intervalo de tempo definido. Dentro de um agendamento podem ser
- * realizados um ou mais serviços ({@link AgendamentoServico}).</p>
+ * Conecta um {@link Cliente} a um {@link Profissional} em um intervalo de tempo.
+ * Um agendamento pode ter um ou mais serviços ({@link AgendamentoServico}).
  *
- * <p>Fluxo de status: {@code PENDENTE} → {@code CONCLUIDO} ou {@code CANCELADO}.
- * As regras de transição são controladas pelo {@code AgendamentoService}.</p>
+ * Fluxo de status: PENDENTE → CONCLUIDO ou CANCELADO.
+ * As regras de transição são controladas pelo AgendamentoService.
  *
- * <p>Ao ser concluído, gera automaticamente uma {@link TransacaoFinanceira}
- * de entrada no caixa do salão.</p>
+ * Ao ser concluído, gera automaticamente uma {@link TransacaoFinanceira} de entrada no caixa.
  */
 @Entity
 @Table(name = "agendamento")

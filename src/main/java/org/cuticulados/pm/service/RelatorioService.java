@@ -13,11 +13,8 @@ import org.cuticulados.pm.repository.ProdutoRepository;
 import org.cuticulados.pm.repository.TransacaoRepository;
 
 /**
- * Serviço responsável pela geração de relatórios do salão.
- *
- * <p>Consolida informações de agendamentos, movimentações financeiras
- * e estoque para exibição no terminal. Também calcula o saldo do caixa
- * com base no total de entradas e saídas registradas.</p>
+ * Gera relatórios do salão: agendamentos por período, financeiro e estoque.
+ * Também calcula o saldo do caixa com base nas entradas e saídas registradas.
  */
 public class RelatorioService {
 
@@ -59,11 +56,9 @@ public class RelatorioService {
     }
 
     /**
-     * Calcula e retorna o saldo financeiro atual do salão.
+     * Calcula o saldo atual do salão (entradas - saídas).
      *
-     * <p>O saldo é obtido subtraindo o total de saídas do total de entradas.</p>
-     *
-     * @return saldo atual (entradas - saídas)
+     * @return saldo atual
      */
     public Double calcularSaldo() {
         try {
@@ -77,11 +72,10 @@ public class RelatorioService {
     }
 
     /**
-     * Gera e exibe no terminal o relatório financeiro de um período,
-     * listando todas as transações e os totais de entradas, saídas e saldo.
+     * Exibe o relatório financeiro do período com todas as transações e os totais de entradas, saídas e saldo.
      *
-     * @param inicio data de início do período
-     * @param fim    data de fim do período
+     * @param inicio data de início
+     * @param fim    data de fim
      */
     public void gerarRelatorioFinanceiro(LocalDate inicio, LocalDate fim) {
         try {
@@ -135,11 +129,8 @@ public class RelatorioService {
 
 //=====
     /**
-     * Exibe no terminal o saldo geral do caixa do salão.
-     *
-     * <p>Reutiliza o método {@link #calcularSaldo()} para evitar
-     * duplicação de código. O saldo é composto por entradas e saídas
-     * buscadas no banco de dados via {@code TransacaoRepository}.</p>
+     * Exibe o saldo geral do caixa com totais de entradas, saídas e saldo final.
+     * Reutiliza {@link #calcularSaldo()} para evitar duplicação.
      */
     public void imprimirSaldo() {
         try {

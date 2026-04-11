@@ -19,12 +19,10 @@ import jakarta.persistence.Table;
 /**
  * Entidade que registra uma movimentação financeira do salão.
  *
- * <p>Toda receita ou despesa do salão é registrada aqui.
- * Uma transação pode estar vinculada a um {@link Agendamento} concluído
- * ou a uma {@link VendaAvulsa} de produto.</p>
+ * Toda receita ou despesa é registrada aqui. Pode estar vinculada
+ * a um {@link Agendamento} concluído ou a uma {@link VendaAvulsa}.
  *
- * <p>O saldo do caixa é calculado pelo {@code RelatorioService}
- * somando entradas e subtraindo saídas.</p>
+ * O saldo do caixa é calculado pelo RelatorioService somando entradas e subtraindo saídas.
  */
 @Entity
 @Table(name = "transacao_financeira")
@@ -73,9 +71,7 @@ public class TransacaoFinanceira {
 
 //=====
     /**
-     * Executado automaticamente pelo JPA antes de inserir o registro.
-     * Preenche o campo {@code dataTransacao} com a data/hora atual,
-     * evitando erro de constraint NOT NULL no banco.
+     * Preenche {@code dataTransacao} antes de inserir o registro, evitando erro de NOT NULL.
      */
     @PrePersist
     protected void onCreate() {

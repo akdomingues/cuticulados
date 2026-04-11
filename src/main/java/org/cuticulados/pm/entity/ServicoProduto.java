@@ -14,14 +14,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Entidade de associação entre {@link Servico} e {@link Produto}.
+ * Associação entre {@link Servico} e {@link Produto}.
  *
- * <p>Representa quais produtos são utilizados na execução de cada serviço.
- * Por exemplo: o serviço "manicure" utiliza "esmalte" e "acetona".</p>
- *
- * <p>É uma tabela intermediária que implementa o relacionamento
- * muitos-para-muitos entre serviços e produtos de forma explícita,
- * permitindo adicionar campos extras no futuro se necessário.</p>
+ * Indica quais produtos são usados em cada serviço — por exemplo,
+ * "manicure" usa "esmalte" e "acetona". Tabela intermediária explícita,
+ * o que permite adicionar campos extras (ex: quantidade) futuramente.
  */
 @Entity
 @Table(name = "servico_produto")

@@ -10,10 +10,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 /**
- * Repositório responsável pelo acesso e manipulação dos dados de {@link Servico}.
- *
- * <p>Encapsula as operações de banco relacionadas aos serviços oferecidos
- * pelo salão, incluindo busca por descrição e listagem com produtos associados.</p>
+ * Repositório de {@link Servico}: CRUD, busca por descrição e listagem com produtos.
  */
 public class ServicoRepository {
 
@@ -67,11 +64,9 @@ public class ServicoRepository {
     }
 
     /**
-     * Busca serviços que contenham o termo informado na descrição.
+     * Busca serviços que contenham o termo na descrição (case-insensitive).
      *
-     * <p>A busca é case-insensitive (não diferencia maiúsculas de minúsculas).</p>
-     *
-     * @param termo texto a ser pesquisado na descrição
+     * @param termo texto a ser pesquisado
      * @return lista de serviços que contêm o termo
      */
     public List<Servico> buscarPorDescricao(String termo) {
@@ -89,12 +84,10 @@ public class ServicoRepository {
     }
 
     /**
-     * Lista todos os serviços com seus produtos associados carregados via LEFT JOIN FETCH.
+     * Lista todos os serviços com produtos associados via LEFT JOIN FETCH.
+     * Serviços sem produtos também aparecem. DISTINCT evita duplicatas.
      *
-     * <p>O {@code LEFT JOIN FETCH} garante que serviços sem produtos também
-     * sejam incluídos no resultado. O {@code DISTINCT} evita duplicatas.</p>
-     *
-     * @return lista de serviços com seus produtos carregados
+     * @return lista de serviços com produtos carregados
      */
     public List<Servico> listarComProdutos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -111,15 +104,10 @@ public class ServicoRepository {
 
 //=====
     /**
-     * Lista todas as combinações possíveis entre serviços e produtos (CROSS JOIN).
+     * Lista todas as combinações entre serviços e produtos via CROSS JOIN (produto cartesiano).
+     * Em JPQL, o cross join é feito listando duas entidades no FROM sem relacionamento entre elas.
      *
-     * <p>Em JPQL, o CROSS JOIN é feito listando duas entidades no FROM sem
-     * relacionamento entre elas, separadas por vírgula. Isso gera o produto
-     * cartesiano: cada serviço é combinado com cada produto.</p>
-     *
-     * <p>Útil para visualizar quais produtos poderiam ser associados a cada serviço.</p>
-     *
-     * @return lista de arrays onde cada posição 0 é um Servico e posição 1 é um Produto
+     * @return lista de arrays: posição 0 é um Servico, posição 1 é um Produto
      */
     public List<Object[]> listarCombinacoesProdutos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {

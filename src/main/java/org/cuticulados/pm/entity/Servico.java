@@ -17,13 +17,11 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 /**
- * Entidade que representa um serviço oferecido pelo salão.
+ * Entidade que representa um serviço oferecido pelo salão (manicure, pedicure, nail art, etc.).
  *
- * <p>Exemplos: manicure, pedicure, alongamento de unhas, nail art.</p>
- *
- * <p>Cada serviço tem um valor base e uma duração estimada em minutos.
- * Pode estar associado a vários {@link Produto}s (via {@link ServicoProduto})
- * e pode ser realizado por vários {@link Profissional}s (via {@code @ManyToMany}).</p>
+ * Cada serviço tem valor base e duração estimada em minutos.
+ * Pode usar vários {@link Produto}s (via {@link ServicoProduto})
+ * e ser realizado por vários {@link Profissional}s (ManyToMany).
  */
 @Entity
 @Table(name = "servico")
@@ -60,11 +58,8 @@ public class Servico {
 
 //=====
     /**
-     * Lista de profissionais habilitados para realizar este serviço.
-     *
-     * <p>Lado inverso do relacionamento {@code @ManyToMany} com {@link Profissional}.
-     * A anotação {@code mappedBy} indica que o controle da tabela intermediária
-     * está em {@code Profissional.servicos}.</p>
+     * Profissionais habilitados para realizar este serviço.
+     * Lado inverso do ManyToMany — a tabela intermediária é controlada por {@code Profissional.servicos}.
      */
     @ManyToMany(mappedBy = "servicos")
     private List<Profissional> profissionais = new ArrayList<>();

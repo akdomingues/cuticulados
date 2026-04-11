@@ -10,10 +10,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 /**
- * Repositório responsável pelo acesso e manipulação dos dados de {@link Cliente}.
- *
- * <p>Encapsula as operações de banco relacionadas a clientes,
- * incluindo busca por CPF e listagem com agendamentos via LEFT JOIN FETCH.</p>
+ * Repositório de {@link Cliente}: CRUD, busca por CPF e listagem com agendamentos.
  */
 public class ClienteRepository {
 
@@ -53,12 +50,10 @@ public class ClienteRepository {
     }
 
     /**
-     * Busca um cliente pelo CPF.
-     *
-     * <p>Usado na regra de negócio que impede cadastro de CPF duplicado.</p>
+     * Busca um cliente pelo CPF. Usado para impedir cadastro duplicado.
      *
      * @param cpf CPF a ser pesquisado (com ou sem formatação)
-     * @return {@code Optional} com o cliente encontrado, ou vazio se não existir
+     * @return Optional com o cliente, ou vazio se não existir
      */
     public Optional<Cliente> buscarPorCpf(String cpf) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
@@ -77,10 +72,8 @@ public class ClienteRepository {
     }
 
     /**
-     * Lista todos os clientes, carregando seus agendamentos via LEFT JOIN FETCH.
-     *
-     * <p>O {@code LEFT JOIN FETCH} garante que clientes sem agendamentos
-     * também apareçam na listagem.</p>
+     * Lista todos os clientes com agendamentos carregados via LEFT JOIN FETCH.
+     * Clientes sem agendamentos também aparecem na listagem.
      *
      * @return lista de todos os clientes cadastrados
      */

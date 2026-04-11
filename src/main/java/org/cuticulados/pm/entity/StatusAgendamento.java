@@ -1,11 +1,10 @@
 package org.cuticulados.pm.entity;
 
 /**
- * Enumeração que representa os possíveis estados de um agendamento.
+ * Estados possíveis de um agendamento.
  *
- * <p>Um agendamento sempre começa como {@code PENDENTE} e pode evoluir
- * para {@code CONCLUIDO} ou {@code CANCELADO}. Transições inválidas
- * são controladas pelo {@code AgendamentoService}.</p>
+ * Todo agendamento começa como PENDENTE e pode evoluir para CONCLUIDO ou CANCELADO.
+ * Transições inválidas são bloqueadas pelo AgendamentoService.
  */
 public enum StatusAgendamento {
     PENDENTE,

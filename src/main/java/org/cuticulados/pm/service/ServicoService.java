@@ -7,10 +7,8 @@ import org.cuticulados.pm.entity.Servico;
 import org.cuticulados.pm.repository.ServicoRepository;
 
 /**
- * Serviço responsável pelas regras de negócio relacionadas aos serviços do salão.
- *
- * <p>Encapsula o CRUD de serviços com validações de negócio,
- * como obrigatoriedade da descrição e valor base maior que zero.</p>
+ * Regras de negócio dos serviços do salão.
+ * CRUD com validações: descrição obrigatória e valor base maior que zero.
  */
 public class ServicoService {
 
@@ -18,11 +16,9 @@ public class ServicoService {
     private final ServicoRepository servicoRepo = new ServicoRepository();
 
     /**
-     * Cadastra um novo serviço com validações obrigatórias.
+     * Cadastra um serviço verificando se a descrição foi informada e se o valor base é positivo.
      *
-     * <p>Verifica se a descrição foi informada e se o valor base é positivo.</p>
-     *
-     * @param servico objeto com os dados do serviço a ser cadastrado
+     * @param servico objeto com os dados do serviço
      */
     public void cadastrarServico(Servico servico) {
         try {

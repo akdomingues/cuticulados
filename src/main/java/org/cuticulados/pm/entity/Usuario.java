@@ -19,18 +19,14 @@ import jakarta.persistence.Table;
 /**
  * Entidade base que representa um usuário do sistema.
  *
- * <p>Utiliza herança JPA do tipo {@code JOINED}: os dados comuns a todos
- * os usuários ficam nesta tabela, enquanto cada subclasse
- * ({@link Cliente}, {@link Profissional}) possui sua própria tabela
- * com as informações específicas.</p>
+ * Utiliza herança JPA do tipo JOINED: os dados comuns ficam nesta tabela,
+ * e cada subclasse (Cliente, Profissional) tem sua própria tabela com dados específicos.
  *
- * <p>O tipo do usuário é controlado pelo ENUM {@link TipoUsuario},
- * permitindo distinguir ADMIN, PROFISSIONAL e CLIENTE sem criar
- * entidades separadas para cada papel.</p>
+ * O tipo do usuário é controlado pelo enum {@link TipoUsuario},
+ * distinguindo ADMIN, PROFISSIONAL e CLIENTE sem criar entidades separadas.
  *
- * <p>Implementa soft delete por meio do campo {@code deletedAt}:
- * ao invés de remover o registro do banco, apenas registra a data
- * da exclusão lógica.</p>
+ * Implementa soft delete via campo {@code deletedAt}: ao invés de remover o registro,
+ * apenas registra a data da exclusão lógica.
  */
 @Entity
 @Table(name = "usuario")
