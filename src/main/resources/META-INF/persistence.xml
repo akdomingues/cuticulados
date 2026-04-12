@@ -29,7 +29,7 @@
 
             <!--hibernate conversor, ele pega a nossa escrita tipo usuario e coloca na linguagem postgresql,
             ele pega os comandos e fala o toma ai, transforme isso em sql so que para o postgresql, ja que,
-            postgresql e diferente do mysql e afins-->
+            postgresql é diferente do mysql e afins-->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
             <!--"none" pois o flyway vai criar os comandos, create table, alter table e afins-->
             <property name="hibernate.hbm2ddl.auto" value="none"/>
