@@ -126,7 +126,7 @@ public class Main {
      * menu para usuários com perfil profissional.
      * inclui "finalizar dia" para fechar todas as vendas em aberto do dia.
      *
-     * @param profissionalusuario usuário logado com perfil profissional
+     * param profissionalusuario usuário logado com perfil profissional
      */
     private static void menuProfissional(Usuario profissionalUsuario) {
         boolean loop = true;
@@ -137,8 +137,8 @@ public class Main {
             System.out.println("3. Cancelar agendamento");
             System.out.println("4. Registrar venda avulsa");
             System.out.println("5. Ver estoque");
-            System.out.println("6. Finalizar dia");           // NOVO
-            System.out.println("7. Relatório de vendas hoje"); // NOVO
+            System.out.println("6. Finalizar dia");
+            System.out.println("7. Relatório de vendas hoje");
             System.out.println("0. Sair");
             System.out.print("Opção: ");
             String op = scanner.nextLine().trim();
@@ -149,8 +149,8 @@ public class Main {
                 case "3" -> cancelarAgendamento();
                 case "4" -> registrarVendaAvulsa();
                 case "5" -> relatorioService.gerarRelatorioEstoque();
-                case "6" -> fecharDiaProfissional(profissionalUsuario);  // NOVO
-                case "7" -> vendaAvulsaService.relatorioVendasDoDia();   // NOVO
+                case "6" -> fecharDiaProfissional(profissionalUsuario);
+                case "7" -> vendaAvulsaService.relatorioVendasDoDia();
                 case "0" -> loop = false;
                 default  -> System.out.println("Opção inválida.");
             }
@@ -200,7 +200,7 @@ public class Main {
             System.out.println("2. Relatório financeiro por período");
             System.out.println("3. Estoque");
             System.out.println("4. Saldo geral do caixa");
-            System.out.println("5. Vendas do dia (hoje)");  // NOVO
+            System.out.println("5. Vendas do dia (hoje)");
             System.out.println("0. Voltar");
             System.out.print("Opção: ");
             String op = scanner.nextLine().trim();
@@ -210,14 +210,14 @@ public class Main {
                 case "2" -> relatorioFinanceiroPorPeriodo();
                 case "3" -> relatorioService.gerarRelatorioEstoque();
                 case "4" -> relatorioService.imprimirSaldo();
-                case "5" -> vendaAvulsaService.relatorioVendasDoDia();  // NOVO
+                case "5" -> vendaAvulsaService.relatorioVendasDoDia();
                 case "0" -> loop = false;
                 default  -> System.out.println("Opção inválida.");
             }
         }
     }
 
-    // fechamento de dia — novo método
+    // fechamento de dia
 
     /**
      * recupera o profissional a partir do usuário logado e delega o fechamento
