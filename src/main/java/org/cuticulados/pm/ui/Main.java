@@ -14,9 +14,9 @@ import java.util.Optional;
 import java.util.Scanner;
 
 /**
- * Ponto de entrada da aplicação Cuticulados.
- * Inicializa o Flyway e o JPA, exibe o menu de login e direciona para o menu
- * correspondente ao perfil do usuário ({@link TipoUsuario}).
+ * ponto de entrada da aplicação cuticulados.
+ * inicializa o flyway e o jpa, exibe o menu de login e direciona para o menu
+ * correspondente ao perfil do usuário (TipoUsuario).
  */
 public class Main {
 
@@ -32,11 +32,7 @@ public class Main {
     private static final DateTimeFormatter FMT_DATA      = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FMT_DATA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    /**
-     * Método principal: inicializa infraestrutura e inicia o fluxo de autenticação.
-     *
-     * @param args argumentos de linha de comando (não utilizados)
-     */
+    // método principal: inicializa infraestrutura e inicia o fluxo de autenticação.
     public static void main(String[] args) {
         try {
             System.out.println("=== Cuticulados — Sistema de Gestão ===");
@@ -55,13 +51,11 @@ public class Main {
         }
     }
 
-    // ---------------------------------------------------------------
-    // AUTENTICAÇÃO
-    // ---------------------------------------------------------------
+    // autenticação
 
     /**
-     * Exibe o prompt de login e autentica o usuário.
-     * Após autenticação, redireciona para o menu do perfil ({@link TipoUsuario}) do usuário.
+     * exibe o prompt de login e autentica o usuário.
+     * após autenticação, redireciona para o menu do perfil (TipoUsuario) do usuário.
      *
      * @return true para continuar o loop principal, false para encerrar
      */
@@ -89,15 +83,13 @@ public class Main {
         return true;
     }
 
-    // ---------------------------------------------------------------
-    // MENU ADMIN
-    // ---------------------------------------------------------------
+    // menu admin
 
     /**
-     * Menu principal para usuários com perfil ADMIN.
-     * Dá acesso completo a clientes, profissionais, serviços, produtos, agendamentos e relatórios.
+     * menu principal para usuários com perfil admin.
+     * dá acesso completo a clientes, profissionais, serviços, produtos, agendamentos e relatórios.
      *
-     * @param admin usuário logado com perfil ADMIN
+     * @param admin usuário logado com perfil admin
      */
     private static void menuAdmin(Usuario admin) {
         boolean loop = true;
@@ -128,15 +120,13 @@ public class Main {
         }
     }
 
-    // ---------------------------------------------------------------
-    // MENU PROFISSIONAL
-    // ---------------------------------------------------------------
+    // menu profissional
 
     /**
-     * Menu para usuários com perfil PROFISSIONAL.
-     * Inclui "Finalizar dia" para fechar todas as vendas em aberto do dia.
+     * menu para usuários com perfil profissional.
+     * inclui "finalizar dia" para fechar todas as vendas em aberto do dia.
      *
-     * @param profissionalUsuario usuário logado com perfil PROFISSIONAL
+     * @param profissionalusuario usuário logado com perfil profissional
      */
     private static void menuProfissional(Usuario profissionalUsuario) {
         boolean loop = true;
@@ -167,15 +157,13 @@ public class Main {
         }
     }
 
-    // ---------------------------------------------------------------
-    // MENU CLIENTE
-    // ---------------------------------------------------------------
+    // menu cliente
 
     /**
-     * Menu para usuários com perfil CLIENTE.
-     * Permite consultar os próprios agendamentos e ver os serviços disponíveis.
+     * menu para usuários com perfil cliente.
+     * permite consultar os próprios agendamentos e ver os serviços disponíveis.
      *
-     * @param cliente usuário logado com perfil CLIENTE
+     * @param cliente usuário logado com perfil cliente
      */
     private static void menuCliente(Usuario cliente) {
         boolean loop = true;
@@ -198,12 +186,10 @@ public class Main {
         }
     }
 
-    // ---------------------------------------------------------------
-    // SUBMENU: RELATÓRIOS
-    // ---------------------------------------------------------------
+    // submenu: relatórios
 
     /**
-     * Submenu de relatórios. A opção "Vendas do dia" consulta diretamente {@link VendaAvulsa}
+     * submenu de relatórios. a opção "vendas do dia" consulta diretamente VendaAvulsa
      * pela data atual, corrigindo o problema de relatórios zerados quando transações não eram criadas.
      */
     private static void menuRelatorios() {
@@ -231,15 +217,13 @@ public class Main {
         }
     }
 
-    // ---------------------------------------------------------------
-    // FECHAMENTO DE DIA — NOVO MÉTODO
-    // ---------------------------------------------------------------
+    // fechamento de dia — novo método
 
     /**
-     * Recupera o Profissional a partir do usuário logado e delega o fechamento
-     * ao VendaAvulsaService. Exibe erro se o usuário não for encontrado como profissional.
+     * recupera o profissional a partir do usuário logado e delega o fechamento
+     * ao vendaavulsaservice. exibe erro se o usuário não for encontrado como profissional.
      *
-     * @param usuario usuário logado com perfil PROFISSIONAL
+     * @param usuario usuário logado com perfil profissional
      */
     private static void fecharDiaProfissional(Usuario usuario) {
         try {
@@ -274,12 +258,10 @@ public class Main {
         }
     }
 
-    // ---------------------------------------------------------------
-    // SUBMENUS: CLIENTES, PROFISSIONAIS, SERVIÇOS, PRODUTOS
-    // ---------------------------------------------------------------
+    // submenus: clientes, profissionais, serviços, produtos
 
     /**
-     * Submenu de gerenciamento de clientes (listar, cadastrar, atualizar, remover).
+     * submenu de gerenciamento de clientes (listar, cadastrar, atualizar, remover).
      */
     private static void menuClientes() {
         boolean loop = true;
@@ -303,7 +285,7 @@ public class Main {
         }
     }
 
-    /** Exibe no terminal todos os clientes cadastrados com CPF, tipo e atendimentos do mês. */
+    /** exibe no terminal todos os clientes cadastrados com cpf, tipo e atendimentos do mes. */
     private static void listarClientes() {
         List<Cliente> clientes = clienteService.listarTodos();
         if (clientes.isEmpty()) { System.out.println("Nenhum cliente."); return; }
@@ -313,7 +295,7 @@ public class Main {
                 c.getTipoCliente(), c.getTotalAtendimentosMes()));
     }
 
-    /** Coleta os dados do novo cliente via terminal e delega o cadastro ao {@link ClienteService}. */
+    /** coleta os dados do novo cliente via terminal e delega o cadastro ao ClienteService. */
     private static void cadastrarCliente() {
         try {
             Cliente c = new Cliente();
@@ -328,7 +310,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Busca o cliente pelo ID e permite alterar nome e telefone. */
+    /** busca o cliente pelo id e permite alterar nome e telefone. */
     private static void atualizarCliente() {
         try {
             System.out.print("ID do cliente: ");
@@ -346,7 +328,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita o ID e remove o cliente pelo {@link ClienteService}. */
+    /** solicita o id e remove o cliente pelo ClienteService. */
     private static void removerCliente() {
         try {
             System.out.print("ID: ");
@@ -354,7 +336,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Submenu de gerenciamento de profissionais (listar, cadastrar, remover com soft delete). */
+    /** submenu de gerenciamento de profissionais (listar, cadastrar, remover com soft delete). */
     private static void menuProfissionais() {
         boolean loop = true;
         while (loop) {
@@ -375,7 +357,7 @@ public class Main {
         }
     }
 
-    /** Exibe no terminal todos os usuários com perfil PROFISSIONAL. */
+    /** exibe no terminal todos os usuários com perfil profissional. */
     private static void listarProfissionais() {
         List<Usuario> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
         if (profs.isEmpty()) { System.out.println("Nenhum profissional."); return; }
@@ -383,7 +365,7 @@ public class Main {
                 p.getId(), p.getNome(), p.getLogin()));
     }
 
-    /** Coleta os dados do novo profissional via terminal e delega o cadastro ao {@link UsuarioService}. */
+    /** coleta os dados do novo profissional via terminal e delega o cadastro ao UsuarioService. */
     private static void cadastrarProfissional() {
         try {
             Profissional p = new Profissional();
@@ -397,7 +379,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita o ID e realiza a exclusão lógica (soft delete) do usuário. */
+    /** solicita o id e realiza a exclusão lógica (soft delete) do usuário. */
     private static void removerUsuario() {
         try {
             System.out.print("ID do usuário: ");
@@ -405,7 +387,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Submenu de gerenciamento de serviços (listar, cadastrar, atualizar, remover). */
+    /** submenu de gerenciamento de serviços (listar, cadastrar, atualizar, remover). */
     private static void menuServicos() {
         boolean loop = true;
         while (loop) {
@@ -428,7 +410,7 @@ public class Main {
         }
     }
 
-    /** Exibe no terminal todos os serviços com descrição, valor base e duração. */
+    /** exibe no terminal todos os serviços com descrição, valor base e duração. */
     private static void listarServicos() {
         List<Servico> servicos = servicoService.listarTodos();
         if (servicos.isEmpty()) { System.out.println("Nenhum serviço."); return; }
@@ -436,7 +418,7 @@ public class Main {
                 s.getId(), s.getDescricao(), s.getValorBase(), s.getDuracaoMinutos()));
     }
 
-    /** Coleta descrição, valor base e duração e cadastra o serviço via {@link ServicoService}. */
+    /** coleta descrição, valor base e duração e cadastra o serviço via ServicoService. */
     private static void cadastrarServico() {
         try {
             Servico s = new Servico();
@@ -447,7 +429,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Busca o serviço pelo ID e permite alterar o valor base. */
+    /** busca o serviço pelo id e permite alterar o valor base. */
     private static void atualizarServico() {
         try {
             System.out.print("ID: ");
@@ -463,7 +445,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita o ID e remove o serviço pelo {@link ServicoService}. */
+    /** solicita o id e remove o serviço pelo ServicoService. */
     private static void removerServico() {
         try {
             System.out.print("ID: ");
@@ -471,7 +453,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Submenu de gerenciamento de produtos do estoque (listar, cadastrar, atualizar, remover, alertas). */
+    /** submenu de gerenciamento de produtos do estoque (listar, cadastrar, atualizar, remover, alertas). */
     private static void menuProdutos() {
         boolean loop = true;
         while (loop) {
@@ -499,7 +481,7 @@ public class Main {
         }
     }
 
-    /** Coleta nome, preços, estoque atual e mínimo e cadastra o produto via {@link ProdutoService}. */
+    /** coleta nome, preços, estoque atual e mínimo e cadastra o produto via ProdutoService. */
     private static void cadastrarProduto() {
         try {
             Produto p = new Produto();
@@ -512,7 +494,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Busca o produto pelo ID e permite alterar preço de venda e quantidade em estoque. */
+    /** busca o produto pelo id e permite alterar preço de venda e quantidade em estoque. */
     private static void atualizarProduto() {
         try {
             System.out.print("ID: ");
@@ -531,7 +513,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita o ID e remove o produto pelo {@link ProdutoService}. */
+    /** solicita o id e remove o produto pelo ProdutoService. */
     private static void removerProduto() {
         try {
             System.out.print("ID: ");
@@ -539,11 +521,9 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    // ---------------------------------------------------------------
-    // AGENDAMENTOS
-    // ---------------------------------------------------------------
+    // agendamentos
 
-    /** Submenu de gerenciamento de agendamentos (listar, criar, concluir, cancelar, remover, filtrar). */
+    /** submenu de gerenciamento de agendamentos (listar, criar, concluir, cancelar, remover, filtrar). */
     private static void menuAgendamentos() {
         boolean loop = true;
         while (loop) {
@@ -570,7 +550,7 @@ public class Main {
         }
     }
 
-    /** Exibe no terminal todos os agendamentos com status, horário, cliente e valor. */
+    /** exibe no terminal todos os agendamentos com status, horário, cliente e valor. */
     private static void listarAgendamentos() {
         List<Agendamento> lista = agendamentoService.listarTodos();
         if (lista.isEmpty()) { System.out.println("Nenhum agendamento."); return; }
@@ -583,8 +563,8 @@ public class Main {
     }
 
     /**
-     * Coleta cliente, profissional, horário de início e fim, e cria o agendamento.
-     * Valida o formato de data/hora e exibe mensagem de erro se for inválido.
+     * coleta cliente, profissional, horário de início e fim, e cria o agendamento.
+     * valida o formato de data/hora e exibe mensagem de erro se for inválido.
      */
     private static void criarAgendamento() {
         try {
@@ -620,7 +600,7 @@ public class Main {
         }
     }
 
-    /** Solicita o ID e marca o agendamento como CONCLUIDO via {@link AgendamentoService}. */
+    /** solicita o id e marca o agendamento como concluido via AgendamentoService. */
     private static void concluirAgendamento() {
         try {
             System.out.print("ID: ");
@@ -628,7 +608,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita o ID e marca o agendamento como CANCELADO via {@link AgendamentoService}. */
+    /** solicita o id e marca o agendamento como cancelado via AgendamentoService. */
     private static void cancelarAgendamento() {
         try {
             System.out.print("ID: ");
@@ -636,7 +616,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita o ID e remove o agendamento (apenas se não estiver concluído). */
+    /** solicita o id e remove o agendamento (apenas se não estiver concluído). */
     private static void removerAgendamento() {
         try {
             System.out.print("ID: ");
@@ -644,7 +624,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita datas de início e fim e exibe o relatório de agendamentos do período. */
+    /** solicita datas de início e fim e exibe o relatório de agendamentos do período. */
     private static void agendamentosPorPeriodo() {
         try {
             System.out.print("Início (dd/MM/yyyy): ");
@@ -657,11 +637,9 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    // ---------------------------------------------------------------
-    // VENDAS AVULSAS
-    // ---------------------------------------------------------------
+    // vendas avulsas
 
-    /** Submenu de vendas avulsas de produtos (listar, registrar, remover). */
+    /** submenu de vendas avulsas de produtos (listar, registrar, remover). */
     private static void menuVendasAvulsas() {
         boolean loop = true;
         while (loop) {
@@ -692,8 +670,8 @@ public class Main {
     }
 
     /**
-     * Coleta produto, profissional e quantidade, e registra a venda avulsa.
-     * Lista produtos e profissionais disponíveis antes de solicitar os IDs.
+     * coleta produto, profissional e quantidade, e registra a venda avulsa.
+     * lista produtos e profissionais disponíveis antes de solicitar os ids.
      */
     private static void registrarVendaAvulsa() {
         try {
@@ -724,7 +702,7 @@ public class Main {
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
     }
 
-    /** Solicita datas de início e fim e exibe o relatório financeiro do período com totais e saldo. */
+    /** solicita datas de início e fim e exibe o relatório financeiro do período com totais e saldo. */
     private static void relatorioFinanceiroPorPeriodo() {
         try {
             System.out.print("Início (dd/MM/yyyy): ");
