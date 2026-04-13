@@ -4,7 +4,7 @@ import org.flywaydb.core.Flyway;
 
 public class FlywayConfig {
     // passa a url, usar e a senha do banco de dados
-    private static final String URL = System.getProperty("db.url", "jdbc:postgresql://localhost:5432/cuticulados");
+    private static final String URL = System.getProperty("db.url", "jdbc:postgresql://localhost:5433/cuticulados");
     private static final String USER = System.getProperty("db.user", "postgres");
     private static final String PASS = System.getProperty("db.pass", "postgres");
     // impede a instanciação da classe, deixa só no uso estático

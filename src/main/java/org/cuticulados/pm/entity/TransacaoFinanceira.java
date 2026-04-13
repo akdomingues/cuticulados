@@ -30,7 +30,7 @@ public class TransacaoFinanceira {
     @Column(nullable = false, length = 255)
     private String descricao;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private Double valor;
 
     @Column(name = "data_transacao", nullable = false, updatable = false)

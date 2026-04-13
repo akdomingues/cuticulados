@@ -32,7 +32,7 @@ public class Servico {
     @Column(nullable = false, length = 200)
     private String descricao;
 
-    @Column(name = "valor_base", nullable = false, precision = 10, scale = 2)
+    @Column(name = "valor_base", nullable = false)
     private Double valorBase;
 
     @Column(name = "duracao_minutos", nullable = false)
