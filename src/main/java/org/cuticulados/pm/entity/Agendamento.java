@@ -110,10 +110,3 @@ public class Agendamento {
         return Objects.hash(id);
     }
 }
-
-//o enum ele define o status possiveis do agendamento
-public enum StatusAgendamento {
-    PENDENTE,
-    CONCLUIDO,
-    CANCELADO
-}

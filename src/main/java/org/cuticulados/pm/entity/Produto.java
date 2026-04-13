@@ -38,10 +38,10 @@ public class Produto {
     @Column(name = "quantidade_minima", nullable = false)
     private Integer quantidadeMinima = 0;
 
-    @Column(name = "preco_custo", nullable = false, precision = 10, scale = 2)
+    @Column(name = "preco_custo", nullable = false)
     private Double precoCusto;
 
-    @Column(name = "preco_venda", nullable = false, precision = 10, scale = 2)
+    @Column(name = "preco_venda", nullable = false)
     private Double precoVenda;
 
     @Column(name = "created_at", nullable = false, updatable = false)

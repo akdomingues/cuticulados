@@ -5,14 +5,3 @@ public enum TipoUsuario {
     PROFISSIONAL,
     CLIENTE
 }
-
-public enum StatusAgendamento {
-    PENDENTE,
-    CONCLUIDO,
-    CANCELADO
-}
-
-public enum TipoTransacao {
-    ENTRADA,
-    SAIDA
-}
