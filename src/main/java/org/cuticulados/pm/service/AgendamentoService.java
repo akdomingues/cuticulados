@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.cuticulados.pm.entity.Agendamento;
 import org.cuticulados.pm.entity.AgendamentoServico;
 import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Descontavel;
 import org.cuticulados.pm.entity.Produto;
 import org.cuticulados.pm.entity.Profissional;
 import org.cuticulados.pm.entity.Servico;
@@ -127,11 +126,8 @@ public class AgendamentoService {
                 }
             }
 
-            // desconto de fidelidade via interface Descontavel
             Cliente cliente = agendamento.getCliente();
-            if (cliente instanceof Descontavel d) {
-                total = d.calcularDesconto(total);
-            }
+            total = cliente.calcularDesconto(total);
 
             agendamento.setValorFinal(total);
         } catch (Exception e) {
