@@ -1,5 +1,7 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
+
 /**
  * Contrato para entidades que podem receber desconto no valor de um serviço.
  */
@@ -10,5 +12,5 @@ public interface Descontavel {
      * @param valorBruto valor antes do desconto
      * @return valor com desconto aplicado
      */
-    double calcularDesconto(double valorBruto);
+    BigDecimal calcularDesconto(BigDecimal valorBruto);
 }

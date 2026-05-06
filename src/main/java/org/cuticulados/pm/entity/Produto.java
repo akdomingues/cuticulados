@@ -2,6 +2,7 @@ package org.cuticulados.pm.entity;
 
 //CLASSE E TABELA PRODUTO
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +40,10 @@ public class Produto {
     private Integer quantidadeMinima = 0;
 
     @Column(name = "preco_custo", nullable = false, precision = 10, scale = 2)
-    private Double precoCusto;
+    private BigDecimal precoCusto;
 
     @Column(name = "preco_venda", nullable = false, precision = 10, scale = 2)
-    private Double precoVenda;
+    private BigDecimal precoVenda;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -78,10 +79,10 @@ public class Produto {
     public void setQuantidadeEstoque(Integer qtd) { this.quantidadeEstoque = qtd; }
     public Integer getQuantidadeMinima() { return quantidadeMinima; }
     public void setQuantidadeMinima(Integer qtd) { this.quantidadeMinima = qtd; }
-    public Double getPrecoCusto() { return precoCusto; }
-    public void setPrecoCusto(Double preco) { this.precoCusto = preco; }
-    public Double getPrecoVenda() { return precoVenda; }
-    public void setPrecoVenda(Double preco) { this.precoVenda = preco; }
+    public BigDecimal getPrecoCusto() { return precoCusto; }
+    public void setPrecoCusto(BigDecimal preco) { this.precoCusto = preco; }
+    public BigDecimal getPrecoVenda() { return precoVenda; }
+    public void setPrecoVenda(BigDecimal preco) { this.precoVenda = preco; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<ServicoProduto> getServicosAssociados() { return servicosAssociados; }

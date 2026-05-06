@@ -1,5 +1,6 @@
 package org.cuticulados.pm.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,14 +64,14 @@ public class RelatorioService {
      *
      * @return saldo atual
      */
-    public Double calcularSaldo() {
+    public BigDecimal calcularSaldo() {
         try {
-            Double entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
-            Double saidas = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
-            return entradas - saidas;
+            BigDecimal entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
+            BigDecimal saidas = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
+            return entradas.subtract(saidas);
         } catch (Exception e) {
             System.out.println("Erro ao calcular saldo: " + e.getMessage());
-            return 0.0;
+            return BigDecimal.ZERO;
         }
     }
 
@@ -86,22 +87,22 @@ public class RelatorioService {
             LocalDateTime dtFim = fim.atTime(23, 59, 59);
             List<TransacaoFinanceira> transacoes = transacaoRepo.buscarPorPeriodo(dtInicio, dtFim);
 
-            double totalEntradas = 0;
-            double totalSaidas = 0;
+            BigDecimal totalEntradas = BigDecimal.ZERO;
+            BigDecimal totalSaidas = BigDecimal.ZERO;
 
             System.out.println("=== Relatorio Financeiro ===");
             for (TransacaoFinanceira t : transacoes) {
                 System.out.printf(" %s | %s | %s | R$ %.2f%n", t.getDataTransacao(), t.getTipo(), t.getDescricao(), t.getValor());
                 if (t.getTipo() == TipoTransacao.ENTRADA) {
-                    totalEntradas += t.getValor();
+                    totalEntradas = totalEntradas.add(t.getValor());
                 } else {
-                    totalSaidas += t.getValor();
+                    totalSaidas = totalSaidas.add(t.getValor());
                 }
             }
 
             System.out.printf("%nTotal entradas: R$ %.2f%n", totalEntradas);
             System.out.printf("Total saidas:   R$ %.2f%n", totalSaidas);
-            System.out.printf("Saldo:          R$ %.2f%n", totalEntradas - totalSaidas);
+            System.out.printf("Saldo:          R$ %.2f%n", totalEntradas.subtract(totalSaidas));
         } catch (Exception e) {
             System.out.println("Erro ao gerar relatorio financeiro: " + e.getMessage());
         }
@@ -132,9 +133,9 @@ public class RelatorioService {
      */
     public void imprimirSaldo() {
         try {
-            Double entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
-            Double saidas = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
-            Double saldo = calcularSaldo(); // reutiliza o metodo existente
+            BigDecimal entradas = transacaoRepo.somarPorTipo(TipoTransacao.ENTRADA);
+            BigDecimal saidas = transacaoRepo.somarPorTipo(TipoTransacao.SAIDA);
+            BigDecimal saldo = calcularSaldo(); // reutiliza o metodo existente
 
             System.out.println("=== Saldo Geral ===");
             System.out.printf(" Total entradas: R$ %.2f%n", entradas);

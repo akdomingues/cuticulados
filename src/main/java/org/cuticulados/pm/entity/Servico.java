@@ -2,6 +2,7 @@ package org.cuticulados.pm.entity;
 
 //CLASSE E TABELA SERVICO
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class Servico {
     private String descricao;
 
     @Column(name = "valor_base", nullable = false, precision = 10, scale = 2)
-    private Double valorBase;
+    private BigDecimal valorBase;
 
     @Column(name = "duracao_minutos", nullable = false)
     private Integer duracaoMinutos;
@@ -71,8 +72,8 @@ public class Servico {
     public void setId(Long id) { this.id = id; }
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
-    public Double getValorBase() { return valorBase; }
-    public void setValorBase(Double valorBase) { this.valorBase = valorBase; }
+    public BigDecimal getValorBase() { return valorBase; }
+    public void setValorBase(BigDecimal valorBase) { this.valorBase = valorBase; }
     public Integer getDuracaoMinutos() { return duracaoMinutos; }
     public void setDuracaoMinutos(Integer duracaoMinutos) { this.duracaoMinutos = duracaoMinutos; }
     public LocalDateTime getCreatedAt() { return createdAt; }

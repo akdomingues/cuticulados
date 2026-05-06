@@ -1,5 +1,6 @@
 package org.cuticulados.pm.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -75,16 +76,16 @@ public class TransacaoRepository {
     }
 
     /** Soma dos valores por tipo — JOIN com agendamento */
-    public Double somarPorTipo(TipoTransacao tipo) {
+    public BigDecimal somarPorTipo(TipoTransacao tipo) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Double resultado = em.createQuery(
-                            "SELECT SUM(t.valor) FROM TransacaoFinanceira t WHERE t.tipo = :tipo", Double.class)
+            BigDecimal resultado = em.createQuery(
+                            "SELECT SUM(t.valor) FROM TransacaoFinanceira t WHERE t.tipo = :tipo", BigDecimal.class)
                     .setParameter("tipo", tipo)
                     .getSingleResult();
-            return resultado != null ? resultado : 0.0;
+            return resultado != null ? resultado : BigDecimal.ZERO;
         } catch (Exception e) {
             System.err.println("Erro ao somar transacoes por tipo: " + e.getMessage());
-            return 0.0;
+            return BigDecimal.ZERO;
         }
     }
 }

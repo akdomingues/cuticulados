@@ -5,6 +5,7 @@ import org.cuticulados.pm.config.JpaUtil;
 import org.cuticulados.pm.entity.*;
 import org.cuticulados.pm.service.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -456,7 +457,7 @@ public class Main {
         try {
             Servico s = new Servico();
             System.out.print("Descrição: ");        s.setDescricao(scanner.nextLine().trim());
-            System.out.print("Valor base: ");       s.setValorBase(Double.parseDouble(scanner.nextLine().trim()));
+            System.out.print("Valor base: ");       s.setValorBase(new BigDecimal(scanner.nextLine().trim()));
             System.out.print("Duração (min): ");    s.setDuracaoMinutos(Integer.parseInt(scanner.nextLine().trim()));
             servicoService.cadastrarServico(s);
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
@@ -472,7 +473,7 @@ public class Main {
             Servico s = op.get();
             System.out.print("Novo valor (" + s.getValorBase() + "): ");
             String val = scanner.nextLine().trim();
-            if (!val.isBlank()) s.setValorBase(Double.parseDouble(val));
+            if (!val.isBlank()) s.setValorBase(new BigDecimal(val));
             servicoService.atualizarServico(s);
             System.out.println("Atualizado.");
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }
@@ -519,8 +520,8 @@ public class Main {
         try {
             Produto p = new Produto();
             System.out.print("Nome: ");             p.setNome(scanner.nextLine().trim());
-            System.out.print("Preço custo: ");      p.setPrecoCusto(Double.parseDouble(scanner.nextLine().trim()));
-            System.out.print("Preço venda: ");      p.setPrecoVenda(Double.parseDouble(scanner.nextLine().trim()));
+            System.out.print("Preço custo: ");      p.setPrecoCusto(new BigDecimal(scanner.nextLine().trim()));
+            System.out.print("Preço venda: ");      p.setPrecoVenda(new BigDecimal(scanner.nextLine().trim()));
             System.out.print("Qtd estoque: ");      p.setQuantidadeEstoque(Integer.parseInt(scanner.nextLine().trim()));
             System.out.print("Qtd mínima: ");       p.setQuantidadeMinima(Integer.parseInt(scanner.nextLine().trim()));
             produtoService.cadastrarProduto(p);
@@ -537,7 +538,7 @@ public class Main {
             Produto p = op.get();
             System.out.print("Novo preço venda (" + p.getPrecoVenda() + "): ");
             String val = scanner.nextLine().trim();
-            if (!val.isBlank()) p.setPrecoVenda(Double.parseDouble(val));
+            if (!val.isBlank()) p.setPrecoVenda(new BigDecimal(val));
             System.out.print("Novo estoque (" + p.getQuantidadeEstoque() + "): ");
             String est = scanner.nextLine().trim();
             if (!est.isBlank()) p.setQuantidadeEstoque(Integer.parseInt(est));

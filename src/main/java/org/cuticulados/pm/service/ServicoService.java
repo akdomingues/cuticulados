@@ -2,6 +2,7 @@ package org.cuticulados.pm.service;
 
 //CRUD DE SERVICO
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ public class ServicoService {
                 System.out.println("Descricao e obrigatoria.");
                 return;
             }
-            if (servico.getValorBase() <= 0) {
+            if (servico.getValorBase().compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("Valor base deve ser maior que zero.");
                 return;
             }

@@ -1,5 +1,6 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +43,9 @@ public class Cliente extends Usuario implements Descontavel {
      * Clientes frequentes recebem 10% de desconto; demais pagam valor integral.
      */
     @Override
-    public double calcularDesconto(double valorBruto) {
+    public BigDecimal calcularDesconto(BigDecimal valorBruto) {
         if ("frequente".equals(tipoCliente)) {
-            return valorBruto * 0.9;
+            return valorBruto.multiply(new BigDecimal("0.9"));
         }
         return valorBruto;
     }

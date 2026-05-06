@@ -1,5 +1,7 @@
 package org.cuticulados.pm.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -117,12 +119,12 @@ public class AgendamentoService {
     // --- regra de negocio 2: calcular valor final com desconto de fidelidade ---
     public void calcularValorFinal(Agendamento agendamento) {
         try {
-            double total = 0.0;
+            BigDecimal total = BigDecimal.ZERO;
             if (agendamento.getServicos() != null) {
                 for (AgendamentoServico as : agendamento.getServicos()) {
-                    double parcial = as.getPrecoAplicado() * as.getQuantidade();
-                    parcial -= (parcial * as.getDescontoAplicado() / 100.0);
-                    total += parcial;
+                    BigDecimal parcial = as.getPrecoAplicado().multiply(BigDecimal.valueOf(as.getQuantidade()));
+                    parcial = parcial.subtract(parcial.multiply(as.getDescontoAplicado()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+                    total = total.add(parcial);
                 }
             }
 
@@ -132,7 +134,7 @@ public class AgendamentoService {
             agendamento.setValorFinal(total);
         } catch (Exception e) {
             System.out.println("Erro ao calcular valor final: " + e.getMessage());
-            agendamento.setValorFinal(0.0);
+            agendamento.setValorFinal(BigDecimal.ZERO);
         }
     }
 

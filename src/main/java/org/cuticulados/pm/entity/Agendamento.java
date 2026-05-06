@@ -1,5 +1,6 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +44,8 @@ public class Agendamento {
     private StatusAgendamento status = StatusAgendamento.PENDENTE;
 
     //valor final
-    @Column(name = "valor_final", nullable = false)
-    private Double valorFinal = 0.0;
+    @Column(name = "valor_final", nullable = false, precision = 10, scale = 2)
+    private BigDecimal valorFinal = BigDecimal.ZERO;
 
     //relacionamento com o cliente
     @ManyToOne(fetch = FetchType.EAGER)
@@ -85,8 +86,8 @@ public class Agendamento {
     public void setDataHoraFim(LocalDateTime d) { this.dataHoraFim = d; }
     public StatusAgendamento getStatus() { return status; }
     public void setStatus(StatusAgendamento status) { this.status = status; }
-    public Double getValorFinal() { return valorFinal; }
-    public void setValorFinal(Double valor) { this.valorFinal = valor; }
+    public BigDecimal getValorFinal() { return valorFinal; }
+    public void setValorFinal(BigDecimal valor) { this.valorFinal = valor; }
     public Cliente getCliente() { return cliente; }
     public void setCliente(Cliente cliente) { this.cliente = cliente; }
     public Profissional getProfissional() { return profissional; }

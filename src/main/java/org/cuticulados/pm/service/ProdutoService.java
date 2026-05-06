@@ -2,6 +2,7 @@ package org.cuticulados.pm.service;
 
 //CRUD DE PRODUTO
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +21,7 @@ public class ProdutoService {
                 System.out.println("Nome do produto e obrigatorio.");
                 return;
             }
-            if (produto.getPrecoVenda() <= 0) {
+            if (produto.getPrecoVenda().compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("Preco de venda deve ser maior que zero.");
                 return;
             }
