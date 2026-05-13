@@ -17,7 +17,7 @@ import java.util.Scanner;
 /**
  * Ponto de entrada da aplicação Cuticulados.
  * Inicializa o Flyway e o JPA, exibe o menu de login e direciona para o menu
- * correspondente ao perfil do usuário ({@link TipoUsuario}).
+ * correspondente ao perfil do usuário ({@link TipoUsuario})
  */
 public class Main {
 
