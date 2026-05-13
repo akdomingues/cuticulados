@@ -16,9 +16,9 @@ public class VendaAvulsaRepository {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
             if (venda.getId() == null) {
-                em.persist(venda); // novo registro
+                em.persist(venda);
             } else {
-                em.merge(venda); // atualização
+                em.merge(venda);
             }
             em.getTransaction().commit();
         } catch (Exception e) {

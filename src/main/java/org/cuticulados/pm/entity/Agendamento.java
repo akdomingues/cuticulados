@@ -1,11 +1,9 @@
 package org.cuticulados.pm.entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,8 +42,8 @@ public class Agendamento {
     private StatusAgendamento status = StatusAgendamento.PENDENTE;
 
     //valor final
-    @Column(name = "valor_final", nullable = false, precision = 10, scale = 2)
-    private BigDecimal valorFinal = BigDecimal.ZERO;
+    @Column(name = "valor_final", nullable = false)
+    private Double valorFinal = 0.0;
 
     //relacionamento com o cliente
     @ManyToOne(fetch = FetchType.EAGER)
@@ -58,7 +56,7 @@ public class Agendamento {
     private Profissional profissional;
 
     //serviços de agendamento
-    @OneToMany(mappedBy = "agendamento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "agendamento")
     private List<AgendamentoServico> servicos = new ArrayList<>();
 
     @OneToOne(mappedBy = "agendamento")
@@ -86,8 +84,8 @@ public class Agendamento {
     public void setDataHoraFim(LocalDateTime d) { this.dataHoraFim = d; }
     public StatusAgendamento getStatus() { return status; }
     public void setStatus(StatusAgendamento status) { this.status = status; }
-    public BigDecimal getValorFinal() { return valorFinal; }
-    public void setValorFinal(BigDecimal valor) { this.valorFinal = valor; }
+    public Double getValorFinal() { return valorFinal; }
+    public void setValorFinal(Double valor) { this.valorFinal = valor; }
     public Cliente getCliente() { return cliente; }
     public void setCliente(Cliente cliente) { this.cliente = cliente; }
     public Profissional getProfissional() { return profissional; }
