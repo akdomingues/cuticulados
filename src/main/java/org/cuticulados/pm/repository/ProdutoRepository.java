@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
 import org.cuticulados.pm.entity.Produto;
+import org.cuticulados.pm.entity.ServicoProduto;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -25,7 +26,7 @@ public class ProdutoRepository {
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao salvar produto: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
     }
 
@@ -78,6 +79,19 @@ public class ProdutoRepository {
         }
     }
 
+    public List<ServicoProduto> buscarServicoProdutos(Long servicoId) {
+        try (EntityManager em = JpaUtil.getEntityManager()) {
+            return em.createQuery(
+                    "SELECT sp FROM ServicoProduto sp JOIN FETCH sp.produto WHERE sp.servico.id = :sid",
+                    ServicoProduto.class)
+                    .setParameter("sid", servicoId)
+                    .getResultList();
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar insumos do servico: " + e.getMessage());
+            return List.of();
+        }
+    }
+
     //DELETAR
 
     public void deletar(Long id) {
@@ -89,8 +103,15 @@ public class ProdutoRepository {
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao deletar produto: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
+    }
+
+    private static String extrairMensagem(Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) cause = cause.getCause();
+        String msg = cause.getMessage();
+        return (msg != null && !msg.isBlank()) ? msg : e.getMessage();
     }
 }
 

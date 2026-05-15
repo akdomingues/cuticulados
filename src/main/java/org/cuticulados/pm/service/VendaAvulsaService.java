@@ -1,5 +1,6 @@
 package org.cuticulados.pm.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +32,7 @@ public class VendaAvulsaService {
             }
 
             venda.setPrecoUnitario(produto.getPrecoVenda());
-            venda.setTotal(venda.getPrecoUnitario() * venda.getQuantidade());
+            venda.setTotal(venda.getPrecoUnitario().multiply(BigDecimal.valueOf(venda.getQuantidade())));
             venda.setDataVenda(LocalDateTime.now());
 
             vendaRepo.salvar(venda);
@@ -85,6 +86,24 @@ public class VendaAvulsaService {
                     v.getTotal(), v.isFechado() ? "FECHADO" : "ABERTO"));
         } catch (Exception e) {
             System.out.println("Erro ao gerar relatorio: " + e.getMessage());
+        }
+    }
+
+    public String fecharVenda(Long id) {
+        try {
+            Optional<VendaAvulsa> op = vendaRepo.buscarPorId(id);
+            if (op.isEmpty()) {
+                return "Venda não encontrada.";
+            }
+            VendaAvulsa venda = op.get();
+            if (venda.isFechado()) {
+                return "Esta venda já está fechada.";
+            }
+            venda.setFechado(true);
+            vendaRepo.salvar(venda);
+            return null;
+        } catch (Exception e) {
+            return "Erro ao fechar venda: " + e.getMessage();
         }
     }
 

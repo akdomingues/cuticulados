@@ -23,7 +23,7 @@ public class ServicoRepository {
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao salvar servico: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
     }
 
@@ -78,7 +78,14 @@ public class ServicoRepository {
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao deletar servico: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
+    }
+
+    private static String extrairMensagem(Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) cause = cause.getCause();
+        String msg = cause.getMessage();
+        return (msg != null && !msg.isBlank()) ? msg : e.getMessage();
     }
 }

@@ -1,5 +1,6 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -29,11 +30,11 @@ public class VendaAvulsa {
     @Column(nullable = false)
     private Integer quantidade;
 
-    @Column(name = "preco_unitario", nullable = false)
-    private Double precoUnitario;
+    @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoUnitario;
 
-    @Column(nullable = false)
-    private Double total;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal total;
 
     @Column(name = "data_venda", nullable = false, updatable = false)
     private LocalDateTime dataVenda;
@@ -54,10 +55,10 @@ public class VendaAvulsa {
     public void setProduto(Produto p) { this.produto = p; }
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer q) { this.quantidade = q; }
-    public Double getPrecoUnitario() { return precoUnitario; }
-    public void setPrecoUnitario(Double p) { this.precoUnitario = p; }
-    public Double getTotal() { return total; }
-    public void setTotal(Double t) { this.total = t; }
+    public BigDecimal getPrecoUnitario() { return precoUnitario; }
+    public void setPrecoUnitario(BigDecimal p) { this.precoUnitario = p; }
+    public BigDecimal getTotal() { return total; }
+    public void setTotal(BigDecimal t) { this.total = t; }
     public LocalDateTime getDataVenda() { return dataVenda; }
     public void setDataVenda(LocalDateTime d) { this.dataVenda = d; }
     public Profissional getProfissional() { return profissional; }
