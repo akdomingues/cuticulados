@@ -16,13 +16,13 @@ public class VendaAvulsaRepository {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
             if (venda.getId() == null) {
-                em.persist(venda); // novo registro
+                em.persist(venda);
             } else {
-                em.merge(venda); // atualização
+                em.merge(venda);
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao salvar venda avulsa: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
     }
 
@@ -75,7 +75,14 @@ public class VendaAvulsaRepository {
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao deletar venda avulsa: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
+    }
+
+    private static String extrairMensagem(Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) cause = cause.getCause();
+        String msg = cause.getMessage();
+        return (msg != null && !msg.isBlank()) ? msg : e.getMessage();
     }
 }

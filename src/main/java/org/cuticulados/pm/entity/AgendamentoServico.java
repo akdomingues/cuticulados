@@ -1,5 +1,6 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -11,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**entidade responsável pra repesentar um agendamento
@@ -39,16 +41,21 @@ public class AgendamentoServico {
     private Integer quantidade = 1;
 
     @Column(name = "preco_aplicado", nullable = false, precision = 10, scale = 2)
-    private Double precoAplicado;
+    private BigDecimal precoAplicado;
 
     @Column(name = "desconto_aplicado", nullable = false, precision = 10, scale = 2)
-    private Double descontoAplicado = 0.0;
+    private BigDecimal descontoAplicado = BigDecimal.ZERO;
 
     @Column(name = "tempo_real")
     private Integer tempoReal;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -58,10 +65,10 @@ public class AgendamentoServico {
     public void setServico(Servico s) { this.servico = s; }
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer q) { this.quantidade = q; }
-    public Double getPrecoAplicado() { return precoAplicado; }
-    public void setPrecoAplicado(Double p) { this.precoAplicado = p; }
-    public Double getDescontoAplicado() { return descontoAplicado; }
-    public void setDescontoAplicado(Double d) { this.descontoAplicado = d; }
+    public BigDecimal getPrecoAplicado() { return precoAplicado; }
+    public void setPrecoAplicado(BigDecimal p) { this.precoAplicado = p; }
+    public BigDecimal getDescontoAplicado() { return descontoAplicado; }
+    public void setDescontoAplicado(BigDecimal d) { this.descontoAplicado = d; }
     public Integer getTempoReal() { return tempoReal; }
     public void setTempoReal(Integer t) { this.tempoReal = t; }
     public LocalDateTime getCreatedAt() { return createdAt; }

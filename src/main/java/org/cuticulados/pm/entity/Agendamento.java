@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
@@ -56,7 +57,7 @@ public class Agendamento {
     private Profissional profissional;
 
     //serviços de agendamento
-    @OneToMany(mappedBy = "agendamento")
+    @OneToMany(mappedBy = "agendamento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AgendamentoServico> servicos = new ArrayList<>();
 
     @OneToOne(mappedBy = "agendamento")
@@ -109,11 +110,4 @@ public class Agendamento {
     public int hashCode() {
         return Objects.hash(id);
     }
-}
-
-//o enum ele define o status possiveis do agendamento
-public enum StatusAgendamento {
-    PENDENTE,
-    CONCLUIDO,
-    CANCELADO
 }

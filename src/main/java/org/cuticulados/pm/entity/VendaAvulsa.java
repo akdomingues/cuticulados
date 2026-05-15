@@ -1,5 +1,6 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -18,12 +19,10 @@ import jakarta.persistence.Table;
 @Table(name = "venda_avulsa")
 public class VendaAvulsa {
 
-    //ID da venda
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //produto vendido
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
@@ -32,22 +31,23 @@ public class VendaAvulsa {
     private Integer quantidade;
 
     @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
-    private Double precoUnitario;
+    private BigDecimal precoUnitario;
 
-    @Column(nullable = false)
-    private Double total;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal total;
 
     @Column(name = "data_venda", nullable = false, updatable = false)
     private LocalDateTime dataVenda;
 
-    // profissional
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "profissional_id", nullable = false)
     private Profissional profissional;
 
-    //transação financeira
     @OneToOne(mappedBy = "vendaAvulsa")
     private TransacaoFinanceira transacao;
+
+    @Column(nullable = false)
+    private boolean fechado = false;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -55,16 +55,18 @@ public class VendaAvulsa {
     public void setProduto(Produto p) { this.produto = p; }
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer q) { this.quantidade = q; }
-    public Double getPrecoUnitario() { return precoUnitario; }
-    public void setPrecoUnitario(Double p) { this.precoUnitario = p; }
-    public Double getTotal() { return total; }
-    public void setTotal(Double t) { this.total = t; }
+    public BigDecimal getPrecoUnitario() { return precoUnitario; }
+    public void setPrecoUnitario(BigDecimal p) { this.precoUnitario = p; }
+    public BigDecimal getTotal() { return total; }
+    public void setTotal(BigDecimal t) { this.total = t; }
     public LocalDateTime getDataVenda() { return dataVenda; }
     public void setDataVenda(LocalDateTime d) { this.dataVenda = d; }
     public Profissional getProfissional() { return profissional; }
     public void setProfissional(Profissional p) { this.profissional = p; }
     public TransacaoFinanceira getTransacao() { return transacao; }
     public void setTransacao(TransacaoFinanceira t) { this.transacao = t; }
+    public boolean isFechado() { return fechado; }
+    public void setFechado(boolean fechado) { this.fechado = fechado; }
 
     @Override
     public boolean equals(Object o) {
