@@ -1,772 +1,611 @@
 package org.cuticulados.pm.ui.panels;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SpinnerDateModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-
 import org.cuticulados.pm.entity.Agendamento;
 import org.cuticulados.pm.entity.AgendamentoServico;
 import org.cuticulados.pm.entity.Cliente;
 import org.cuticulados.pm.entity.Profissional;
 import org.cuticulados.pm.entity.Servico;
-import org.cuticulados.pm.entity.StatusAgendamento;
+import org.cuticulados.pm.entity.TipoUsuario;
+import org.cuticulados.pm.entity.Usuario;
 import org.cuticulados.pm.service.AgendamentoService;
 import org.cuticulados.pm.service.ClienteService;
 import org.cuticulados.pm.service.ServicoService;
 import org.cuticulados.pm.service.UsuarioService;
+import org.cuticulados.pm.ui.theme.AppColors;
+import org.cuticulados.pm.ui.theme.AppDimensions;
+import org.cuticulados.pm.ui.theme.AppFonts;
+import org.cuticulados.pm.ui.theme.AppTheme;
 
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * Painel de gerenciamento de agendamentos do perfil ADMIN.
+ * Exibe tabela com cores por status e permite criar, concluir, cancelar, remover e filtrar.
+ */
 public class PainelAgendamentos extends JPanel {
 
+    // services
     private final AgendamentoService agendamentoService;
+    private final ClienteService     clienteService;
+    private final ServicoService     servicoService;
+    private final UsuarioService     usuarioService;
 
-    private final ClienteService clienteService;
-
-    private final UsuarioService usuarioService;
-
-    private final ServicoService servicoService;
-
+    // componentes principais
     private JTable tabela;
-
     private DefaultTableModel tableModel;
 
-    private final SimpleDateFormat sdf =
-            new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    // lista atual
+    private List<Agendamento> agendamentosAtuais;
 
+    // formato de data/hora exibido na tabela
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    // colunas
+    private static final String[] COLUNAS = {
+            "ID", "Status", "Início", "Fim", "Cliente", "Profissional", "Valor (R$)"
+    };
+
+    // cores das linhas por status
+    private static final Color COR_PENDENTE_BG  = new Color(0xFF, 0xF3, 0xD6);
+    private static final Color COR_PENDENTE_FG  = AppColors.STATUS_PEND;
+    private static final Color COR_CONCLUIDO_BG = new Color(0xE3, 0xF0, 0xDC);
+    private static final Color COR_CONCLUIDO_FG = AppColors.STATUS_CONC;
+    private static final Color COR_CANCELADO_BG = new Color(0xFA, 0xDD, 0xDD);
+    private static final Color COR_CANCELADO_FG = AppColors.PERIGO;
+
+    // painel agendamentos
     public PainelAgendamentos() {
-
-        this.agendamentoService =
-                new AgendamentoService();
-
-        this.clienteService =
-                new ClienteService();
-
-        this.usuarioService =
-                new UsuarioService();
-
-        this.servicoService =
-                new ServicoService();
-
+        this.agendamentoService = new AgendamentoService();
+        this.clienteService     = new ClienteService();
+        this.servicoService     = new ServicoService();
+        this.usuarioService     = new UsuarioService();
         setLayout(new BorderLayout());
-
+        setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
-
         carregarDados();
     }
 
-    // cria tabela e botoes
+    // inicialização
     private void inicializarComponentes() {
+        add(criarTopbar(), BorderLayout.NORTH);
+        add(criarConteudo(), BorderLayout.CENTER);
+    }
 
-        JPanel topo =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.RIGHT
-                        )
-                );
+    // topbar com titulo e botões de ação
+    private JPanel criarTopbar() {
+        JPanel topbar = new JPanel(new BorderLayout());
+        topbar.setBackground(AppColors.FUNDO_CARD);
+        topbar.setBorder(new CompoundBorder(
+                new LineBorder(AppColors.BORDA, 1, false),
+                new EmptyBorder(10, 20, 10, 20)
+        ));
+        topbar.setPreferredSize(new Dimension(0, AppDimensions.TOPBAR_HEIGHT));
 
-        JButton btnCriar =
-                criarBotao("Criar");
+        JLabel titulo = new JLabel("Agendamentos");
+        titulo.setFont(AppFonts.TITLE);
+        titulo.setForeground(AppColors.TEXTO_TITULO);
+        topbar.add(titulo, BorderLayout.WEST);
 
-        JButton btnConcluir =
-                criarBotao("Concluir");
+        topbar.add(criarBotoesAcao(), BorderLayout.EAST);
+        return topbar;
+    }
 
-        JButton btnCancelar =
-                criarBotao("Cancelar");
+    // painel com botões: criar / concluir / cancelar / remover / filtrar
+    private JPanel criarBotoesAcao() {
+        JPanel painel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        painel.setOpaque(false);
 
-        JButton btnRemover =
-                criarBotao("Remover");
+        JButton btnCriar    = new JButton("+ Criar");
+        JButton btnConcluir = new JButton("Concluir");
+        JButton btnCancelar = new JButton("Cancelar");
+        JButton btnRemover  = new JButton("Remover");
+        JButton btnFiltrar  = new JButton("Filtrar Período");
 
-        JButton btnFiltro =
-                criarBotao("Filtrar");
+        AppTheme.stylePrimaryButton(btnCriar, false);
+        AppTheme.styleOutlineButton(btnConcluir, false);
+        AppTheme.styleOutlineButton(btnCancelar, false);
+        AppTheme.styleOutlineButton(btnRemover, false);
+        AppTheme.styleOutlineButton(btnFiltrar, false);
 
-        topo.add(btnCriar);
+        btnConcluir.setForeground(AppColors.STATUS_CONC);
+        btnCancelar.setForeground(AppColors.STATUS_PEND);
+        btnRemover.setForeground(AppColors.PERIGO);
 
-        topo.add(btnConcluir);
+        btnCriar.addActionListener(e -> abrirDialogCriacao());
+        btnConcluir.addActionListener(e -> concluirSelecionado());
+        btnCancelar.addActionListener(e -> cancelarSelecionado());
+        btnRemover.addActionListener(e -> confirmarRemocao());
+        btnFiltrar.addActionListener(e -> abrirDialogFiltro());
 
-        topo.add(btnCancelar);
+        painel.add(btnCriar);
+        painel.add(btnConcluir);
+        painel.add(btnCancelar);
+        painel.add(btnRemover);
+        painel.add(btnFiltrar);
+        return painel;
+    }
 
-        topo.add(btnRemover);
+    // área central com tabela
+    private JPanel criarConteudo() {
+        JPanel conteudo = new JPanel(new BorderLayout(0, 12));
+        conteudo.setOpaque(false);
+        conteudo.setBorder(new EmptyBorder(16, 20, 16, 20));
+        conteudo.add(criarPainelTabela(), BorderLayout.CENTER);
+        return conteudo;
+    }
 
-        topo.add(btnFiltro);
-
-        add(topo, BorderLayout.NORTH);
-
-        tableModel = new DefaultTableModel(
-                new Object[]{
-                        "ID",
-                        "Status",
-                        "Início",
-                        "Fim",
-                        "Cliente",
-                        "Profissional",
-                        "Valor Final"
-                }, 0
-        );
+    // cria o modelo da tabela com renderizador colorido por status
+    private JScrollPane criarPainelTabela() {
+        tableModel = new DefaultTableModel(COLUNAS, 0) {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        };
 
         tabela = new JTable(tableModel);
+        tabela.setFont(AppFonts.TABLE);
+        tabela.setForeground(AppColors.TEXTO_CORPO);
+        tabela.setBackground(AppColors.FUNDO_CARD);
+        tabela.setSelectionBackground(AppColors.ROSA_PALIDO);
+        tabela.setSelectionForeground(AppColors.TEXTO_TITULO);
+        tabela.setGridColor(AppColors.BORDA);
+        tabela.setRowHeight(AppDimensions.ROW_HEIGHT);
+        tabela.setShowVerticalLines(false);
+        tabela.setIntercellSpacing(new Dimension(0, 1));
+        tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tabela.setFillsViewportHeight(true);
 
-        tabela.setRowHeight(32);
+        estilizarCabecalhoTabela();
+        aplicarRenderizadorStatus();
+        configurarLargurasColunas();
 
-        tabela.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        13
-                )
-        );
-
-        tabela.getTableHeader().setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        13
-                )
-        );
-
-        tabela.setDefaultRenderer(
-                Object.class,
-                new StatusRenderer()
-        );
-
-        JScrollPane scroll =
-                new JScrollPane(tabela);
-
-        add(scroll, BorderLayout.CENTER);
-
-        btnCriar.addActionListener(e ->
-                abrirDialogCriacao()
-        );
-
-        btnConcluir.addActionListener(e ->
-                concluirAgendamento()
-        );
-
-        btnCancelar.addActionListener(e ->
-                cancelarAgendamento()
-        );
-
-        btnRemover.addActionListener(e ->
-                removerAgendamento()
-        );
-
-        btnFiltro.addActionListener(e ->
-                abrirFiltroPeriodo()
-        );
+        JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(new LineBorder(AppColors.BORDA, 1, false));
+        scroll.getViewport().setBackground(AppColors.FUNDO_CARD);
+        return scroll;
     }
 
-    private JButton criarBotao(String texto) {
-
-        JButton btn = new JButton(texto);
-
-        btn.setFocusPainted(false);
-
-        btn.setBackground(
-                new Color(196, 82, 126)
-        );
-
-        btn.setForeground(Color.WHITE);
-
-        btn.setBorder(
-                BorderFactory.createEmptyBorder(
-                        10,
-                        16,
-                        10,
-                        16
-                )
-        );
-
-        return btn;
+    private void estilizarCabecalhoTabela() {
+        JTableHeader header = tabela.getTableHeader();
+        header.setFont(AppFonts.TABLE_HEADER);
+        header.setBackground(AppColors.ROSA_PALIDO);
+        header.setForeground(AppColors.TEXTO_TITULO);
+        header.setPreferredSize(new Dimension(0, 34));
+        header.setBorder(new LineBorder(AppColors.BORDA, 1, false));
+        header.setReorderingAllowed(false);
     }
 
-    // atualiza tabela
+    // renderizador que colore a linha inteira conforme o status do agendamento
+    private void aplicarRenderizadorStatus() {
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable t, Object value, boolean selected, boolean focused, int row, int col) {
+                super.getTableCellRendererComponent(t, value, selected, focused, row, col);
+                setBorder(new EmptyBorder(0, 12, 0, 12));
+                setFont(AppFonts.TABLE);
+
+                if (!selected) {
+                    Object statusVal = t.getModel().getValueAt(row, 1);
+                    String status = statusVal != null ? statusVal.toString() : "";
+                    switch (status) {
+                        case "CONCLUIDO" -> {
+                            setBackground(COR_CONCLUIDO_BG);
+                            setForeground(col == 1 ? COR_CONCLUIDO_FG : AppColors.TEXTO_CORPO);
+                        }
+                        case "CANCELADO" -> {
+                            setBackground(COR_CANCELADO_BG);
+                            setForeground(col == 1 ? COR_CANCELADO_FG : AppColors.TEXTO_CORPO);
+                        }
+                        default -> {
+                            setBackground(COR_PENDENTE_BG);
+                            setForeground(col == 1 ? COR_PENDENTE_FG : AppColors.TEXTO_CORPO);
+                        }
+                    }
+                    // texto amigável na coluna de status
+                    if (col == 1 && value != null) {
+                        setText(formatarStatus(value.toString()));
+                    }
+                }
+                return this;
+            }
+        };
+
+        for (int i = 0; i < COLUNAS.length; i++) {
+            tabela.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        }
+    }
+
+    private void configurarLargurasColunas() {
+        int[] larguras = {50, 100, 130, 130, 160, 160, 100};
+        for (int i = 0; i < larguras.length; i++) {
+            tabela.getColumnModel().getColumn(i).setPreferredWidth(larguras[i]);
+        }
+        tabela.getColumnModel().getColumn(0).setMaxWidth(60);
+    }
+
+    // dados
+    // recarrega todos os agendamentos e preenche a tabela
     private void carregarDados() {
+        agendamentosAtuais = agendamentoService.listarTodos();
+        preencherTabela(agendamentosAtuais);
+    }
 
+    private void preencherTabela(List<Agendamento> lista) {
         tableModel.setRowCount(0);
+        for (Agendamento ag : lista) {
+            String inicio = ag.getDataHoraInicio() != null
+                    ? ag.getDataHoraInicio().format(FMT) : "—";
+            String fim = ag.getDataHoraFim() != null
+                    ? ag.getDataHoraFim().format(FMT) : "—";
+            String cliente = ag.getCliente() != null
+                    ? ag.getCliente().getNome() : "—";
+            String prof = ag.getProfissional() != null
+                    ? ag.getProfissional().getNome() : "—";
+            String valor = ag.getValorFinal() != null
+                    ? String.format("R$ %.2f", ag.getValorFinal()) : "R$ 0,00";
 
-        try {
-
-            List<Agendamento> lista =
-                    agendamentoService.listarTodos();
-
-            for (Agendamento ag : lista) {
-
-                tableModel.addRow(new Object[]{
-                        ag.getId(),
-                        ag.getStatus(),
-                        sdf.format(ag.getInicio()),
-                        sdf.format(ag.getFim()),
-                        ag.getCliente().getNome(),
-                        ag.getProfissional().getNome(),
-                        "R$ " + ag.getValorFinal()
-                });
-            }
-
-        } catch (Exception ex) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    ex.getMessage(),
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            tableModel.addRow(new Object[]{
+                    ag.getId(),
+                    ag.getStatus().name(),
+                    inicio, fim, cliente, prof, valor
+            });
         }
     }
 
-    // dialog de criacao
+    // ações do crud
+
+    private void concluirSelecionado() {
+        int linhaSel = tabela.getSelectedRow();
+        if (linhaSel < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Selecione um agendamento para concluir.",
+                    "Nenhuma seleção", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        Long id = (Long) tableModel.getValueAt(linhaSel, 0);
+        agendamentoService.concluirAgendamento(id);
+        carregarDados();
+        JOptionPane.showMessageDialog(this,
+                "Agendamento #" + id + " concluído com sucesso!",
+                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void cancelarSelecionado() {
+        int linhaSel = tabela.getSelectedRow();
+        if (linhaSel < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Selecione um agendamento para cancelar.",
+                    "Nenhuma seleção", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        Long id = (Long) tableModel.getValueAt(linhaSel, 0);
+        agendamentoService.cancelarAgendamento(id);
+        carregarDados();
+        JOptionPane.showMessageDialog(this,
+                "Agendamento #" + id + " cancelado.",
+                "Agendamento cancelado", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void confirmarRemocao() {
+        int linhaSel = tabela.getSelectedRow();
+        if (linhaSel < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Selecione um agendamento para remover.",
+                    "Nenhuma seleção", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        Long id = (Long) tableModel.getValueAt(linhaSel, 0);
+        int resp = JOptionPane.showConfirmDialog(this,
+                "Deseja remover o agendamento #" + id + "?\nEsta ação não pode ser desfeita.",
+                "Confirmar Remoção",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (resp == JOptionPane.YES_OPTION) {
+            agendamentoService.removerAgendamento(id);
+            carregarDados();
+            JOptionPane.showMessageDialog(this,
+                    "Agendamento #" + id + " removido com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    // abre dialog de filtro por período
+    private void abrirDialogFiltro() {
+        JDialog dialog = criarDialogBase("Filtrar por Período", 400, 220);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+        form.setBorder(new EmptyBorder(16, 16, 8, 16));
+        GridBagConstraints gbc = criarGbc();
+
+        JSpinner spInicio = criarSpinnerDataHora();
+        JSpinner spFim    = criarSpinnerDataHora();
+
+        adicionarCampoForm(form, gbc, "Data Início", spInicio, 0, 0, false);
+        adicionarCampoForm(form, gbc, "Data Fim",    spFim,    0, 1, false);
+
+        JButton btnFiltrar  = new JButton("Filtrar");
+        JButton btnCancelar = new JButton("Cancelar");
+        AppTheme.stylePrimaryButton(btnFiltrar, true);
+        AppTheme.styleOutlineButton(btnCancelar, true);
+
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        btnFiltrar.addActionListener(e -> {
+            LocalDateTime inicio = spinnerParaLocalDateTime(spInicio);
+            LocalDateTime fim    = spinnerParaLocalDateTime(spFim);
+            List<Agendamento> filtrados = agendamentoService.buscarPorPeriodo(inicio, fim);
+            preencherTabela(filtrados);
+            dialog.dispose();
+        });
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(criarRodapeDialog(btnCancelar, btnFiltrar), BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    // dialog de criação de agendamento
     private void abrirDialogCriacao() {
+        JDialog dialog = criarDialogBase("Novo Agendamento", 520, 500);
 
-        JDialog dialog =
-                new JDialog();
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+        form.setBorder(new EmptyBorder(16, 16, 8, 16));
+        GridBagConstraints gbc = criarGbc();
 
-        dialog.setTitle(
-                "Novo Agendamento"
-        );
-
-        dialog.setSize(520, 520);
-
-        dialog.setLocationRelativeTo(this);
-
-        dialog.setLayout(null);
-
-        JLabel lblCliente =
-                new JLabel("Cliente");
-
-        lblCliente.setBounds(20, 20, 120, 25);
-
-        JComboBox<Cliente> cbCliente =
-                new JComboBox<>();
-
-        clienteService.listarTodos()
-                .forEach(cbCliente::addItem);
-
-        cbCliente.setBounds(20, 45, 450, 35);
-
-        JLabel lblProf =
-                new JLabel("Profissional");
-
-        lblProf.setBounds(20, 95, 120, 25);
-
-        JComboBox<Profissional> cbProf =
-                new JComboBox<>();
-
-        usuarioService
-                .listarPorTipo("PROFISSIONAL")
-                .forEach(p ->
-                        cbProf.addItem(
-                                (Profissional) p
-                        )
-                );
-
-        cbProf.setBounds(20, 120, 450, 35);
-
-        JLabel lblInicio =
-                new JLabel("Início");
-
-        lblInicio.setBounds(20, 170, 120, 25);
-
-        JSpinner spInicio =
-                new JSpinner(
-                        new SpinnerDateModel()
-                );
-
-        spInicio.setEditor(
-                new JSpinner.DateEditor(
-                        spInicio,
-                        "dd/MM/yyyy HH:mm"
-                )
-        );
-
-        spInicio.setBounds(20, 195, 200, 35);
-
-        JLabel lblFim =
-                new JLabel("Fim");
-
-        lblFim.setBounds(250, 170, 120, 25);
-
-        JSpinner spFim =
-                new JSpinner(
-                        new SpinnerDateModel()
-                );
-
-        spFim.setEditor(
-                new JSpinner.DateEditor(
-                        spFim,
-                        "dd/MM/yyyy HH:mm"
-                )
-        );
-
-        spFim.setBounds(250, 195, 220, 35);
-
-        JLabel lblServicos =
-                new JLabel("Serviços");
-
-        lblServicos.setBounds(20, 250, 120, 25);
-
-        DefaultListModel<Servico> model =
-                new DefaultListModel<>();
-
-        servicoService.listarTodos()
-                .forEach(model::addElement);
-
-        JList<Servico> lista =
-                new JList<>(model);
-
-        lista.setSelectionMode(
-                ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
-        );
-
-        JScrollPane scroll =
-                new JScrollPane(lista);
-
-        scroll.setBounds(20, 275, 450, 110);
-
-        JButton btnSalvar =
-                criarBotao("Confirmar");
-
-        btnSalvar.setBounds(
-                160,
-                420,
-                180,
-                40
-        );
-
-        btnSalvar.addActionListener(e -> {
-
-            try {
-
-                Agendamento ag =
-                        new Agendamento();
-
-                ag.setCliente(
-                        (Cliente)
-                                cbCliente.getSelectedItem()
-                );
-
-                ag.setProfissional(
-                        (Profissional)
-                                cbProf.getSelectedItem()
-                );
-
-                ag.setInicio(
-                        (Date)
-                                spInicio.getValue()
-                );
-
-                ag.setFim(
-                        (Date)
-                                spFim.getValue()
-                );
-
-                ag.setStatus(
-                        StatusAgendamento.PENDENTE
-                );
-
-                // monta os servicos do agendamento
-                for (Servico s :
-                        lista.getSelectedValuesList()) {
-
-                    AgendamentoServico as =
-                            new AgendamentoServico();
-
-                    as.setServico(s);
-
-                    as.setAgendamento(ag);
-
-                    as.setPrecoAplicado(
-                            s.getValorBase()
-                    );
-
-                    as.setQuantidade(1);
-
-                    ag.getServicos().add(as);
-                }
-
-                agendamentoService
-                        .criarAgendamento(ag);
-
-                carregarDados();
-
-                dialog.dispose();
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        ex.getMessage(),
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
+        // combobox de clientes
+        List<Cliente> clientes = clienteService.listarTodos();
+        JComboBox<Cliente> cbCliente = new JComboBox<>();
+        clientes.forEach(cbCliente::addItem);
+        estilizarCombo(cbCliente);
+        cbCliente.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            JLabel lbl = new JLabel(value != null ? value.getNome() : "");
+            lbl.setFont(AppFonts.BODY);
+            lbl.setBorder(new EmptyBorder(4, 8, 4, 8));
+            if (isSelected) { lbl.setBackground(AppColors.ROSA_PALIDO); lbl.setOpaque(true); }
+            return lbl;
         });
 
-        dialog.add(lblCliente);
+        // combobox de profissionais
+        List<Usuario> profissionais = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL)
+                .stream().filter(u -> !u.isDeleted()).toList();
+        JComboBox<Usuario> cbProfissional = new JComboBox<>();
+        profissionais.forEach(cbProfissional::addItem);
+        estilizarCombo(cbProfissional);
+        cbProfissional.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            JLabel lbl = new JLabel(value != null ? value.getNome() : "");
+            lbl.setFont(AppFonts.BODY);
+            lbl.setBorder(new EmptyBorder(4, 8, 4, 8));
+            if (isSelected) { lbl.setBackground(AppColors.ROSA_PALIDO); lbl.setOpaque(true); }
+            return lbl;
+        });
 
-        dialog.add(cbCliente);
+        // spinners de data/hora para início e fim
+        JSpinner spInicio = criarSpinnerDataHora();
+        JSpinner spFim    = criarSpinnerDataHora();
 
-        dialog.add(lblProf);
+        // JList de serviços com seleção múltipla
+        List<Servico> todosServicos = servicoService.listarTodos();
+        DefaultListModel<Servico> listModel = new DefaultListModel<>();
+        todosServicos.forEach(listModel::addElement);
 
-        dialog.add(cbProf);
+        JList<Servico> listaServicos = new JList<>(listModel);
+        listaServicos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        listaServicos.setFont(AppFonts.BODY);
+        listaServicos.setBackground(AppColors.FUNDO_APP);
+        listaServicos.setForeground(AppColors.TEXTO_CORPO);
+        listaServicos.setSelectionBackground(AppColors.ROSA_PALIDO);
+        listaServicos.setSelectionForeground(AppColors.TEXTO_TITULO);
+        listaServicos.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            String texto = value != null
+                    ? value.getDescricao() + " — R$ " + String.format("%.2f", value.getValorBase())
+                    : "";
+            JLabel lbl = new JLabel(texto);
+            lbl.setFont(AppFonts.BODY);
+            lbl.setBorder(new EmptyBorder(4, 10, 4, 10));
+            if (isSelected) {
+                lbl.setBackground(AppColors.ROSA_PALIDO);
+                lbl.setForeground(AppColors.TEXTO_TITULO);
+                lbl.setOpaque(true);
+            } else {
+                lbl.setForeground(AppColors.TEXTO_CORPO);
+            }
+            return lbl;
+        });
 
-        dialog.add(lblInicio);
+        JScrollPane scrollServicos = new JScrollPane(listaServicos);
+        scrollServicos.setBorder(new LineBorder(AppColors.BORDA, 1, false));
+        scrollServicos.setPreferredSize(new Dimension(0, 120));
 
-        dialog.add(spInicio);
+        adicionarCampoForm(form, gbc, "Cliente",          cbCliente,    0, 0, false);
+        adicionarCampoForm(form, gbc, "Profissional",     cbProfissional, 0, 1, false);
+        adicionarCampoForm(form, gbc, "Início",           spInicio,     1, 0, false);
+        adicionarCampoForm(form, gbc, "Fim",              spFim,        1, 1, false);
+        adicionarCampoForm(form, gbc, "Serviços (ctrl+clique para múltiplos)",
+                scrollServicos, 2, 0, true);
 
-        dialog.add(lblFim);
+        JButton btnConfirmar = new JButton("Confirmar");
+        JButton btnCancelar  = new JButton("Cancelar");
+        AppTheme.stylePrimaryButton(btnConfirmar, true);
+        AppTheme.styleOutlineButton(btnCancelar, true);
 
-        dialog.add(spFim);
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        btnConfirmar.addActionListener(e -> {
+            Cliente clienteSel = (Cliente) cbCliente.getSelectedItem();
+            Usuario profSel    = (Usuario)  cbProfissional.getSelectedItem();
+            List<Servico> selecionados = listaServicos.getSelectedValuesList();
 
-        dialog.add(lblServicos);
+            if (clienteSel == null || profSel == null) {
+                JOptionPane.showMessageDialog(dialog,
+                        "Selecione cliente e profissional.", "Campos inválidos",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (selecionados.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog,
+                        "Selecione ao menos um serviço.", "Campos inválidos",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-        dialog.add(scroll);
+            LocalDateTime inicio = spinnerParaLocalDateTime(spInicio);
+            LocalDateTime fim    = spinnerParaLocalDateTime(spFim);
+            if (!fim.isAfter(inicio)) {
+                JOptionPane.showMessageDialog(dialog,
+                        "A data/hora de fim deve ser posterior à data/hora de início.",
+                        "Datas inválidas", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-        dialog.add(btnSalvar);
+            Agendamento ag = new Agendamento();
+            ag.setCliente(clienteSel);
+            ag.setProfissional((Profissional) profSel);
+            ag.setDataHoraInicio(inicio);
+            ag.setDataHoraFim(fim);
 
+            // monta a lista de AgendamentoServico conforme exemplo do guia
+            List<AgendamentoServico> agServicos = new ArrayList<>();
+            for (Servico s : selecionados) {
+                AgendamentoServico as = new AgendamentoServico();
+                as.setServico(s);
+                as.setAgendamento(ag);
+                as.setPrecoAplicado(s.getValorBase());
+                as.setQuantidade(1);
+                agServicos.add(as);
+            }
+            ag.setServicos(agServicos);
+
+            String erro = agendamentoService.criarAgendamento(ag);
+            if (erro != null) {
+                JOptionPane.showMessageDialog(dialog, erro, "Erro ao criar agendamento",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            dialog.dispose();
+            carregarDados();
+            JOptionPane.showMessageDialog(PainelAgendamentos.this,
+                    "Agendamento criado com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(criarRodapeDialog(btnCancelar, btnConfirmar), BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
-    // conclui agendamento
-    private void concluirAgendamento() {
+    // ajuda de ui (msm padrão de PainelClientes)
+    private JDialog criarDialogBase(String titulo, int largura, int altura) {
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = (owner instanceof Frame)
+                ? new JDialog((Frame) owner, titulo, true)
+                : new JDialog((Dialog) owner, titulo, true);
 
-        int linha =
-                tabela.getSelectedRow();
-
-        if (linha == -1) {
-            return;
-        }
-
-        try {
-
-            Integer id =
-                    (Integer)
-                            tableModel.getValueAt(
-                                    linha,
-                                    0
-                            );
-
-            agendamentoService
-                    .concluirAgendamento(id);
-
-            carregarDados();
-
-        } catch (Exception ex) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    ex.getMessage(),
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    // cancela agendamento
-    private void cancelarAgendamento() {
-
-        int linha =
-                tabela.getSelectedRow();
-
-        if (linha == -1) {
-            return;
-        }
-
-        try {
-
-            Integer id =
-                    (Integer)
-                            tableModel.getValueAt(
-                                    linha,
-                                    0
-                            );
-
-            agendamentoService
-                    .cancelarAgendamento(id);
-
-            carregarDados();
-
-        } catch (Exception ex) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    ex.getMessage(),
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    // remove agendamento
-    private void removerAgendamento() {
-
-        int linha =
-                tabela.getSelectedRow();
-
-        if (linha == -1) {
-            return;
-        }
-
-        int op =
-                JOptionPane.showConfirmDialog(
-                        this,
-                        "Deseja remover?",
-                        "Confirmação",
-                        JOptionPane.YES_NO_OPTION
-                );
-
-        if (op != JOptionPane.YES_OPTION) {
-            return;
-        }
-
-        try {
-
-            Integer id =
-                    (Integer)
-                            tableModel.getValueAt(
-                                    linha,
-                                    0
-                            );
-
-            agendamentoService
-                    .removerAgendamento(id);
-
-            carregarDados();
-
-        } catch (Exception ex) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    ex.getMessage(),
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    // filtro por periodo
-    private void abrirFiltroPeriodo() {
-
-        JDialog dialog =
-                new JDialog();
-
-        dialog.setTitle("Filtrar");
-
-        dialog.setSize(350, 220);
-
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(largura, altura);
         dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
+        dialog.getContentPane().setBackground(AppColors.FUNDO_CARD);
 
-        dialog.setLayout(null);
+        // header roxo
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(AppColors.ROXO);
+        header.setBorder(new EmptyBorder(12, 16, 12, 16));
+        header.setPreferredSize(new Dimension(0, 44));
 
-        JLabel lblInicio =
-                new JLabel("Data Inicial");
+        JLabel lblTitulo = new JLabel(titulo);
+        lblTitulo.setFont(AppFonts.TITLE);
+        lblTitulo.setForeground(Color.WHITE);
+        header.add(lblTitulo, BorderLayout.WEST);
+        dialog.add(header, BorderLayout.NORTH);
 
-        lblInicio.setBounds(20, 20, 120, 25);
-
-        JSpinner spInicio =
-                new JSpinner(
-                        new SpinnerDateModel()
-                );
-
-        spInicio.setEditor(
-                new JSpinner.DateEditor(
-                        spInicio,
-                        "dd/MM/yyyy"
-                )
-        );
-
-        spInicio.setBounds(20, 45, 280, 35);
-
-        JLabel lblFim =
-                new JLabel("Data Final");
-
-        lblFim.setBounds(20, 90, 120, 25);
-
-        JSpinner spFim =
-                new JSpinner(
-                        new SpinnerDateModel()
-                );
-
-        spFim.setEditor(
-                new JSpinner.DateEditor(
-                        spFim,
-                        "dd/MM/yyyy"
-                )
-        );
-
-        spFim.setBounds(20, 115, 280, 35);
-
-        JButton btnBuscar =
-                criarBotao("Buscar");
-
-        btnBuscar.setBounds(
-                90,
-                160,
-                150,
-                35
-        );
-
-        btnBuscar.addActionListener(e -> {
-
-            try {
-
-                tableModel.setRowCount(0);
-
-                List<Agendamento> lista =
-                        agendamentoService
-                                .buscarPorPeriodo(
-                                        (Date)
-                                                spInicio.getValue(),
-                                        (Date)
-                                                spFim.getValue()
-                                );
-
-                for (Agendamento ag : lista) {
-
-                    tableModel.addRow(
-                            new Object[]{
-                                    ag.getId(),
-                                    ag.getStatus(),
-                                    sdf.format(
-                                            ag.getInicio()
-                                    ),
-                                    sdf.format(
-                                            ag.getFim()
-                                    ),
-                                    ag.getCliente()
-                                            .getNome(),
-                                    ag.getProfissional()
-                                            .getNome(),
-                                    "R$ " +
-                                            ag.getValorFinal()
-                            }
-                    );
-                }
-
-                dialog.dispose();
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        ex.getMessage(),
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        dialog.add(lblInicio);
-
-        dialog.add(spInicio);
-
-        dialog.add(lblFim);
-
-        dialog.add(spFim);
-
-        dialog.add(btnBuscar);
-
-        dialog.setVisible(true);
+        return dialog;
     }
 
-    // pinta linhas por status
-    private static class StatusRenderer
-            extends DefaultTableCellRenderer {
+    private JSpinner criarSpinnerDataHora() {
+        JSpinner spinner = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor editor = new JSpinner.DateEditor(spinner, "dd/MM/yyyy HH:mm");
+        spinner.setEditor(editor);
+        spinner.setFont(AppFonts.BODY);
+        spinner.setPreferredSize(new Dimension(0, AppDimensions.INPUT_HEIGHT));
+        spinner.setBorder(new LineBorder(AppColors.BORDA, 1, false));
+        editor.getTextField().setFont(AppFonts.BODY);
+        editor.getTextField().setBackground(AppColors.FUNDO_APP);
+        editor.getTextField().setForeground(AppColors.TEXTO_CORPO);
+        editor.getTextField().setBorder(new EmptyBorder(4, 6, 4, 6));
+        return spinner;
+    }
 
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table,
-                Object value,
-                boolean isSelected,
-                boolean hasFocus,
-                int row,
-                int column
-        ) {
+    private LocalDateTime spinnerParaLocalDateTime(JSpinner spinner) {
+        Date date = (Date) spinner.getValue();
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
 
-            Component c =
-                    super.getTableCellRendererComponent(
-                            table,
-                            value,
-                            isSelected,
-                            hasFocus,
-                            row,
-                            column
-                    );
+    private <T> void estilizarCombo(JComboBox<T> combo) {
+        combo.setFont(AppFonts.BODY);
+        combo.setBackground(AppColors.FUNDO_APP);
+        combo.setForeground(AppColors.TEXTO_CORPO);
+        combo.setBorder(new LineBorder(AppColors.BORDA, 1, false));
+        combo.setPreferredSize(new Dimension(0, AppDimensions.INPUT_HEIGHT));
+    }
 
-            String status =
-                    table.getValueAt(
-                            row,
-                            1
-                    ).toString();
+    private GridBagConstraints criarGbc() {
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(4, 6, 4, 6);
+        g.weightx = 1.0;
+        return g;
+    }
 
-            if (!isSelected) {
+    private void adicionarCampoForm(JPanel form, GridBagConstraints gbc,
+                                    String label, JComponent campo,
+                                    int linha, int col, boolean full) {
+        gbc.gridy = linha * 2;
+        gbc.gridx = full ? 0 : col;
+        gbc.gridwidth = full ? 2 : 1;
 
-                switch (status) {
+        JLabel lbl = new JLabel(label.toUpperCase());
+        lbl.setFont(AppFonts.LABEL);
+        lbl.setForeground(AppColors.TEXTO_SECUNDARIO);
+        form.add(lbl, gbc);
 
-                    case "PENDENTE":
+        gbc.gridy = linha * 2 + 1;
+        form.add(campo, gbc);
+        gbc.gridwidth = 1;
+    }
 
-                        c.setBackground(
-                                new Color(
-                                        255,
-                                        243,
-                                        214
-                                )
-                        );
+    private JPanel criarRodapeDialog(JButton btnCancelar, JButton btnConfirmar) {
+        JPanel rodape = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        rodape.setBackground(AppColors.BOTAO_OUTLINE_FUNDO);
+        rodape.setBorder(new CompoundBorder(
+                new LineBorder(AppColors.BORDA, 1, false),
+                new EmptyBorder(2, 8, 2, 8)
+        ));
+        rodape.add(btnCancelar);
+        rodape.add(btnConfirmar);
+        return rodape;
+    }
 
-                        break;
-
-                    case "CONCLUIDO":
-
-                        c.setBackground(
-                                new Color(
-                                        227,
-                                        240,
-                                        220
-                                )
-                        );
-
-                        break;
-
-                    case "CANCELADO":
-
-                        c.setBackground(
-                                new Color(
-                                        250,
-                                        221,
-                                        221
-                                )
-                        );
-
-                        break;
-
-                    default:
-
-                        c.setBackground(
-                                Color.WHITE
-                        );
-                }
-            }
-
-            return c;
-        }
+    private String formatarStatus(String status) {
+        return switch (status) {
+            case "CONCLUIDO" -> "Concluído";
+            case "CANCELADO" -> "Cancelado";
+            default          -> "Pendente";
+        };
     }
 }
