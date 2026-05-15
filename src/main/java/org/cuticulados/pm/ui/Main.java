@@ -599,7 +599,7 @@ public class Main {
 
     /**
      * Registra de maneira síncrona a saída de um produto para comercialização direta,
-     * vinculando o faturamento e deduzindo as unidades correspondentes da contagem fisica.
+     * vinculando o faturamento e deduzindo as uunidades correspondentes da contagem fisica.
      */
     private static void registrarVendaAvulsa() {
         try {
