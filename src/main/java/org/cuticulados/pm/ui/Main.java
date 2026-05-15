@@ -17,7 +17,7 @@ import java.util.Scanner;
 /**
  * Ponto de entrada da aplicação Cuticulados.
  * Orquestra o ciclo de vida inicial do sistema e gerencia o fluxo de transição
- * das interfaces de Clientes e Profissionais para o ecossistema Java Swing.
+ * das interfaces de Clientes e Profissionais para o ecossistema Java Swing.!
  */
 public class Main {
 
