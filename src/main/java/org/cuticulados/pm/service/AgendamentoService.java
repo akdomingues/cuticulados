@@ -25,11 +25,11 @@ public class AgendamentoService {
 
     // --- CRUD basico ---
 
-    public void criarAgendamento(Agendamento agendamento) {
+    // retorna null em caso de sucesso, ou a mensagem de erro para exibir na UI
+    public String criarAgendamento(Agendamento agendamento) {
         try {
             if (agendamento.getCliente() == null || agendamento.getProfissional() == null) {
-                System.out.println("Cliente e profissional sao obrigatorios.");
-                return;
+                return "Cliente e profissional são obrigatórios.";
             }
 
             // regra 1: conflito de horario
@@ -38,8 +38,7 @@ public class AgendamentoService {
                     agendamento.getDataHoraInicio(),
                     agendamento.getDataHoraFim());
             if (conflita) {
-                System.out.println("Conflito de horario! O profissional ja tem atendimento nesse periodo.");
-                return;
+                return "Conflito de horário! O profissional já tem atendimento nesse período.";
             }
 
             // RF05: bloquear se insumos insuficientes
@@ -49,10 +48,9 @@ public class AgendamentoService {
                 for (ServicoProduto sp : insumos) {
                     Produto produto = sp.getProduto();
                     if (produto.getQuantidadeEstoque() < as.getQuantidade()) {
-                        System.out.println("Estoque insuficiente para o produto '" + produto.getNome()
-                                + "'. Disponivel: " + produto.getQuantidadeEstoque()
-                                + ", necessario: " + as.getQuantidade());
-                        return;
+                        return "Estoque insuficiente para o produto '" + produto.getNome()
+                                + "'. Disponível: " + produto.getQuantidadeEstoque()
+                                + ", necessário: " + as.getQuantidade();
                     }
                 }
             }
@@ -60,9 +58,9 @@ public class AgendamentoService {
             calcularValorFinal(agendamento);
             agendamento.setStatus(StatusAgendamento.PENDENTE);
             agendamentoRepo.salvar(agendamento);
-            System.out.println("Agendamento criado com sucesso.");
+            return null; // sucesso
         } catch (Exception e) {
-            System.out.println("Erro ao criar agendamento: " + e.getMessage());
+            return "Erro ao criar agendamento: " + e.getMessage();
         }
     }
 
@@ -131,10 +129,10 @@ public class AgendamentoService {
             Cliente cliente = agendamento.getCliente();
             total = cliente.calcularDesconto(total);
 
-            agendamento.setValorFinal(total);
+            agendamento.setValorFinal(total.doubleValue());
         } catch (Exception e) {
             System.out.println("Erro ao calcular valor final: " + e.getMessage());
-            agendamento.setValorFinal(BigDecimal.ZERO);
+            agendamento.setValorFinal(0.0);
         }
     }
 

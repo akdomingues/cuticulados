@@ -15,20 +15,18 @@ public class ProdutoService {
 
 //CADASTRO
 
-    public void cadastrarProduto(Produto produto) {
+    public String cadastrarProduto(Produto produto) {
         try {
             if (produto.getNome() == null || produto.getNome().isBlank()) {
-                System.out.println("Nome do produto e obrigatorio.");
-                return;
+                return "Nome do produto é obrigatório.";
             }
             if (produto.getPrecoVenda().compareTo(BigDecimal.ZERO) <= 0) {
-                System.out.println("Preco de venda deve ser maior que zero.");
-                return;
+                return "Preço de venda deve ser maior que zero.";
             }
             produtoRepo.salvar(produto);
-            System.out.println("Produto cadastrado com sucesso.");
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao cadastrar produto: " + e.getMessage());
+            return "Erro ao cadastrar produto: " + e.getMessage();
         }
     }
 
@@ -52,31 +50,30 @@ public class ProdutoService {
 
     //ATUALIZAR
 
-    public void atualizarProduto(Produto produto) {
+    public String atualizarProduto(Produto produto) {
         try {
             Optional<Produto> existente = produtoRepo.buscarPorId(produto.getId());
             if (existente.isEmpty()) {
-                System.out.println("Produto nao encontrado.");
-                return;
+                return "Produto não encontrado.";
             }
             produtoRepo.salvar(produto);
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao atualizar produto: " + e.getMessage());
+            return "Erro ao atualizar produto: " + e.getMessage();
         }
     }
 
     //REMOVER
 
-    public void removerProduto(Long id) {
+    public String removerProduto(Long id) {
         try {
             if (produtoRepo.buscarPorId(id).isEmpty()) {
-                System.out.println("Produto nao encontrado.");
-                return;
+                return "Produto não encontrado.";
             }
             produtoRepo.deletar(id);
-            System.out.println("Produto removido com sucesso.");
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao remover produto: " + e.getMessage());
+            return "Erro ao remover produto: " + e.getMessage();
         }
     }
 

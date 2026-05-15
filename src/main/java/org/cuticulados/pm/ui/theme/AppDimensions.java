@@ -15,9 +15,9 @@ public final class AppDimensions {
 
     public static final int ROW_HEIGHT = 36;
 
-    public static final int SIDEBAR_WIDTH = 200;
+    public static final int SIDEBAR_WIDTH = 260;
 
-    public static final int TOPBAR_HEIGHT = 46;
+    public static final int TOPBAR_HEIGHT = 54;
 
     public static final int DIALOG_WIDTH = 480;
 }

@@ -23,7 +23,7 @@ public class AgendamentoRepository {
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao salvar agendamento: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
     }
 
@@ -43,8 +43,11 @@ public class AgendamentoRepository {
 
     public List<Agendamento> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
+            // DISTINCT evita duplicatas causadas pelo JOIN FETCH na coleção servicos.
+            // Não fazemos JOIN FETCH de cliente/profissional pois ambos usam herança JOINED
+            // no Hibernate 6, o que gera SQL incorreto quando combinado com JOIN FETCH.
             return em.createQuery(
-                            "SELECT a FROM Agendamento a LEFT JOIN FETCH a.cliente LEFT JOIN FETCH a.profissional",
+                            "SELECT DISTINCT a FROM Agendamento a LEFT JOIN FETCH a.servicos ORDER BY a.dataHoraInicio DESC",
                             Agendamento.class)
                     .getResultList();
         } catch (Exception e) {
@@ -111,7 +114,14 @@ public class AgendamentoRepository {
             }
             em.getTransaction().commit();
         } catch (Exception e) {
-            System.err.println("Erro ao deletar agendamento: " + e.getMessage());
+            throw new RuntimeException(extrairMensagem(e), e);
         }
+    }
+
+    private static String extrairMensagem(Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) cause = cause.getCause();
+        String msg = cause.getMessage();
+        return (msg != null && !msg.isBlank()) ? msg : e.getMessage();
     }
 }

@@ -330,9 +330,16 @@ public class PainelClientes extends JPanel {
             c.setTelefone(telefone);
             c.setTipo(TipoUsuario.CLIENTE);
 
-            clienteService.cadastrarCliente(c);
+            String erro = clienteService.cadastrarCliente(c);
+            if (erro != null) {
+                JOptionPane.showMessageDialog(dialog, erro, "Erro ao cadastrar", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             dialog.dispose();
             carregarDados();
+            JOptionPane.showMessageDialog(PainelClientes.this,
+                    "Cliente \"" + nome + "\" cadastrado com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         });
 
         JPanel rodape = criarRodapeDialog(btnCancelar, btnSalvar);
@@ -398,9 +405,16 @@ public class PainelClientes extends JPanel {
             c.setNome(nome);
             c.setTelefone(telefone);
             c.setEmail(email);
-            clienteService.atualizarCliente(c);
+            String erro = clienteService.atualizarCliente(c);
+            if (erro != null) {
+                JOptionPane.showMessageDialog(dialog, erro, "Erro ao atualizar", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             dialog.dispose();
             carregarDados();
+            JOptionPane.showMessageDialog(PainelClientes.this,
+                    "Cliente atualizado com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         });
 
         JPanel rodape = criarRodapeDialog(btnCancelar, btnSalvar);
@@ -428,8 +442,15 @@ public class PainelClientes extends JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            clienteService.removerCliente(id);
+            String erro = clienteService.removerCliente(id);
+            if (erro != null) {
+                JOptionPane.showMessageDialog(this, erro, "Erro ao remover", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             carregarDados();
+            JOptionPane.showMessageDialog(this,
+                    "Cliente \"" + nome + "\" removido com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

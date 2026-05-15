@@ -11,20 +11,18 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepo = new UsuarioRepository();
 
-    public void cadastrarUsuario(Usuario usuario) {
+    public String cadastrarUsuario(Usuario usuario) {
         try {
             if (usuario.getLogin() == null || usuario.getLogin().isBlank()) {
-                System.out.println("Login e obrigatorio.");
-                return;
+                return "Login é obrigatório.";
             }
             if (usuario.getSenha() == null || usuario.getSenha().length() < 4) {
-                System.out.println("Senha deve ter no minimo 4 caracteres.");
-                return;
+                return "Senha deve ter no mínimo 4 caracteres.";
             }
             usuarioRepo.salvar(usuario);
-            System.out.println("Usuario " + usuario.getNome() + " cadastrado.");
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao cadastrar usuario: " + e.getMessage());
+            return "Erro ao cadastrar usuário: " + e.getMessage();
         }
     }
 
@@ -71,12 +69,12 @@ public class UsuarioService {
         }
     }
 
-    public void removerUsuario(Long id) {
+    public String removerUsuario(Long id) {
         try {
             usuarioRepo.deletarLogico(id);
-            System.out.println("Usuario removido (soft delete).");
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao remover usuario: " + e.getMessage());
+            return "Erro ao remover profissional: " + e.getMessage();
         }
     }
 }

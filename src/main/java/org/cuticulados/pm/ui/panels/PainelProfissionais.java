@@ -289,9 +289,16 @@ public class PainelProfissionais extends JPanel {
             p.setEspecialidade(especialidade);
             p.setTipo(TipoUsuario.PROFISSIONAL);
 
-            usuarioService.cadastrarUsuario(p);
+            String erro = usuarioService.cadastrarUsuario(p);
+            if (erro != null) {
+                JOptionPane.showMessageDialog(dialog, erro, "Erro ao cadastrar", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             dialog.dispose();
             carregarDados();
+            JOptionPane.showMessageDialog(PainelProfissionais.this,
+                    "Profissional \"" + nome + "\" cadastrado com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         });
 
         dialog.add(form, BorderLayout.CENTER);
@@ -319,8 +326,15 @@ public class PainelProfissionais extends JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            usuarioService.removerUsuario(id);
+            String erro = usuarioService.removerUsuario(id);
+            if (erro != null) {
+                JOptionPane.showMessageDialog(this, erro, "Erro ao remover", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             carregarDados();
+            JOptionPane.showMessageDialog(this,
+                    "Profissional \"" + nome + "\" removido com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
