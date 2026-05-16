@@ -3,7 +3,6 @@ package org.cuticulados.pm.ui.frames;
 import org.cuticulados.pm.entity.Agendamento;
 import org.cuticulados.pm.entity.Cliente;
 import org.cuticulados.pm.entity.Servico;
-import org.cuticulados.pm.entity.StatusAgendamento;
 import org.cuticulados.pm.service.AgendamentoService;
 import org.cuticulados.pm.service.ServicoService;
 import org.cuticulados.pm.ui.theme.AppColors;
