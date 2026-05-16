@@ -1,8 +1,7 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.TipoUsuario;
-import org.cuticulados.pm.service.ClienteService;
+import org.cuticulados.pm.entity.Produto;
+import org.cuticulados.pm.service.ProdutoService;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -15,19 +14,21 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Painel de gerenciamento de clientes do perfil ADMIN.
- * Exibe tabela com todos os clientes e permite cadastrar, atualizar e remover.
+ * Painel de gerenciamento de produtos do perfil ADMIN.
+ * Exibe tabela com estoque; linhas com estoque ≤ mínimo aparecem em vermelho claro.
  */
-public class PainelClientes extends JPanel {
+public class PainelProdutos extends JPanel {
 
     // services
-    private final ClienteService clienteService;
+    private final ProdutoService produtoService;
 
     // componentes principais
     private JTable tabela;
@@ -35,16 +36,18 @@ public class PainelClientes extends JPanel {
     private JTextField campoBusca;
 
     // lista atual
-    private List<Cliente> clientesAtuais;
+    private List<Produto> produtosAtuais;
 
-    // nomes das colunas
-    private static final String[] COLUNAS = {
-            "ID", "Nome", "CPF", "Telefone", "Tipo", "Atend/mês"
-    };
+    // colunas
+    private static final String[] COLUNAS = {"ID", "Nome", "Estoque", "Mínimo", "Preço Custo", "Preço Venda"};
 
-    // painel cliente
-    public PainelClientes() {
-        this.clienteService = new ClienteService();
+    // cores de alerta de estoque baixo
+    private static final Color COR_ESTOQUE_BAIXO    = new Color(0xFA, 0xDD, 0xDD);
+    private static final Color COR_ESTOQUE_BAIXO_FG = new Color(0xA0, 0x30, 0x30);
+
+    // painel produtos
+    public PainelProdutos() {
+        this.produtoService = new ProdutoService();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -57,7 +60,7 @@ public class PainelClientes extends JPanel {
         add(criarConteudo(), BorderLayout.CENTER);
     }
 
-    // topbar com titulo
+    // topbar com titulo e botões
     private JPanel criarTopbar() {
         JPanel topbar = new JPanel(new BorderLayout());
         topbar.setBackground(AppColors.FUNDO_CARD);
@@ -67,7 +70,7 @@ public class PainelClientes extends JPanel {
         ));
         topbar.setPreferredSize(new Dimension(0, AppDimensions.TOPBAR_HEIGHT));
 
-        JLabel titulo = new JLabel("Clientes");
+        JLabel titulo = new JLabel("Produtos");
         titulo.setFont(AppFonts.TITLE);
         titulo.setForeground(AppColors.TEXTO_TITULO);
         topbar.add(titulo, BorderLayout.WEST);
@@ -76,28 +79,32 @@ public class PainelClientes extends JPanel {
         return topbar;
     }
 
-    // painel com os botões cadastrar / atualizar / remover
+    // painel com os botões cadastrar / atualizar / remover / alertas
     private JPanel criarBotoesAcao() {
         JPanel painel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         painel.setOpaque(false);
 
         JButton btnCadastrar = new JButton("+ Cadastrar");
         JButton btnAtualizar = new JButton("Atualizar");
-        JButton btnRemover = new JButton("Remover");
+        JButton btnRemover   = new JButton("Remover");
+        JButton btnAlertas   = new JButton("⚠ Estoque Baixo");
 
         AppTheme.stylePrimaryButton(btnCadastrar, false);
         AppTheme.styleOutlineButton(btnAtualizar, false);
         AppTheme.styleOutlineButton(btnRemover, false);
-
+        AppTheme.styleOutlineButton(btnAlertas, false);
         btnRemover.setForeground(AppColors.PERIGO);
+        btnAlertas.setForeground(AppColors.STATUS_PEND);
 
         btnCadastrar.addActionListener(e -> abrirDialogCadastro());
         btnAtualizar.addActionListener(e -> abrirDialogAtualizacao());
         btnRemover.addActionListener(e -> confirmarRemocao());
+        btnAlertas.addActionListener(e -> abrirDialogAlertas());
 
         painel.add(btnCadastrar);
         painel.add(btnAtualizar);
         painel.add(btnRemover);
+        painel.add(btnAlertas);
         return painel;
     }
 
@@ -106,18 +113,13 @@ public class PainelClientes extends JPanel {
         JPanel conteudo = new JPanel(new BorderLayout(0, 12));
         conteudo.setOpaque(false);
         conteudo.setBorder(new EmptyBorder(16, 20, 16, 20));
-
         conteudo.add(criarBarraBusca(), BorderLayout.NORTH);
         conteudo.add(criarPainelTabela(), BorderLayout.CENTER);
         return conteudo;
     }
 
-    // campo de busca e filtro
+    // campo de busca com filtro em tempo real
     private JPanel criarBarraBusca() {
-        JPanel painel = new JPanel(new BorderLayout(6, 0));
-        painel.setOpaque(false);
-        painel.setMaximumSize(new Dimension(320, AppDimensions.INPUT_HEIGHT));
-
         JPanel wrapper = new JPanel(new BorderLayout(6, 0));
         wrapper.setBackground(AppColors.FUNDO_CARD);
         wrapper.setBorder(new CompoundBorder(
@@ -135,7 +137,6 @@ public class PainelClientes extends JPanel {
         campoBusca.setForeground(AppColors.TEXTO_CORPO);
         campoBusca.setBorder(BorderFactory.createEmptyBorder());
         campoBusca.setOpaque(false);
-
         campoBusca.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -152,7 +153,7 @@ public class PainelClientes extends JPanel {
         return alinhado;
     }
 
-    // cria o modelo da tabela e o JTable no estilo
+    // cria tabela com prepareRenderer para colorir linhas com estoque baixo
     private JScrollPane criarPainelTabela() {
         tableModel = new DefaultTableModel(COLUNAS, 0) {
             @Override
@@ -161,7 +162,25 @@ public class PainelClientes extends JPanel {
             }
         };
 
-        tabela = new JTable(tableModel);
+        // sobrescreve prepareRenderer para destacar estoque baixo em vermelho
+        tabela = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    Object estoqueVal = getModel().getValueAt(row, 2);
+                    Object minVal     = getModel().getValueAt(row, 3);
+                    if (estoqueVal instanceof Integer estoque
+                            && minVal instanceof Integer min
+                            && estoque <= min) {
+                        c.setBackground(COR_ESTOQUE_BAIXO);
+                        c.setForeground(COR_ESTOQUE_BAIXO_FG);
+                    }
+                }
+                return c;
+            }
+        };
+
         tabela.setFont(AppFonts.TABLE);
         tabela.setForeground(AppColors.TEXTO_CORPO);
         tabela.setBackground(AppColors.FUNDO_CARD);
@@ -199,40 +218,27 @@ public class PainelClientes extends JPanel {
             @Override
             public Component getTableCellRendererComponent(
                     JTable t, Object value, boolean selected, boolean focused, int row, int col) {
-
                 super.getTableCellRendererComponent(t, value, selected, focused, row, col);
                 setBorder(new EmptyBorder(0, 12, 0, 12));
                 setFont(AppFonts.TABLE);
-
                 if (!selected) {
                     setBackground(row % 2 == 0
                             ? AppColors.FUNDO_CARD
                             : AppColors.FUNDO_LINHA_ALTERNADA);
                     setForeground(AppColors.TEXTO_CORPO);
                 }
-
-                // coluna do tipo
-                if (col == 4 && value != null) {
-                    String tipo = value.toString().toLowerCase();
-                    if ("frequente".equals(tipo)) {
-                        setForeground(selected ? AppColors.TEXTO_TITULO : AppColors.BADGE_FREQ_FRENTE);
-                        if (!selected) setBackground(AppColors.BADGE_FREQ_FUNDO);
-                    } else {
-                        setForeground(selected ? AppColors.TEXTO_TITULO : AppColors.BADGE_NOVO_FRENTE);
-                        if (!selected) setBackground(AppColors.BADGE_NOVO_FUNDO);
-                    }
-                }
+                // preços em roxo claro
+                if ((col == 4 || col == 5) && !selected) setForeground(AppColors.ROXO_CLARO);
                 return this;
             }
         };
-
         for (int i = 0; i < COLUNAS.length; i++) {
             tabela.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
     }
 
     private void configurarLargurasColunas() {
-        int[] larguras = {50, 200, 130, 120, 90, 80};
+        int[] larguras = {50, 200, 80, 80, 120, 120};
         for (int i = 0; i < larguras.length; i++) {
             tabela.getColumnModel().getColumn(i).setPreferredWidth(larguras[i]);
         }
@@ -242,42 +248,40 @@ public class PainelClientes extends JPanel {
     // dados
     // recarrega a lista completa do banco e atualiza a tabela
     private void carregarDados() {
-        clientesAtuais = clienteService.listarTodos();
-        preencherTabela(clientesAtuais);
+        produtosAtuais = produtoService.listarTodos();
+        preencherTabela(produtosAtuais);
     }
 
-    private void preencherTabela(List<Cliente> clientes) {
+    private void preencherTabela(List<Produto> lista) {
         tableModel.setRowCount(0);
-        for (Cliente c : clientes) {
+        for (Produto p : lista) {
             tableModel.addRow(new Object[]{
-                    c.getId(),
-                    c.getNome(),
-                    c.getCpf(),
-                    c.getTelefone(),
-                    c.getTipoCliente(),
-                    c.getTotalAtendimentosMes()
+                    p.getId(),
+                    p.getNome(),
+                    p.getQuantidadeEstoque(),   // Integer — usado pelo prepareRenderer
+                    p.getQuantidadeMinima(),     // Integer — usado pelo prepareRenderer
+                    String.format("R$ %.2f", p.getPrecoCusto()),
+                    String.format("R$ %.2f", p.getPrecoVenda())
             });
         }
     }
 
     private void filtrarTabela(String termo) {
-        if (clientesAtuais == null) return;
+        if (produtosAtuais == null) return;
         if (termo.isBlank()) {
-            preencherTabela(clientesAtuais);
+            preencherTabela(produtosAtuais);
             return;
         }
         String low = termo.toLowerCase();
-        List<Cliente> filtrados = clientesAtuais.stream()
-                .filter(c -> c.getNome().toLowerCase().contains(low)
-                        || c.getCpf().contains(low)
-                        || (c.getTelefone() != null && c.getTelefone().contains(low)))
+        List<Produto> filtrados = produtosAtuais.stream()
+                .filter(p -> p.getNome().toLowerCase().contains(low))
                 .toList();
         preencherTabela(filtrados);
     }
 
     // ações do crud
     private void abrirDialogCadastro() {
-        JDialog dialog = criarDialogBase("Cadastrar Cliente", 490, 380);
+        JDialog dialog = criarDialogBase("Cadastrar Produto", 490, 370);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
@@ -285,21 +289,24 @@ public class PainelClientes extends JPanel {
         GridBagConstraints gbc = criarGbc();
 
         JTextField fNome = criarCampo();
-        JTextField fEmail = criarCampo();
-        JTextField fLogin = criarCampo();
-        JPasswordField fSenha = new JPasswordField();
-        estilizarCampo(fSenha);
-        JTextField fCpf = criarCampo();
-        JTextField fTelefone = criarCampo();
 
-        adicionarCampoForm(form, gbc, "Nome", fNome, 0, 0, false);
-        adicionarCampoForm(form, gbc, "E-mail", fEmail, 0, 1, false);
-        adicionarCampoForm(form, gbc, "Login", fLogin, 1, 0, false);
-        adicionarCampoForm(form, gbc, "Senha", fSenha, 1, 1, false);
-        adicionarCampoForm(form, gbc, "CPF", fCpf, 2, 0, false);
-        adicionarCampoForm(form, gbc, "Telefone", fTelefone, 2, 1, false);
+        SpinnerNumberModel modelCusto  = new SpinnerNumberModel(0.0, 0.0, 99999.99, 0.5);
+        SpinnerNumberModel modelVenda  = new SpinnerNumberModel(0.0, 0.0, 99999.99, 0.5);
+        SpinnerNumberModel modelEstoq  = new SpinnerNumberModel(0, 0, 99999, 1);
+        SpinnerNumberModel modelMinimo = new SpinnerNumberModel(0, 0, 99999, 1);
 
-        JButton btnSalvar = new JButton("Salvar");
+        JSpinner fCusto  = criarSpinner(modelCusto);
+        JSpinner fVenda  = criarSpinner(modelVenda);
+        JSpinner fEstoq  = criarSpinner(modelEstoq);
+        JSpinner fMinimo = criarSpinner(modelMinimo);
+
+        adicionarCampoForm(form, gbc, "Nome", fNome, 0, 0, true);
+        adicionarCampoForm(form, gbc, "Preço Custo (R$)", fCusto, 1, 0, false);
+        adicionarCampoForm(form, gbc, "Preço Venda (R$)", fVenda, 1, 1, false);
+        adicionarCampoForm(form, gbc, "Qtd Estoque", fEstoq, 2, 0, false);
+        adicionarCampoForm(form, gbc, "Qtd Mínima", fMinimo, 2, 1, false);
+
+        JButton btnSalvar   = new JButton("Salvar");
         JButton btnCancelar = new JButton("Cancelar");
         AppTheme.stylePrimaryButton(btnSalvar, true);
         AppTheme.styleOutlineButton(btnCancelar, true);
@@ -307,44 +314,32 @@ public class PainelClientes extends JPanel {
         btnCancelar.addActionListener(e -> dialog.dispose());
         btnSalvar.addActionListener(e -> {
             String nome = fNome.getText().trim();
-            String email = fEmail.getText().trim();
-            String login = fLogin.getText().trim();
-            String senha = new String(fSenha.getPassword()).trim();
-            String cpf = fCpf.getText().trim();
-            String telefone = fTelefone.getText().trim();
-
-            if (nome.isBlank() || email.isBlank() || login.isBlank()
-                    || senha.isBlank() || cpf.isBlank() || telefone.isBlank()) {
+            if (nome.isBlank()) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Todos os campos são obrigatórios.", "Campos inválidos",
+                        "O nome é obrigatório.", "Campo inválido",
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            Cliente c = new Cliente();
-            c.setNome(nome);
-            c.setEmail(email);
-            c.setLogin(login);
-            c.setSenha(senha);
-            c.setCpf(cpf);
-            c.setTelefone(telefone);
-            c.setTipo(TipoUsuario.CLIENTE);
-
-            String erro = clienteService.cadastrarCliente(c);
+            Produto p = new Produto();
+            p.setNome(nome);
+            p.setPrecoCusto(BigDecimal.valueOf(((Number) fCusto.getValue()).doubleValue()));
+            p.setPrecoVenda(BigDecimal.valueOf(((Number) fVenda.getValue()).doubleValue()));
+            p.setQuantidadeEstoque(((Number) fEstoq.getValue()).intValue());
+            p.setQuantidadeMinima(((Number) fMinimo.getValue()).intValue());
+            String erro = produtoService.cadastrarProduto(p);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao cadastrar", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             dialog.dispose();
             carregarDados();
-            JOptionPane.showMessageDialog(PainelClientes.this,
-                    "Cliente \"" + nome + "\" cadastrado com sucesso!",
+            JOptionPane.showMessageDialog(PainelProdutos.this,
+                    "Produto \"" + nome + "\" cadastrado com sucesso!",
                     "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         });
 
-        JPanel rodape = criarRodapeDialog(btnCancelar, btnSalvar);
         dialog.add(form, BorderLayout.CENTER);
-        dialog.add(rodape, BorderLayout.SOUTH);
+        dialog.add(criarRodapeDialog(btnCancelar, btnSalvar), BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
@@ -352,74 +347,60 @@ public class PainelClientes extends JPanel {
         int linhaSel = tabela.getSelectedRow();
         if (linhaSel < 0) {
             JOptionPane.showMessageDialog(this,
-                    "Selecione um cliente na tabela para atualizar.",
+                    "Selecione um produto na tabela para atualizar.",
                     "Nenhuma seleção", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
-        Cliente c = clienteService.buscarPorId(id).orElse(null);
-        if (c == null) {
+        Produto p = produtoService.buscarPorId(id).orElse(null);
+        if (p == null) {
             JOptionPane.showMessageDialog(this,
-                    "Cliente não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    "Produto não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        JDialog dialog = criarDialogBase("Atualizar Cliente", 490, 280);
+        JDialog dialog = criarDialogBase("Atualizar Produto", 490, 260);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
         form.setBorder(new EmptyBorder(16, 16, 8, 16));
         GridBagConstraints gbc = criarGbc();
 
-        JTextField fNome = criarCampo();
-        JTextField fTelefone = criarCampo();
-        JTextField fEmail = criarCampo();
+        SpinnerNumberModel modelVenda  = new SpinnerNumberModel(
+                p.getPrecoVenda().doubleValue(), 0.0, 99999.99, 0.5);
+        SpinnerNumberModel modelEstoq  = new SpinnerNumberModel(
+                p.getQuantidadeEstoque().intValue(), 0, 99999, 1);
 
-        fNome.setText(c.getNome());
-        fTelefone.setText(c.getTelefone());
-        fEmail.setText(c.getEmail());
+        JSpinner fVenda = criarSpinner(modelVenda);
+        JSpinner fEstoq = criarSpinner(modelEstoq);
 
-        adicionarCampoForm(form, gbc, "Nome", fNome, 0, 0, false);
-        adicionarCampoForm(form, gbc, "Telefone", fTelefone, 0, 1, false);
-        adicionarCampoForm(form, gbc, "E-mail", fEmail, 1, 0, true);
+        adicionarCampoForm(form, gbc, "Preço Venda (R$)", fVenda, 0, 0, false);
+        adicionarCampoForm(form, gbc, "Qtd Estoque", fEstoq, 0, 1, false);
 
-        JButton btnSalvar = new JButton("Salvar");
+        JButton btnSalvar   = new JButton("Salvar");
         JButton btnCancelar = new JButton("Cancelar");
         AppTheme.stylePrimaryButton(btnSalvar, true);
         AppTheme.styleOutlineButton(btnCancelar, true);
 
         btnCancelar.addActionListener(e -> dialog.dispose());
         btnSalvar.addActionListener(e -> {
-            String nome = fNome.getText().trim();
-            String telefone = fTelefone.getText().trim();
-            String email = fEmail.getText().trim();
-
-            if (nome.isBlank() || telefone.isBlank() || email.isBlank()) {
-                JOptionPane.showMessageDialog(dialog,
-                        "Nome, Telefone e E-mail são obrigatório.",
-                        "Campo inválido", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            c.setNome(nome);
-            c.setTelefone(telefone);
-            c.setEmail(email);
-            String erro = clienteService.atualizarCliente(c);
+            p.setPrecoVenda(BigDecimal.valueOf(((Number) fVenda.getValue()).doubleValue()));
+            p.setQuantidadeEstoque(((Number) fEstoq.getValue()).intValue());
+            String erro = produtoService.atualizarProduto(p);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao atualizar", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             dialog.dispose();
             carregarDados();
-            JOptionPane.showMessageDialog(PainelClientes.this,
-                    "Cliente atualizado com sucesso!",
+            JOptionPane.showMessageDialog(PainelProdutos.this,
+                    "Produto atualizado com sucesso!",
                     "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         });
 
-        JPanel rodape = criarRodapeDialog(btnCancelar, btnSalvar);
         dialog.add(form, BorderLayout.CENTER);
-        dialog.add(rodape, BorderLayout.SOUTH);
+        dialog.add(criarRodapeDialog(btnCancelar, btnSalvar), BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
@@ -427,7 +408,7 @@ public class PainelClientes extends JPanel {
         int linhaSel = tabela.getSelectedRow();
         if (linhaSel < 0) {
             JOptionPane.showMessageDialog(this,
-                    "Selecione um cliente na tabela para remover.",
+                    "Selecione um produto na tabela para remover.",
                     "Nenhuma seleção", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -436,26 +417,76 @@ public class PainelClientes extends JPanel {
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
 
         int resp = JOptionPane.showConfirmDialog(this,
-                "Deseja remover o cliente \"" + nome + "\"?\nEsta ação não pode ser desfeita.",
+                "Deseja remover o produto \"" + nome + "\"?\nEsta ação não pode ser desfeita.",
                 "Confirmar Remoção",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            String erro = clienteService.removerCliente(id);
+            String erro = produtoService.removerProduto(id);
             if (erro != null) {
                 JOptionPane.showMessageDialog(this, erro, "Erro ao remover", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             carregarDados();
             JOptionPane.showMessageDialog(this,
-                    "Cliente \"" + nome + "\" removido com sucesso!",
+                    "Produto \"" + nome + "\" removido com sucesso!",
                     "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    // ajuda de ui
+    // abre dialog listando apenas produtos abaixo do estoque mínimo
+    private void abrirDialogAlertas() {
+        List<Produto> baixo = produtoService.verificarEstoqueBaixo();
 
+        JDialog dialog = criarDialogBase("Alertas de Estoque Baixo", 500, 380);
+
+        if (baixo.isEmpty()) {
+            JLabel lblOk = new JLabel("Nenhum produto com estoque abaixo do mínimo.", SwingConstants.CENTER);
+            lblOk.setFont(AppFonts.BODY);
+            lblOk.setForeground(AppColors.STATUS_CONC);
+            lblOk.setBorder(new EmptyBorder(24, 0, 0, 0));
+            dialog.add(lblOk, BorderLayout.CENTER);
+        } else {
+            String[] colAlerta = {"Nome", "Estoque", "Mínimo"};
+            DefaultTableModel alertModel = new DefaultTableModel(colAlerta, 0) {
+                @Override public boolean isCellEditable(int r, int c) { return false; }
+            };
+            for (Produto p : baixo) {
+                alertModel.addRow(new Object[]{
+                        p.getNome(), p.getQuantidadeEstoque(), p.getQuantidadeMinima()
+                });
+            }
+
+            JTable tabelaAlerta = new JTable(alertModel);
+            tabelaAlerta.setFont(AppFonts.TABLE);
+            tabelaAlerta.setRowHeight(AppDimensions.ROW_HEIGHT);
+            tabelaAlerta.setShowVerticalLines(false);
+            tabelaAlerta.setBackground(AppColors.FUNDO_CARD);
+            tabelaAlerta.getTableHeader().setBackground(AppColors.ROSA_PALIDO);
+            tabelaAlerta.getTableHeader().setFont(AppFonts.TABLE_HEADER);
+
+            JScrollPane scroll = new JScrollPane(tabelaAlerta);
+            scroll.setBorder(new EmptyBorder(12, 16, 12, 16));
+            dialog.add(scroll, BorderLayout.CENTER);
+        }
+
+        JButton btnFechar = new JButton("Fechar");
+        AppTheme.styleOutlineButton(btnFechar, true);
+        btnFechar.addActionListener(e -> dialog.dispose());
+
+        JPanel rodape = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        rodape.setBackground(AppColors.BOTAO_OUTLINE_FUNDO);
+        rodape.setBorder(new CompoundBorder(
+                new LineBorder(AppColors.BORDA, 1, false),
+                new EmptyBorder(2, 8, 2, 8)
+        ));
+        rodape.add(btnFechar);
+        dialog.add(rodape, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    // ajuda de ui (msm padrão de PainelClientes)
     private JDialog criarDialogBase(String titulo, int largura, int altura) {
         Window owner = SwingUtilities.getWindowAncestor(this);
         JDialog dialog = (owner instanceof Frame)
@@ -485,11 +516,6 @@ public class PainelClientes extends JPanel {
 
     private JTextField criarCampo() {
         JTextField f = new JTextField();
-        estilizarCampo(f);
-        return f;
-    }
-
-    private void estilizarCampo(JTextField f) {
         f.setFont(AppFonts.BODY);
         f.setForeground(AppColors.TEXTO_CORPO);
         f.setBackground(AppColors.FUNDO_APP);
@@ -498,6 +524,20 @@ public class PainelClientes extends JPanel {
                 new EmptyBorder(5, 8, 5, 8)
         ));
         f.setPreferredSize(new Dimension(0, AppDimensions.INPUT_HEIGHT));
+        return f;
+    }
+
+    private JSpinner criarSpinner(SpinnerModel model) {
+        JSpinner spinner = new JSpinner(model);
+        spinner.setFont(AppFonts.BODY);
+        spinner.setPreferredSize(new Dimension(0, AppDimensions.INPUT_HEIGHT));
+        spinner.setBorder(new LineBorder(AppColors.BORDA, 1, false));
+        JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) spinner.getEditor();
+        editor.getTextField().setFont(AppFonts.BODY);
+        editor.getTextField().setForeground(AppColors.TEXTO_CORPO);
+        editor.getTextField().setBackground(AppColors.FUNDO_APP);
+        editor.getTextField().setBorder(new EmptyBorder(4, 6, 4, 6));
+        return spinner;
     }
 
     private GridBagConstraints criarGbc() {
@@ -508,17 +548,6 @@ public class PainelClientes extends JPanel {
         return g;
     }
 
-    /**
-     * Adiciona um par label + campo ao formulário em GridBagLayout.
-     *
-     * @param form  painel alvo
-     * @param gbc   constraints reutilizável
-     * @param label texto do rótulo
-     * @param campo componente de entrada
-     * @param linha linha lógica (par de linhas label+campo = linha*2)
-     * @param col   0 ou 1
-     * @param full  true para ocupar as 2 colunas (grid-column: 1/-1)
-     */
     private void adicionarCampoForm(JPanel form, GridBagConstraints gbc,
                                     String label, JComponent campo,
                                     int linha, int col, boolean full) {

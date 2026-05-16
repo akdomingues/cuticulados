@@ -13,23 +13,21 @@ public class ClienteService {
 
     // --- CRUD basico ---
 
-    public void cadastrarCliente(Cliente cliente) {
+    public String cadastrarCliente(Cliente cliente) {
         try {
             if (cliente.getCpf() == null || cliente.getCpf().isBlank()) {
-                System.out.println("CPF e obrigatorio.");
-                return;
+                return "CPF é obrigatório.";
             }
             Optional<Cliente> existente = clienteRepo.buscarPorCpf(cliente.getCpf());
             if (existente.isPresent()) {
-                System.out.println("Ja existe um cliente com esse CPF.");
-                return;
+                return "Já existe um cliente com esse CPF.";
             }
             cliente.setTipoCliente("novo");
             cliente.setTotalAtendimentosMes(0);
             clienteRepo.salvar(cliente);
-            System.out.println("Cliente " + cliente.getNome() + " cadastrado com sucesso.");
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao cadastrar cliente: " + e.getMessage());
+            return "Erro ao cadastrar cliente: " + e.getMessage();
         }
     }
 
@@ -51,31 +49,29 @@ public class ClienteService {
         }
     }
 
-    public void atualizarCliente(Cliente cliente) {
+    public String atualizarCliente(Cliente cliente) {
         try {
             Optional<Cliente> existente = clienteRepo.buscarPorId(cliente.getId());
             if (existente.isEmpty()) {
-                System.out.println("Cliente nao encontrado.");
-                return;
+                return "Cliente não encontrado.";
             }
             clienteRepo.salvar(cliente);
-            System.out.println("Cliente atualizado com sucesso.");
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao atualizar cliente: " + e.getMessage());
+            return "Erro ao atualizar cliente: " + e.getMessage();
         }
     }
 
-    public void removerCliente(Long id) {
+    public String removerCliente(Long id) {
         try {
             Optional<Cliente> existente = clienteRepo.buscarPorId(id);
             if (existente.isEmpty()) {
-                System.out.println("Cliente nao encontrado.");
-                return;
+                return "Cliente não encontrado.";
             }
             clienteRepo.deletar(id);
-            System.out.println("Cliente removido com sucesso.");
+            return null;
         } catch (Exception e) {
-            System.out.println("Erro ao remover cliente: " + e.getMessage());
+            return "Erro ao remover cliente: " + e.getMessage();
         }
     }
 

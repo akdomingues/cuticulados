@@ -44,15 +44,12 @@ public class Main {
             FlywayConfig.executarMigracoes();
             JpaUtil.inicializar();
 
-            boolean rodando = true;
-            while (rodando) {
-                rodando = menuLogin();
-            }
+            // abre a interface gráfica na EDT do Swing
+            javax.swing.SwingUtilities.invokeLater(() ->
+                    new org.cuticulados.pm.ui.frames.LoginFrame().setVisible(true));
         } catch (Exception e) {
             System.out.println("Erro fatal ao iniciar o sistema: " + e.getMessage());
-        } finally {
             JpaUtil.fechar();
-            scanner.close();
         }
     }
 

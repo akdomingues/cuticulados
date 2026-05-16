@@ -68,7 +68,7 @@ public class ClienteFrame extends JFrame {
     // configuração de tamanho
 
     private void configurarJanela() {
-        setTitle("Cuticulados — Área do Cliente");
+        setTitle("NailGestor — Área do Cliente");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(900, 620);
         setMinimumSize(new Dimension(780, 520));
@@ -100,6 +100,8 @@ public class ClienteFrame extends JFrame {
         sidebar.add(Box.createVerticalGlue());
         sidebar.add(criarSidebarSeparador());
         sidebar.add(criarSidebarUsuario());
+        sidebar.add(criarSidebarSeparador());
+        sidebar.add(criarBotaoSair());
 
         return sidebar;
     }
@@ -115,7 +117,7 @@ public class ClienteFrame extends JFrame {
         iconeLogo.setForeground(AppColors.DOURADO);
         iconeLogo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel nome = new JLabel("Cuticulados");
+        JLabel nome = new JLabel("NailGestor");
         nome.setFont(AppFonts.LOGO);
         nome.setForeground(Color.WHITE);
         nome.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -169,17 +171,15 @@ public class ClienteFrame extends JFrame {
         ));
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setRolloverEnabled(false);
 
+        // hover: cor opaca pré-calculada (blend 8% branco sobre ROXO) evita artefato de alpha no Swing
         btn.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) {
-                if (!card.equals(cardAtivo())) {
-                    btn.setBackground(new Color(255, 255, 255, 20));
-                }
+                if (!card.equals(cardAtivo())) btn.setBackground(new Color(105, 56, 100));
             }
             @Override public void mouseExited(MouseEvent e) {
-                if (!card.equals(cardAtivo())) {
-                    btn.setBackground(AppColors.ROXO);
-                }
+                if (!card.equals(cardAtivo())) btn.setBackground(AppColors.ROXO);
             }
         });
 
@@ -468,7 +468,7 @@ public class ClienteFrame extends JFrame {
     private void aplicarEstiloNavAtivo(JButton btn, boolean ativo) {
         if (btn == null) return;
         if (ativo) {
-            btn.setBackground(new Color(255, 255, 255, 31));
+            btn.setBackground(new Color(112, 65, 107));
             btn.setForeground(Color.WHITE);
             btn.setBorder(new CompoundBorder(
                     new MatteBorder(0, 3, 0, 0, AppColors.DOURADO),
@@ -558,6 +558,40 @@ public class ClienteFrame extends JFrame {
         scroll.setBorder(new LineBorder(AppColors.BORDA, 1, false));
         scroll.getViewport().setBackground(AppColors.FUNDO_CARD);
         return scroll;
+    }
+
+    private JPanel criarBotaoSair() {
+        JPanel wrapper = new JPanel();
+        wrapper.setOpaque(false);
+        wrapper.setBorder(new EmptyBorder(6, 10, 10, 10));
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
+
+        JButton btn = new JButton("Sair");
+        btn.setFont(AppFonts.BUTTON);
+        btn.setForeground(new Color(255, 120, 120));
+        btn.setBackground(AppColors.ROXO);
+        btn.setOpaque(true);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBorder(new EmptyBorder(7, 8, 7, 8));
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { btn.setBackground(new Color(90, 40, 55)); }
+            @Override public void mouseExited(MouseEvent e)  { btn.setBackground(AppColors.ROXO); }
+        });
+        btn.addActionListener(e -> {
+            int resp = JOptionPane.showConfirmDialog(this,
+                    "Deseja sair e voltar à tela de login?",
+                    "Confirmar Saída", JOptionPane.YES_NO_OPTION);
+            if (resp == JOptionPane.YES_OPTION) {
+                dispose();
+                new LoginFrame().setVisible(true);
+            }
+        });
+        wrapper.add(btn);
+        return wrapper;
     }
 
     // utilitários de ui

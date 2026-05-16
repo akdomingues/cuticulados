@@ -89,6 +89,24 @@ public class VendaAvulsaService {
         }
     }
 
+    public String fecharVenda(Long id) {
+        try {
+            Optional<VendaAvulsa> op = vendaRepo.buscarPorId(id);
+            if (op.isEmpty()) {
+                return "Venda não encontrada.";
+            }
+            VendaAvulsa venda = op.get();
+            if (venda.isFechado()) {
+                return "Esta venda já está fechada.";
+            }
+            venda.setFechado(true);
+            vendaRepo.salvar(venda);
+            return null;
+        } catch (Exception e) {
+            return "Erro ao fechar venda: " + e.getMessage();
+        }
+    }
+
     public void fecharDia(Profissional profissional) {
         try {
             LocalDateTime inicio = LocalDateTime.now().toLocalDate().atStartOfDay();
