@@ -1,5 +1,6 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "cliente")
-public class Cliente extends Usuario {
+public class Cliente extends Usuario implements Descontavel {
 
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
@@ -37,5 +38,16 @@ public class Cliente extends Usuario {
     public void setTotalAtendimentosMes(Integer total) { this.totalAtendimentosMes = total; }
     public List<Agendamento> getAgendamentos() { return agendamentos; }
     public void setAgendamentos(List<Agendamento> agendamentos) { this.agendamentos = agendamentos; }
+
+    /**
+     * Clientes frequentes recebem 10% de desconto; demais pagam valor integral.
+     */
+    @Override
+    public BigDecimal calcularDesconto(BigDecimal valorBruto) {
+        if ("frequente".equals(tipoCliente)) {
+            return valorBruto.multiply(new BigDecimal("0.9"));
+        }
+        return valorBruto;
+    }
 }
 

@@ -1,5 +1,6 @@
 package org.cuticulados.pm.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -30,8 +31,8 @@ public class TransacaoFinanceira {
     @Column(nullable = false, length = 255)
     private String descricao;
 
-    @Column(nullable = false)
-    private Double valor;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal valor;
 
     @Column(name = "data_transacao", nullable = false, updatable = false)
     private LocalDateTime dataTransacao;
@@ -50,8 +51,8 @@ public class TransacaoFinanceira {
     public void setTipo(TipoTransacao tipo) { this.tipo = tipo; }
     public String getDescricao() { return descricao; }
     public void setDescricao(String d) { this.descricao = d; }
-    public Double getValor() { return valor; }
-    public void setValor(Double v) { this.valor = v; }
+    public BigDecimal getValor() { return valor; }
+    public void setValor(BigDecimal v) { this.valor = v; }
     public LocalDateTime getDataTransacao() { return dataTransacao; }
     public void setDataTransacao(LocalDateTime d) { this.dataTransacao = d; }
     public Agendamento getAgendamento() { return agendamento; }
