@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 */
 @Entity
 @Table(name = "agendamento_servico")
-public class AgendamentoServico {
+public class AgendamentoServicoEntity {
 
     // ID unico gerado automaticamente pelo banco
     @Id
@@ -30,12 +30,12 @@ public class AgendamentoServico {
     // relacionamento com o agendamento
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "agendamento_id", nullable = false)
-    private Agendamento agendamento;
+    private AgendamentoEntity agendamentoEntity;
 
     // relacionamento com o servico
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "servico_id", nullable = false)
-    private Servico servico;
+    private ServicoEntity servicoEntity;
 
     @Column(nullable = false)
     private Integer quantidade = 1;
@@ -59,10 +59,10 @@ public class AgendamentoServico {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Agendamento getAgendamento() { return agendamento; }
-    public void setAgendamento(Agendamento a) { this.agendamento = a; }
-    public Servico getServico() { return servico; }
-    public void setServico(Servico s) { this.servico = s; }
+    public AgendamentoEntity getAgendamento() { return agendamentoEntity; }
+    public void setAgendamento(AgendamentoEntity a) { this.agendamentoEntity = a; }
+    public ServicoEntity getServico() { return servicoEntity; }
+    public void setServico(ServicoEntity s) { this.servicoEntity = s; }
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer q) { this.quantidade = q; }
     public BigDecimal getPrecoAplicado() { return precoAplicado; }
@@ -79,7 +79,7 @@ public class AgendamentoServico {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AgendamentoServico as = (AgendamentoServico) o;
+        AgendamentoServicoEntity as = (AgendamentoServicoEntity) o;
         return Objects.equals(id, as.id);
     }
 

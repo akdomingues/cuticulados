@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "servico_produto")
-public class ServicoProduto {
+public class ServicoProdutoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,13 +29,13 @@ public class ServicoProduto {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "servico_id", nullable = false)
-    private Servico servico;
+    private ServicoEntity servicoEntity;
 
     //RELACIONA COM PRODUTO
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "produto_id", nullable = false)
-    private Produto produto;
+    private ProdutoEntity produtoEntity;
 
     //REGRAS DA TABELA
 
@@ -46,10 +46,10 @@ public class ServicoProduto {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Servico getServico() { return servico; }
-    public void setServico(Servico s) { this.servico = s; }
-    public Produto getProduto() { return produto; }
-    public void setProduto(Produto p) { this.produto = p; }
+    public ServicoEntity getServico() { return servicoEntity; }
+    public void setServico(ServicoEntity s) { this.servicoEntity = s; }
+    public ProdutoEntity getProduto() { return produtoEntity; }
+    public void setProduto(ProdutoEntity p) { this.produtoEntity = p; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime c) { this.createdAt = c; }
 
@@ -59,7 +59,7 @@ public class ServicoProduto {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ServicoProduto sp = (ServicoProduto) o;
+        ServicoProdutoEntity sp = (ServicoProdutoEntity) o;
         return Objects.equals(id, sp.id);
     }
 

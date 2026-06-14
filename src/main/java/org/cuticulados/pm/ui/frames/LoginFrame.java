@@ -1,9 +1,8 @@
 package org.cuticulados.pm.ui.frames;
 
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Profissional;
-import org.cuticulados.pm.entity.TipoUsuario;
-import org.cuticulados.pm.entity.Usuario;
+import org.cuticulados.pm.entity.ClienteEntity;
+import org.cuticulados.pm.entity.ProfissionalEntity;
+import org.cuticulados.pm.entity.UsuarioEntity;
 import org.cuticulados.pm.service.UsuarioService;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
@@ -159,7 +158,7 @@ public class LoginFrame extends JFrame {
             return;
         }
 
-        Optional<Usuario> resultado = usuarioService.autenticar(login, senha);
+        Optional<UsuarioEntity> resultado = usuarioService.autenticar(login, senha);
 
         if (resultado.isEmpty()) {
             mostrarErro("Login ou senha incorretos.");
@@ -168,19 +167,19 @@ public class LoginFrame extends JFrame {
             return;
         }
 
-        Usuario usuario = resultado.get();
+        UsuarioEntity usuarioEntity = resultado.get();
         dispose();
 
         // abre a frame correta conforme o perfil do usuário
-        switch (usuario.getTipo()) {
-            case ADMIN -> new MainFrame(usuario).setVisible(true);
+        switch (usuarioEntity.getTipo()) {
+            case ADMIN -> new MainFrame(usuarioEntity).setVisible(true);
             case CLIENTE -> {
-                if (usuario instanceof Cliente cliente) {
-                    new ClienteFrame(cliente).setVisible(true);
+                if (usuarioEntity instanceof ClienteEntity clienteEntity) {
+                    new ClienteFrame(clienteEntity).setVisible(true);
                 }
             }
             case PROFISSIONAL -> {
-                if (usuario instanceof Profissional prof) {
+                if (usuarioEntity instanceof ProfissionalEntity prof) {
                     new ProfissionalFrame(prof).setVisible(true);
                 }
             }

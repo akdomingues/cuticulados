@@ -1,9 +1,9 @@
 package org.cuticulados.pm.ui.frames;
 
-import org.cuticulados.pm.entity.Agendamento;
-import org.cuticulados.pm.entity.Produto;
-import org.cuticulados.pm.entity.Profissional;
-import org.cuticulados.pm.entity.VendaAvulsa;
+import org.cuticulados.pm.entity.AgendamentoEntity;
+import org.cuticulados.pm.entity.ProdutoEntity;
+import org.cuticulados.pm.entity.ProfissionalEntity;
+import org.cuticulados.pm.entity.VendaAvulsaEntity;
 import org.cuticulados.pm.service.AgendamentoService;
 import org.cuticulados.pm.service.ProdutoService;
 import org.cuticulados.pm.service.VendaAvulsaService;
@@ -43,7 +43,7 @@ public class ProfissionalFrame extends JFrame {
     private final ProdutoService     produtoService;
 
     // profissional logado
-    private final Profissional profissionalLogado;
+    private final ProfissionalEntity profissionalEntityLogado;
 
     // layout central
     private JPanel     painelCentral;
@@ -75,8 +75,8 @@ public class ProfissionalFrame extends JFrame {
     private static final Color COR_CANCELADO_BG = new Color(0xFA, 0xDD, 0xDD);
 
     // profissional frame
-    public ProfissionalFrame(Profissional profissional) {
-        this.profissionalLogado = profissional;
+    public ProfissionalFrame(ProfissionalEntity profissionalEntity) {
+        this.profissionalEntityLogado = profissionalEntity;
         this.agendamentoService = new AgendamentoService();
         this.vendaAvulsaService = new VendaAvulsaService();
         this.produtoService     = new ProdutoService();
@@ -251,18 +251,18 @@ public class ProfissionalFrame extends JFrame {
         painel.setOpaque(false);
         painel.setBorder(new EmptyBorder(2, 2, 2, 2));
 
-        JPanel avatar = criarAvatar(profissionalLogado.getNome());
+        JPanel avatar = criarAvatar(profissionalEntityLogado.getNome());
 
         JPanel info = new JPanel();
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
         info.setOpaque(false);
 
-        JLabel lblNome = new JLabel(abreviarNome(profissionalLogado.getNome()));
+        JLabel lblNome = new JLabel(abreviarNome(profissionalEntityLogado.getNome()));
         lblNome.setFont(AppFonts.SMALL);
         lblNome.setForeground(new Color(255, 255, 255, 218));
 
-        String especialidade = profissionalLogado.getEspecialidade() != null
-                ? profissionalLogado.getEspecialidade() : "Profissional";
+        String especialidade = profissionalEntityLogado.getEspecialidade() != null
+                ? profissionalEntityLogado.getEspecialidade() : "Profissional";
         JLabel lblEsp = new JLabel(especialidade);
         lblEsp.setFont(new Font(AppFonts.FAMILY, Font.PLAIN, 10));
         lblEsp.setForeground(new Color(255, 255, 255, 102));
@@ -326,8 +326,8 @@ public class ProfissionalFrame extends JFrame {
         barra.setBorder(new EmptyBorder(4, 16, 4, 16));
         barra.setPreferredSize(new Dimension(0, 30));
 
-        JLabel lblUsuario = new JLabel("Profissional: " + profissionalLogado.getNome()
-                + "  ·  " + profissionalLogado.getLogin());
+        JLabel lblUsuario = new JLabel("Profissional: " + profissionalEntityLogado.getNome()
+                + "  ·  " + profissionalEntityLogado.getLogin());
         lblUsuario.setFont(new Font(AppFonts.FAMILY, Font.PLAIN, 11));
         lblUsuario.setForeground(new Color(255, 255, 255, 160));
         barra.add(lblUsuario, BorderLayout.WEST);
@@ -410,9 +410,9 @@ public class ProfissionalFrame extends JFrame {
         gbc.weightx = 1.0;
 
         // combobox de produtos com nome e estoque
-        List<Produto> produtos = produtoService.listarTodos();
-        JComboBox<Produto> cbProduto = new JComboBox<>();
-        produtos.forEach(cbProduto::addItem);
+        List<ProdutoEntity> produtoEntities = produtoService.listarTodos();
+        JComboBox<ProdutoEntity> cbProduto = new JComboBox<>();
+        produtoEntities.forEach(cbProduto::addItem);
         estilizarCombo(cbProduto);
         cbProduto.setRenderer((list, value, idx, isSelected, cellHasFocus) -> {
             String texto = value != null
@@ -426,7 +426,7 @@ public class ProfissionalFrame extends JFrame {
         });
 
         // spinner de quantidade com max dinâmico
-        Produto primeiro = produtos.isEmpty() ? null : produtos.get(0);
+        ProdutoEntity primeiro = produtoEntities.isEmpty() ? null : produtoEntities.get(0);
         int estoqueInicial = primeiro != null ? Math.max(1, primeiro.getQuantidadeEstoque()) : 1;
         JSpinner spQtd = new JSpinner(new SpinnerNumberModel(1, 1, estoqueInicial, 1));
         estilizarSpinner(spQtd);
@@ -438,7 +438,7 @@ public class ProfissionalFrame extends JFrame {
 
         // atualiza total e max do spinner ao mudar produto ou quantidade
         Runnable atualizarTotal = () -> {
-            Produto p = (Produto) cbProduto.getSelectedItem();
+            ProdutoEntity p = (ProdutoEntity) cbProduto.getSelectedItem();
             int qtd = (Integer) spQtd.getValue();
             if (p != null && p.getPrecoVenda() != null) {
                 BigDecimal total = p.getPrecoVenda().multiply(BigDecimal.valueOf(qtd));
@@ -457,7 +457,7 @@ public class ProfissionalFrame extends JFrame {
         AppTheme.stylePrimaryButton(btnRegistrar, false);
         btnRegistrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, AppDimensions.BUTTON_HEIGHT));
         btnRegistrar.addActionListener(e -> {
-            Produto p = (Produto) cbProduto.getSelectedItem();
+            ProdutoEntity p = (ProdutoEntity) cbProduto.getSelectedItem();
             if (p == null) {
                 JOptionPane.showMessageDialog(this, "Selecione um produto.", "Campo inválido", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -470,10 +470,10 @@ public class ProfissionalFrame extends JFrame {
                 return;
             }
 
-            VendaAvulsa venda = new VendaAvulsa();
+            VendaAvulsaEntity venda = new VendaAvulsaEntity();
             venda.setProduto(p);
             venda.setQuantidade(qtd);
-            venda.setProfissional(profissionalLogado);
+            venda.setProfissional(profissionalEntityLogado);
             vendaAvulsaService.registrarVenda(venda);
 
             JOptionPane.showMessageDialog(this,
@@ -626,10 +626,10 @@ public class ProfissionalFrame extends JFrame {
     // filtra agendamentos do profissional logado
     private void carregarAgendamentos() {
         modelAgendamentos.setRowCount(0);
-        List<Agendamento> todos = agendamentoService.listarTodos();
-        for (Agendamento ag : todos) {
+        List<AgendamentoEntity> todos = agendamentoService.listarTodos();
+        for (AgendamentoEntity ag : todos) {
             if (ag.getProfissional() == null) continue;
-            if (!ag.getProfissional().getId().equals(profissionalLogado.getId())) continue;
+            if (!ag.getProfissional().getId().equals(profissionalEntityLogado.getId())) continue;
 
             String inicio  = ag.getDataHoraInicio() != null ? ag.getDataHoraInicio().format(FMT) : "—";
             String fim     = ag.getDataHoraFim()    != null ? ag.getDataHoraFim().format(FMT)    : "—";
@@ -651,7 +651,7 @@ public class ProfissionalFrame extends JFrame {
 
     private void carregarEstoque() {
         modelEstoque.setRowCount(0);
-        for (Produto p : produtoService.listarTodos()) {
+        for (ProdutoEntity p : produtoService.listarTodos()) {
             modelEstoque.addRow(new Object[]{
                     p.getId(),
                     p.getNome(),
@@ -669,9 +669,9 @@ public class ProfissionalFrame extends JFrame {
         String hoje          = LocalDateTime.now().toLocalDate()
                 .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
-        List<VendaAvulsa> vendas = vendaAvulsaService.listarTodas().stream()
+        List<VendaAvulsaEntity> vendas = vendaAvulsaService.listarTodas().stream()
                 .filter(v -> v.getProfissional() != null
-                        && v.getProfissional().getId().equals(profissionalLogado.getId())
+                        && v.getProfissional().getId().equals(profissionalEntityLogado.getId())
                         && !v.getDataVenda().isBefore(inicio)
                         && v.getDataVenda().isBefore(fim))
                 .toList();
@@ -685,7 +685,7 @@ public class ProfissionalFrame extends JFrame {
         }
 
         BigDecimal totalGeral = BigDecimal.ZERO;
-        for (VendaAvulsa v : vendas) {
+        for (VendaAvulsaEntity v : vendas) {
             sb.append(String.format("  [#%d] %s  |  %dx %-20s  |  R$ %8.2f  |  %s%n",
                     v.getId(),
                     v.getDataVenda().format(FMT_HR),
@@ -697,7 +697,7 @@ public class ProfissionalFrame extends JFrame {
         }
 
         long abertas  = vendas.stream().filter(v -> !v.isFechado()).count();
-        long fechadas = vendas.stream().filter(VendaAvulsa::isFechado).count();
+        long fechadas = vendas.stream().filter(VendaAvulsaEntity::isFechado).count();
 
         sb.append("\n──────────────────────────────────────────────\n");
         sb.append(String.format("  Total do dia:       R$ %.2f%n", totalGeral));
@@ -743,7 +743,7 @@ public class ProfissionalFrame extends JFrame {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            vendaAvulsaService.fecharDia(profissionalLogado);
+            vendaAvulsaService.fecharDia(profissionalEntityLogado);
             JOptionPane.showMessageDialog(this,
                     "Dia finalizado com sucesso.",
                     "Dia Fechado", JOptionPane.INFORMATION_MESSAGE);

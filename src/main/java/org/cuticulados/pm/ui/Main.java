@@ -70,19 +70,19 @@ public class Main {
         System.out.print("Senha: ");
         String senha = scanner.nextLine().trim();
 
-        Optional<Usuario> op = usuarioService.autenticar(login, senha);
+        Optional<UsuarioEntity> op = usuarioService.autenticar(login, senha);
         if (op.isEmpty()) {
             System.out.print("Continuar? (s/n): ");
             return scanner.nextLine().trim().equalsIgnoreCase("s");
         }
 
-        Usuario usuario = op.get();
-        System.out.println("Bem-vindo(a), " + usuario.getNome() + "! [" + usuario.getTipo() + "]");
+        UsuarioEntity usuarioEntity = op.get();
+        System.out.println("Bem-vindo(a), " + usuarioEntity.getNome() + "! [" + usuarioEntity.getTipo() + "]");
 
-        switch (usuario.getTipo()) {
-            case ADMIN        -> menuAdmin(usuario);
-            case PROFISSIONAL -> menuProfissional(usuario);
-            case CLIENTE      -> menuCliente(usuario);
+        switch (usuarioEntity.getTipo()) {
+            case ADMIN        -> menuAdmin(usuarioEntity);
+            case PROFISSIONAL -> menuProfissional(usuarioEntity);
+            case CLIENTE      -> menuCliente(usuarioEntity);
         }
         return true;
     }
@@ -97,7 +97,7 @@ public class Main {
      *
      * @param admin usuário logado com perfil ADMIN
      */
-    private static void menuAdmin(Usuario admin) {
+    private static void menuAdmin(UsuarioEntity admin) {
         boolean loop = true;
         while (loop) {
             System.out.println("\n=== Menu Admin ===");
@@ -134,9 +134,9 @@ public class Main {
      * Menu para usuários com perfil PROFISSIONAL.
      * Inclui "Finalizar dia" para fechar todas as vendas em aberto do dia.
      *
-     * @param profissionalUsuario usuário logado com perfil PROFISSIONAL
+     * @param profissionalUsuarioEntity usuário logado com perfil PROFISSIONAL
      */
-    private static void menuProfissional(Usuario profissionalUsuario) {
+    private static void menuProfissional(UsuarioEntity profissionalUsuarioEntity) {
         boolean loop = true;
         while (loop) {
             System.out.println("\n=== Menu Profissional ===");
@@ -157,7 +157,7 @@ public class Main {
                 case "3" -> cancelarAgendamento();
                 case "4" -> registrarVendaAvulsa();
                 case "5" -> relatorioService.gerarRelatorioEstoque();
-                case "6" -> fecharDiaProfissional(profissionalUsuario);  // NOVO
+                case "6" -> fecharDiaProfissional(profissionalUsuarioEntity);  // NOVO
                 case "7" -> vendaAvulsaService.relatorioVendasDoDia();   // NOVO
                 case "0" -> loop = false;
                 default  -> System.out.println("Opção inválida.");
@@ -175,7 +175,7 @@ public class Main {
      *
      * @param cliente usuário logado com perfil CLIENTE
      */
-    private static void menuCliente(Usuario cliente) {
+    private static void menuCliente(UsuarioEntity cliente) {
         boolean loop = true;
         while (loop) {
             System.out.println("\n=== Menu Cliente ===");
@@ -201,7 +201,7 @@ public class Main {
     // ---------------------------------------------------------------
 
     /**
-     * Submenu de relatórios. A opção "Vendas do dia" consulta diretamente {@link VendaAvulsa}
+     * Submenu de relatórios. A opção "Vendas do dia" consulta diretamente {@link VendaAvulsaEntity}
      * pela data atual, corrigindo o problema de relatórios zerados quando transações não eram criadas.
      */
     private static void menuRelatorios() {
@@ -252,14 +252,14 @@ public class Main {
      * Recupera o Profissional a partir do usuário logado e delega o fechamento
      * ao VendaAvulsaService. Exibe erro se o usuário não for encontrado como profissional.
      *
-     * @param usuario usuário logado com perfil PROFISSIONAL
+     * @param usuarioEntity usuário logado com perfil PROFISSIONAL
      */
-    private static void fecharDiaProfissional(Usuario usuario) {
+    private static void fecharDiaProfissional(UsuarioEntity usuarioEntity) {
         try {
             // Recupera o profissional pelo ID do usuário logado
-            List<Usuario> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
-            Optional<Usuario> opProf = profs.stream()
-                    .filter(u -> u.getId().equals(usuario.getId()))
+            List<UsuarioEntity> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
+            Optional<UsuarioEntity> opProf = profs.stream()
+                    .filter(u -> u.getId().equals(usuarioEntity.getId()))
                     .findFirst();
 
             if (opProf.isEmpty()) {
@@ -267,7 +267,7 @@ public class Main {
                 return;
             }
 
-            if (!(opProf.get() instanceof Profissional profissional)) {
+            if (!(opProf.get() instanceof ProfissionalEntity profissionalEntity)) {
                 System.out.println("Usuário não é um profissional válido.");
                 return;
             }
@@ -280,7 +280,7 @@ public class Main {
                 return;
             }
 
-            vendaAvulsaService.fecharDia(profissional);
+            vendaAvulsaService.fecharDia(profissionalEntity);
 
         } catch (Exception e) {
             System.out.println("Erro ao fechar dia: " + e.getMessage());
@@ -318,9 +318,9 @@ public class Main {
 
     /** Exibe no terminal todos os clientes cadastrados com CPF, tipo e atendimentos do mês. */
     private static void listarClientes() {
-        List<Cliente> clientes = clienteService.listarTodos();
-        if (clientes.isEmpty()) { System.out.println("Nenhum cliente."); return; }
-        clientes.forEach(c -> System.out.printf(
+        List<ClienteEntity> clienteEntities = clienteService.listarTodos();
+        if (clienteEntities.isEmpty()) { System.out.println("Nenhum cliente."); return; }
+        clienteEntities.forEach(c -> System.out.printf(
                 " [%d] %s | CPF: %s | Tipo: %s | Atend/mês: %d%n",
                 c.getId(), c.getNome(), c.getCpf(),
                 c.getTipoCliente(), c.getTotalAtendimentosMes()));
@@ -329,7 +329,7 @@ public class Main {
     /** Coleta os dados do novo cliente via terminal e delega o cadastro ao {@link ClienteService}. */
     private static void cadastrarCliente() {
         try {
-            Cliente c = new Cliente();
+            ClienteEntity c = new ClienteEntity();
             System.out.print("Nome: ");       c.setNome(scanner.nextLine().trim());
             System.out.print("Email: ");      c.setEmail(scanner.nextLine().trim());
             System.out.print("Login: ");      c.setLogin(scanner.nextLine().trim());
@@ -346,9 +346,9 @@ public class Main {
         try {
             System.out.print("ID do cliente: ");
             Long id = Long.parseLong(scanner.nextLine().trim());
-            Optional<Cliente> op = clienteService.buscarPorId(id);
+            Optional<ClienteEntity> op = clienteService.buscarPorId(id);
             if (op.isEmpty()) { System.out.println("Não encontrado."); return; }
-            Cliente c = op.get();
+            ClienteEntity c = op.get();
             System.out.print("Novo nome (" + c.getNome() + "): ");
             String nome = scanner.nextLine().trim();
             if (!nome.isBlank()) c.setNome(nome);
@@ -390,7 +390,7 @@ public class Main {
 
     /** Exibe no terminal todos os usuários com perfil PROFISSIONAL. */
     private static void listarProfissionais() {
-        List<Usuario> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
+        List<UsuarioEntity> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
         if (profs.isEmpty()) { System.out.println("Nenhum profissional."); return; }
         profs.forEach(p -> System.out.printf(" [%d] %s | Login: %s%n",
                 p.getId(), p.getNome(), p.getLogin()));
@@ -399,7 +399,7 @@ public class Main {
     /** Coleta os dados do novo profissional via terminal e delega o cadastro ao {@link UsuarioService}. */
     private static void cadastrarProfissional() {
         try {
-            Profissional p = new Profissional();
+            ProfissionalEntity p = new ProfissionalEntity();
             System.out.print("Nome: ");          p.setNome(scanner.nextLine().trim());
             System.out.print("Email: ");         p.setEmail(scanner.nextLine().trim());
             System.out.print("Login: ");         p.setLogin(scanner.nextLine().trim());
@@ -443,16 +443,16 @@ public class Main {
 
     /** Exibe no terminal todos os serviços com descrição, valor base e duração. */
     private static void listarServicos() {
-        List<Servico> servicos = servicoService.listarTodos();
-        if (servicos.isEmpty()) { System.out.println("Nenhum serviço."); return; }
-        servicos.forEach(s -> System.out.printf(" [%d] %s | R$ %.2f | %d min%n",
+        List<ServicoEntity> servicoEntities = servicoService.listarTodos();
+        if (servicoEntities.isEmpty()) { System.out.println("Nenhum serviço."); return; }
+        servicoEntities.forEach(s -> System.out.printf(" [%d] %s | R$ %.2f | %d min%n",
                 s.getId(), s.getDescricao(), s.getValorBase(), s.getDuracaoMinutos()));
     }
 
     /** Coleta descrição, valor base e duração e cadastra o serviço via {@link ServicoService}. */
     private static void cadastrarServico() {
         try {
-            Servico s = new Servico();
+            ServicoEntity s = new ServicoEntity();
             System.out.print("Descrição: ");        s.setDescricao(scanner.nextLine().trim());
             System.out.print("Valor base: ");       s.setValorBase(new BigDecimal(scanner.nextLine().trim()));
             System.out.print("Duração (min): ");    s.setDuracaoMinutos(Integer.parseInt(scanner.nextLine().trim()));
@@ -465,9 +465,9 @@ public class Main {
         try {
             System.out.print("ID: ");
             Long id = Long.parseLong(scanner.nextLine().trim());
-            Optional<Servico> op = servicoService.buscarPorId(id);
+            Optional<ServicoEntity> op = servicoService.buscarPorId(id);
             if (op.isEmpty()) { System.out.println("Não encontrado."); return; }
-            Servico s = op.get();
+            ServicoEntity s = op.get();
             System.out.print("Novo valor (" + s.getValorBase() + "): ");
             String val = scanner.nextLine().trim();
             if (!val.isBlank()) s.setValorBase(new BigDecimal(val));
@@ -515,7 +515,7 @@ public class Main {
     /** Coleta nome, preços, estoque atual e mínimo e cadastra o produto via {@link ProdutoService}. */
     private static void cadastrarProduto() {
         try {
-            Produto p = new Produto();
+            ProdutoEntity p = new ProdutoEntity();
             System.out.print("Nome: ");             p.setNome(scanner.nextLine().trim());
             System.out.print("Preço custo: ");      p.setPrecoCusto(new BigDecimal(scanner.nextLine().trim()));
             System.out.print("Preço venda: ");      p.setPrecoVenda(new BigDecimal(scanner.nextLine().trim()));
@@ -530,9 +530,9 @@ public class Main {
         try {
             System.out.print("ID: ");
             Long id = Long.parseLong(scanner.nextLine().trim());
-            Optional<Produto> op = produtoService.buscarPorId(id);
+            Optional<ProdutoEntity> op = produtoService.buscarPorId(id);
             if (op.isEmpty()) { System.out.println("Não encontrado."); return; }
-            Produto p = op.get();
+            ProdutoEntity p = op.get();
             System.out.print("Novo preço venda (" + p.getPrecoVenda() + "): ");
             String val = scanner.nextLine().trim();
             if (!val.isBlank()) p.setPrecoVenda(new BigDecimal(val));
@@ -585,7 +585,7 @@ public class Main {
 
     /** Exibe no terminal todos os agendamentos com status, horário, cliente e valor. */
     private static void listarAgendamentos() {
-        List<Agendamento> lista = agendamentoService.listarTodos();
+        List<AgendamentoEntity> lista = agendamentoService.listarTodos();
         if (lista.isEmpty()) { System.out.println("Nenhum agendamento."); return; }
         lista.forEach(a -> System.out.printf(
                 " [%d] %s | %s → %s | %s | R$ %.2f%n",
@@ -604,14 +604,14 @@ public class Main {
             listarClientes();
             System.out.print("ID do cliente: ");
             Long clienteId = Long.parseLong(scanner.nextLine().trim());
-            Optional<Cliente> opC = clienteService.buscarPorId(clienteId);
+            Optional<ClienteEntity> opC = clienteService.buscarPorId(clienteId);
             if (opC.isEmpty()) { System.out.println("Não encontrado."); return; }
 
             listarProfissionais();
             System.out.print("ID do profissional: ");
             Long profId = Long.parseLong(scanner.nextLine().trim());
-            List<Usuario> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
-            Optional<Usuario> opP = profs.stream()
+            List<UsuarioEntity> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
+            Optional<UsuarioEntity> opP = profs.stream()
                     .filter(u -> u.getId().equals(profId)).findFirst();
             if (opP.isEmpty()) { System.out.println("Não encontrado."); return; }
 
@@ -620,9 +620,9 @@ public class Main {
             System.out.print("Fim    (dd/MM/yyyy HH:mm): ");
             LocalDateTime fim = LocalDateTime.parse(scanner.nextLine().trim(), FMT_DATA_HORA);
 
-            Agendamento ag = new Agendamento();
+            AgendamentoEntity ag = new AgendamentoEntity();
             ag.setCliente(opC.get());
-            ag.setProfissional((Profissional) opP.get());
+            ag.setProfissional((ProfissionalEntity) opP.get());
             ag.setDataHoraInicio(inicio);
             ag.setDataHoraFim(fim);
 
@@ -635,16 +635,16 @@ public class Main {
                 if (input.isEmpty()) break;
                 try {
                     Long servicoId = Long.parseLong(input);
-                    Optional<Servico> opS = servicoService.buscarPorId(servicoId);
+                    Optional<ServicoEntity> opS = servicoService.buscarPorId(servicoId);
                     if (opS.isEmpty()) { System.out.println("Serviço não encontrado."); continue; }
-                    Servico servico = opS.get();
-                    AgendamentoServico as = new AgendamentoServico();
-                    as.setServico(servico);
+                    ServicoEntity servicoEntity = opS.get();
+                    AgendamentoServicoEntity as = new AgendamentoServicoEntity();
+                    as.setServico(servicoEntity);
                     as.setAgendamento(ag);
-                    as.setPrecoAplicado(servico.getValorBase());
+                    as.setPrecoAplicado(servicoEntity.getValorBase());
                     as.setQuantidade(1);
                     ag.getServicos().add(as);
-                    System.out.println("Serviço adicionado: " + servico.getDescricao());
+                    System.out.println("Serviço adicionado: " + servicoEntity.getDescricao());
                 } catch (NumberFormatException ex) {
                     System.out.println("ID inválido.");
                 }
@@ -740,23 +740,23 @@ public class Main {
                     p.getId(), p.getNome(), p.getQuantidadeEstoque(), p.getPrecoVenda()));
             System.out.print("ID do produto: ");
             Long prodId = Long.parseLong(scanner.nextLine().trim());
-            Optional<Produto> opP = produtoService.buscarPorId(prodId);
+            Optional<ProdutoEntity> opP = produtoService.buscarPorId(prodId);
             if (opP.isEmpty()) { System.out.println("Produto não encontrado."); return; }
 
             listarProfissionais();
             System.out.print("ID do profissional: ");
             Long profId = Long.parseLong(scanner.nextLine().trim());
-            List<Usuario> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
-            Optional<Usuario> opU = profs.stream()
+            List<UsuarioEntity> profs = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL);
+            Optional<UsuarioEntity> opU = profs.stream()
                     .filter(u -> u.getId().equals(profId)).findFirst();
             if (opU.isEmpty()) { System.out.println("Profissional não encontrado."); return; }
 
             System.out.print("Quantidade: ");
             int qtd = Integer.parseInt(scanner.nextLine().trim());
 
-            VendaAvulsa venda = new VendaAvulsa();
+            VendaAvulsaEntity venda = new VendaAvulsaEntity();
             venda.setProduto(opP.get());
-            venda.setProfissional((Profissional) opU.get());
+            venda.setProfissional((ProfissionalEntity) opU.get());
             venda.setQuantidade(qtd);
             vendaAvulsaService.registrarVenda(venda);
         } catch (Exception e) { System.out.println("Erro: " + e.getMessage()); }

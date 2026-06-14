@@ -8,10 +8,10 @@ import java.util.List;
 import org.cuticulados.pm.config.JpaUtil;
 import jakarta.persistence.EntityManager;
 
-import org.cuticulados.pm.entity.Agendamento;
-import org.cuticulados.pm.entity.Produto;
+import org.cuticulados.pm.entity.AgendamentoEntity;
+import org.cuticulados.pm.entity.ProdutoEntity;
 import org.cuticulados.pm.entity.TipoTransacao;
-import org.cuticulados.pm.entity.TransacaoFinanceira;
+import org.cuticulados.pm.entity.TransacaoFinanceiraEntity;
 import org.cuticulados.pm.repository.AgendamentoRepository;
 import org.cuticulados.pm.repository.ProdutoRepository;
 import org.cuticulados.pm.repository.TransacaoRepository;
@@ -45,13 +45,13 @@ public class RelatorioService {
      */
     public void gerarRelatorioAgendamentos(LocalDate inicio, LocalDate fim) {
         try {
-            List<Agendamento> lista = agendamentoRepo.buscarPorPeriodo(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
+            List<AgendamentoEntity> lista = agendamentoRepo.buscarPorPeriodo(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
             if (lista.isEmpty()) {
                 System.out.println("Nenhum agendamento no periodo.");
                 return;
             }
             System.out.println("=== Agendamentos de " + inicio + " ate " + fim + " ===");
-            for (Agendamento a : lista) {
+            for (AgendamentoEntity a : lista) {
                 System.out.printf(" #%d | %s | %s | %s | R$ %.2f%n", a.getId(), a.getDataHoraInicio(), a.getCliente().getNome(), a.getProfissional().getNome(), a.getValorFinal());
             }
         } catch (Exception e) {
@@ -85,13 +85,13 @@ public class RelatorioService {
         try {
             LocalDateTime dtInicio = inicio.atStartOfDay();
             LocalDateTime dtFim = fim.atTime(23, 59, 59);
-            List<TransacaoFinanceira> transacoes = transacaoRepo.buscarPorPeriodo(dtInicio, dtFim);
+            List<TransacaoFinanceiraEntity> transacoes = transacaoRepo.buscarPorPeriodo(dtInicio, dtFim);
 
             BigDecimal totalEntradas = BigDecimal.ZERO;
             BigDecimal totalSaidas = BigDecimal.ZERO;
 
             System.out.println("=== Relatorio Financeiro ===");
-            for (TransacaoFinanceira t : transacoes) {
+            for (TransacaoFinanceiraEntity t : transacoes) {
                 System.out.printf(" %s | %s | %s | R$ %.2f%n", t.getDataTransacao(), t.getTipo(), t.getDescricao(), t.getValor());
                 if (t.getTipo() == TipoTransacao.ENTRADA) {
                     totalEntradas = totalEntradas.add(t.getValor());
@@ -114,9 +114,9 @@ public class RelatorioService {
      */
     public void gerarRelatorioEstoque() {
         try {
-            List<Produto> produtos = produtoRepo.listarTodos();
+            List<ProdutoEntity> produtoEntities = produtoRepo.listarTodos();
             System.out.println("=== Estoque Atual ===");
-            for (Produto p : produtos) {
+            for (ProdutoEntity p : produtoEntities) {
                 String status = p.getQuantidadeEstoque() <= p.getQuantidadeMinima() ? " [BAIXO]" : "";
                 System.out.printf(" %s | estoque: %d | minimo: %d | preco venda: R$ %.2f%s%n", p.getNome(), p.getQuantidadeEstoque(), p.getQuantidadeMinima(), p.getPrecoVenda(), status);
             }

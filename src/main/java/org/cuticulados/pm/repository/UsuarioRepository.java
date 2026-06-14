@@ -4,20 +4,20 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
-import org.cuticulados.pm.entity.Usuario;
+import org.cuticulados.pm.entity.UsuarioEntity;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 public class UsuarioRepository {
 
-    public void salvar(Usuario usuario) {
+    public void salvar(UsuarioEntity usuarioEntity) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            if (usuario.getId() == null) {
-                em.persist(usuario);
+            if (usuarioEntity.getId() == null) {
+                em.persist(usuarioEntity);
             } else {
-                em.merge(usuario);
+                em.merge(usuarioEntity);
             }
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -25,9 +25,9 @@ public class UsuarioRepository {
         }
     }
 
-    public Optional<Usuario> buscarPorId(Long id) {
+    public Optional<UsuarioEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Usuario u = em.find(Usuario.class, id);
+            UsuarioEntity u = em.find(UsuarioEntity.class, id);
             return Optional.ofNullable(u);
         } catch (Exception e) {
             System.err.println("Erro ao buscar usuario por id: " + e.getMessage());
@@ -35,10 +35,10 @@ public class UsuarioRepository {
         }
     }
 
-    public Optional<Usuario> buscarPorLogin(String login) {
+    public Optional<UsuarioEntity> buscarPorLogin(String login) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Usuario u = em.createQuery(
-                            "SELECT u FROM Usuario u WHERE u.login = :login", Usuario.class)
+            UsuarioEntity u = em.createQuery(
+                            "SELECT u FROM Usuario u WHERE u.login = :login", UsuarioEntity.class)
                     .setParameter("login", login)
                     .getSingleResult();
             return Optional.ofNullable(u);
@@ -50,9 +50,9 @@ public class UsuarioRepository {
         }
     }
 
-    public List<Usuario> listarTodos() {
+    public List<UsuarioEntity> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            return em.createQuery("SELECT u FROM Usuario u WHERE u.deletedAt IS NULL", Usuario.class)
+            return em.createQuery("SELECT u FROM Usuario u WHERE u.deletedAt IS NULL", UsuarioEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar usuarios: " + e.getMessage());
@@ -63,7 +63,7 @@ public class UsuarioRepository {
     public void deletarLogico(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            Usuario u = em.find(Usuario.class, id);
+            UsuarioEntity u = em.find(UsuarioEntity.class, id);
             if (u != null) {
                 u.setDeletedAt(java.time.LocalDateTime.now());
                 em.merge(u);

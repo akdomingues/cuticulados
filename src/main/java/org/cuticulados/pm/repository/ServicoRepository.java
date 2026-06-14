@@ -6,20 +6,19 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
-import org.cuticulados.pm.entity.Servico;
+import org.cuticulados.pm.entity.ServicoEntity;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 
 public class ServicoRepository {
 
-    public void salvar(Servico servico) {
+    public void salvar(ServicoEntity servicoEntity) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            if (servico.getId() == null) {
-                em.persist(servico);
+            if (servicoEntity.getId() == null) {
+                em.persist(servicoEntity);
             } else {
-                em.merge(servico);
+                em.merge(servicoEntity);
             }
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -27,9 +26,9 @@ public class ServicoRepository {
         }
     }
 
-    public Optional<Servico> buscarPorId(Long id) {
+    public Optional<ServicoEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Servico s = em.find(Servico.class, id);
+            ServicoEntity s = em.find(ServicoEntity.class, id);
             return Optional.ofNullable(s);
         } catch (Exception e) {
             System.err.println("Erro ao buscar servico: " + e.getMessage());
@@ -37,19 +36,19 @@ public class ServicoRepository {
         }
     }
 
-    public List<Servico> listarTodos() {
+    public List<ServicoEntity> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            return em.createQuery("FROM Servico", Servico.class).getResultList();
+            return em.createQuery("FROM Servico", ServicoEntity.class).getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar servicos: " + e.getMessage());
             return List.of();
         }
     }
 
-    public List<Servico> buscarPorDescricao(String termo) {
+    public List<ServicoEntity> buscarPorDescricao(String termo) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT s FROM Servico s WHERE LOWER(s.descricao) LIKE LOWER(:termo)", Servico.class)
+                            "SELECT s FROM Servico s WHERE LOWER(s.descricao) LIKE LOWER(:termo)", ServicoEntity.class)
                     .setParameter("termo", "%" + termo + "%")
                     .getResultList();
         } catch (Exception e) {
@@ -58,10 +57,10 @@ public class ServicoRepository {
         }
     }
 
-    public List<Servico> listarComProdutos() {
+    public List<ServicoEntity> listarComProdutos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT DISTINCT s FROM Servico s LEFT JOIN FETCH s.produtosUtilizados", Servico.class)
+                            "SELECT DISTINCT s FROM Servico s LEFT JOIN FETCH s.produtosUtilizados", ServicoEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar servicos com produtos: " + e.getMessage());
@@ -72,7 +71,7 @@ public class ServicoRepository {
     public void deletar(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            Servico s = em.find(Servico.class, id);
+            ServicoEntity s = em.find(ServicoEntity.class, id);
             if (s != null) {
                 em.remove(s);
             }

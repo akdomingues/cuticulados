@@ -1,7 +1,7 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Servico;
-import org.cuticulados.pm.service.ServicoService;
+import org.cuticulados.pm.entity.ServicoEntity;
+import org.cuticulados.pm.controller.servico.ServicoController;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -27,7 +27,7 @@ import java.util.List;
 public class PainelServicos extends JPanel {
 
     // services
-    private final ServicoService servicoService;
+    private final ServicoController servicoController;
 
     // componentes principais
     private JTable tabela;
@@ -35,14 +35,14 @@ public class PainelServicos extends JPanel {
     private JTextField campoBusca;
 
     // lista atual
-    private List<Servico> servicosAtuais;
+    private List<ServicoEntity> servicosAtuais;
 
     // colunas
     private static final String[] COLUNAS = {"ID", "Descrição", "Valor Base (R$)", "Duração (min)"};
 
     // painel servicos
     public PainelServicos() {
-        this.servicoService = new ServicoService();
+        this.servicoController = new ServicoController();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -220,13 +220,13 @@ public class PainelServicos extends JPanel {
     // dados
     // recarrega a lista completa do banco e atualiza a tabela
     private void carregarDados() {
-        servicosAtuais = servicoService.listarTodos();
+        servicosAtuais = servicoController.listarTodos();
         preencherTabela(servicosAtuais);
     }
 
-    private void preencherTabela(List<Servico> lista) {
+    private void preencherTabela(List<ServicoEntity> lista) {
         tableModel.setRowCount(0);
-        for (Servico s : lista) {
+        for (ServicoEntity s : lista) {
             tableModel.addRow(new Object[]{
                     s.getId(),
                     s.getDescricao(),
@@ -243,7 +243,7 @@ public class PainelServicos extends JPanel {
             return;
         }
         String low = termo.toLowerCase();
-        List<Servico> filtrados = servicosAtuais.stream()
+        List<ServicoEntity> filtrados = servicosAtuais.stream()
                 .filter(s -> s.getDescricao().toLowerCase().contains(low))
                 .toList();
         preencherTabela(filtrados);
@@ -284,11 +284,11 @@ public class PainelServicos extends JPanel {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            Servico s = new Servico();
+            ServicoEntity s = new ServicoEntity();
             s.setDescricao(descricao);
             s.setValorBase(BigDecimal.valueOf(((Number) fValor.getValue()).doubleValue()));
             s.setDuracaoMinutos(((Number) fDuracao.getValue()).intValue());
-            String erro = servicoService.cadastrarServico(s);
+            String erro = servicoController.cadastrarServico(s);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao cadastrar", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -315,7 +315,7 @@ public class PainelServicos extends JPanel {
         }
 
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
-        Servico s = servicoService.buscarPorId(id).orElse(null);
+        ServicoEntity s = servicoController.buscarPorId(id).orElse(null);
         if (s == null) {
             JOptionPane.showMessageDialog(this,
                     "Serviço não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -361,7 +361,7 @@ public class PainelServicos extends JPanel {
             s.setDescricao(descricao);
             s.setValorBase(BigDecimal.valueOf(((Number) fValor.getValue()).doubleValue()));
             s.setDuracaoMinutos(((Number) fDuracao.getValue()).intValue());
-            String erro = servicoService.atualizarServico(s);
+            String erro = servicoController.atualizarServico(s);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao atualizar", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -397,7 +397,7 @@ public class PainelServicos extends JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            String erro = servicoService.removerServico(id);
+            String erro = servicoController.removerServico(id);
             if (erro != null) {
                 JOptionPane.showMessageDialog(this, erro, "Erro ao remover", JOptionPane.ERROR_MESSAGE);
                 return;

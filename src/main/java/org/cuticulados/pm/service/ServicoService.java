@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import org.cuticulados.pm.entity.Servico;
+import org.cuticulados.pm.entity.ServicoEntity;
 import org.cuticulados.pm.repository.ServicoRepository;
 
 public class ServicoService {
@@ -14,15 +14,15 @@ public class ServicoService {
     private final ServicoRepository servicoRepo = new ServicoRepository();
 
     //CADASTRO
-    public String cadastrarServico(Servico servico) {
+    public String cadastrarServico(ServicoEntity servicoEntity) {
         try {
-            if (servico.getDescricao() == null || servico.getDescricao().isBlank()) {
+            if (servicoEntity.getDescricao() == null || servicoEntity.getDescricao().isBlank()) {
                 return "Descrição é obrigatória.";
             }
-            if (servico.getValorBase().compareTo(BigDecimal.ZERO) <= 0) {
+            if (servicoEntity.getValorBase().compareTo(BigDecimal.ZERO) <= 0) {
                 return "Valor base deve ser maior que zero.";
             }
-            servicoRepo.salvar(servico);
+            servicoRepo.salvar(servicoEntity);
             return null;
         } catch (Exception e) {
             return "Erro ao cadastrar serviço: " + e.getMessage();
@@ -31,7 +31,7 @@ public class ServicoService {
 
     //BUSCA
 
-    public Optional<Servico> buscarPorId(Long id) {
+    public Optional<ServicoEntity> buscarPorId(Long id) {
         try {
             return servicoRepo.buscarPorId(id);
         } catch (Exception e) {
@@ -41,7 +41,7 @@ public class ServicoService {
     }
 
     //LISTAR
-    public List<Servico> listarTodos() {
+    public List<ServicoEntity> listarTodos() {
         try {
             return servicoRepo.listarTodos();
         } catch (Exception e) {
@@ -52,12 +52,12 @@ public class ServicoService {
 
     //ATUALIZAR
 
-    public String atualizarServico(Servico servico) {
+    public String atualizarServico(ServicoEntity servicoEntity) {
         try {
-            if (servicoRepo.buscarPorId(servico.getId()).isEmpty()) {
+            if (servicoRepo.buscarPorId(servicoEntity.getId()).isEmpty()) {
                 return "Serviço não encontrado.";
             }
-            servicoRepo.salvar(servico);
+            servicoRepo.salvar(servicoEntity);
             return null;
         } catch (Exception e) {
             return "Erro ao atualizar serviço: " + e.getMessage();
@@ -79,7 +79,7 @@ public class ServicoService {
 
     //BUSCA
 
-    public List<Servico> buscarPorTermo(String termo) {
+    public List<ServicoEntity> buscarPorTermo(String termo) {
         try {
             return servicoRepo.buscarPorDescricao(termo);
         } catch (Exception e) {

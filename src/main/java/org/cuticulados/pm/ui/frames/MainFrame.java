@@ -1,6 +1,6 @@
 package org.cuticulados.pm.ui.frames;
 
-import org.cuticulados.pm.entity.Usuario;
+import org.cuticulados.pm.entity.UsuarioEntity;
 import org.cuticulados.pm.ui.panels.PainelAgendamentos;
 import org.cuticulados.pm.ui.panels.PainelClientes;
 import org.cuticulados.pm.ui.panels.PainelProdutos;
@@ -29,7 +29,7 @@ import java.util.Map;
 public class MainFrame extends JFrame {
 
     // dados do admin logado
-    private final Usuario adminLogado;
+    private final UsuarioEntity adminLogado;
 
     // layout central
     private JPanel painelCentral;
@@ -49,7 +49,7 @@ public class MainFrame extends JFrame {
     private static final String CARD_RELATORIOS    = "relatorios";
 
     // main frame do admin
-    public MainFrame(Usuario admin) {
+    public MainFrame(UsuarioEntity admin) {
         this.adminLogado = admin;
         configurarJanela();
         inicializarLayout();

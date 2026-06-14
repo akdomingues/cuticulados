@@ -1,17 +1,16 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Agendamento;
-import org.cuticulados.pm.entity.AgendamentoServico;
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Profissional;
-import org.cuticulados.pm.entity.Servico;
-import org.cuticulados.pm.entity.StatusAgendamento;
+import org.cuticulados.pm.entity.AgendamentoEntity;
+import org.cuticulados.pm.entity.AgendamentoServicoEntity;
+import org.cuticulados.pm.entity.ClienteEntity;
+import org.cuticulados.pm.entity.ProfissionalEntity;
+import org.cuticulados.pm.entity.ServicoEntity;
 import org.cuticulados.pm.entity.TipoUsuario;
-import org.cuticulados.pm.entity.Usuario;
-import org.cuticulados.pm.service.AgendamentoService;
-import org.cuticulados.pm.service.ClienteService;
-import org.cuticulados.pm.service.ServicoService;
-import org.cuticulados.pm.service.UsuarioService;
+import org.cuticulados.pm.entity.UsuarioEntity;
+import org.cuticulados.pm.controller.agendamento.AgendamentoController;
+import org.cuticulados.pm.controller.cliente.ClienteController;
+import org.cuticulados.pm.controller.servico.ServicoController;
+import org.cuticulados.pm.controller.usuario.UsuarioController;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -39,17 +38,17 @@ import java.util.List;
 public class PainelAgendamentos extends JPanel {
 
     // services
-    private final AgendamentoService agendamentoService;
-    private final ClienteService     clienteService;
-    private final ServicoService     servicoService;
-    private final UsuarioService     usuarioService;
+    private final AgendamentoController agendamentoController;
+    private final ClienteController     clienteController;
+    private final ServicoController     servicoController;
+    private final UsuarioController     usuarioController;
 
     // componentes principais
     private JTable tabela;
     private DefaultTableModel tableModel;
 
     // lista atual
-    private List<Agendamento> agendamentosAtuais;
+    private List<AgendamentoEntity> agendamentosAtuais;
 
     // formato de data/hora exibido na tabela
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -69,10 +68,10 @@ public class PainelAgendamentos extends JPanel {
 
     // painel agendamentos
     public PainelAgendamentos() {
-        this.agendamentoService = new AgendamentoService();
-        this.clienteService     = new ClienteService();
-        this.servicoService     = new ServicoService();
-        this.usuarioService     = new UsuarioService();
+        this.agendamentoController = new AgendamentoController();
+        this.clienteController     = new ClienteController();
+        this.servicoController     = new ServicoController();
+        this.usuarioController     = new UsuarioController();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -242,13 +241,13 @@ public class PainelAgendamentos extends JPanel {
     // dados
     // recarrega todos os agendamentos e preenche a tabela
     private void carregarDados() {
-        agendamentosAtuais = agendamentoService.listarTodos();
+        agendamentosAtuais = agendamentoController.listarTodos();
         preencherTabela(agendamentosAtuais);
     }
 
-    private void preencherTabela(List<Agendamento> lista) {
+    private void preencherTabela(List<AgendamentoEntity> lista) {
         tableModel.setRowCount(0);
-        for (Agendamento ag : lista) {
+        for (AgendamentoEntity ag : lista) {
             String inicio = ag.getDataHoraInicio() != null
                     ? ag.getDataHoraInicio().format(FMT) : "—";
             String fim = ag.getDataHoraFim() != null
@@ -279,7 +278,7 @@ public class PainelAgendamentos extends JPanel {
             return;
         }
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
-        agendamentoService.concluirAgendamento(id);
+        agendamentoController.concluirAgendamento(id);
         carregarDados();
         JOptionPane.showMessageDialog(this,
                 "Agendamento #" + id + " concluído com sucesso!",
@@ -295,7 +294,7 @@ public class PainelAgendamentos extends JPanel {
             return;
         }
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
-        agendamentoService.cancelarAgendamento(id);
+        agendamentoController.cancelarAgendamento(id);
         carregarDados();
         JOptionPane.showMessageDialog(this,
                 "Agendamento #" + id + " cancelado.",
@@ -319,7 +318,7 @@ public class PainelAgendamentos extends JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            agendamentoService.removerAgendamento(id);
+            agendamentoController.removerAgendamento(id);
             carregarDados();
             JOptionPane.showMessageDialog(this,
                     "Agendamento #" + id + " removido com sucesso!",
@@ -351,7 +350,7 @@ public class PainelAgendamentos extends JPanel {
         btnFiltrar.addActionListener(e -> {
             LocalDateTime inicio = spinnerParaLocalDateTime(spInicio);
             LocalDateTime fim    = spinnerParaLocalDateTime(spFim);
-            List<Agendamento> filtrados = agendamentoService.buscarPorPeriodo(inicio, fim);
+            List<AgendamentoEntity> filtrados = agendamentoController.buscarPorPeriodo(inicio, fim);
             preencherTabela(filtrados);
             dialog.dispose();
         });
@@ -371,9 +370,9 @@ public class PainelAgendamentos extends JPanel {
         GridBagConstraints gbc = criarGbc();
 
         // combobox de clientes
-        List<Cliente> clientes = clienteService.listarTodos();
-        JComboBox<Cliente> cbCliente = new JComboBox<>();
-        clientes.forEach(cbCliente::addItem);
+        List<ClienteEntity> clienteEntities = clienteController.listarTodos();
+        JComboBox<ClienteEntity> cbCliente = new JComboBox<>();
+        clienteEntities.forEach(cbCliente::addItem);
         estilizarCombo(cbCliente);
         cbCliente.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
             JLabel lbl = new JLabel(value != null ? value.getNome() : "");
@@ -384,9 +383,9 @@ public class PainelAgendamentos extends JPanel {
         });
 
         // combobox de profissionais
-        List<Usuario> profissionais = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL)
+        List<UsuarioEntity> profissionais = usuarioController.listarPorTipo(TipoUsuario.PROFISSIONAL)
                 .stream().filter(u -> !u.isDeleted()).toList();
-        JComboBox<Usuario> cbProfissional = new JComboBox<>();
+        JComboBox<UsuarioEntity> cbProfissional = new JComboBox<>();
         profissionais.forEach(cbProfissional::addItem);
         estilizarCombo(cbProfissional);
         cbProfissional.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
@@ -402,11 +401,11 @@ public class PainelAgendamentos extends JPanel {
         JSpinner spFim    = criarSpinnerDataHora();
 
         // JList de serviços com seleção múltipla
-        List<Servico> todosServicos = servicoService.listarTodos();
-        DefaultListModel<Servico> listModel = new DefaultListModel<>();
-        todosServicos.forEach(listModel::addElement);
+        List<ServicoEntity> todosServicoEntities = servicoController.listarTodos();
+        DefaultListModel<ServicoEntity> listModel = new DefaultListModel<>();
+        todosServicoEntities.forEach(listModel::addElement);
 
-        JList<Servico> listaServicos = new JList<>(listModel);
+        JList<ServicoEntity> listaServicos = new JList<>(listModel);
         listaServicos.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         listaServicos.setFont(AppFonts.BODY);
         listaServicos.setBackground(AppColors.FUNDO_APP);
@@ -448,11 +447,11 @@ public class PainelAgendamentos extends JPanel {
 
         btnCancelar.addActionListener(e -> dialog.dispose());
         btnConfirmar.addActionListener(e -> {
-            Cliente clienteSel = (Cliente) cbCliente.getSelectedItem();
-            Usuario profSel    = (Usuario)  cbProfissional.getSelectedItem();
-            List<Servico> selecionados = listaServicos.getSelectedValuesList();
+            ClienteEntity clienteEntitySel = (ClienteEntity) cbCliente.getSelectedItem();
+            UsuarioEntity profSel    = (UsuarioEntity)  cbProfissional.getSelectedItem();
+            List<ServicoEntity> selecionados = listaServicos.getSelectedValuesList();
 
-            if (clienteSel == null || profSel == null) {
+            if (clienteEntitySel == null || profSel == null) {
                 JOptionPane.showMessageDialog(dialog,
                         "Selecione cliente e profissional.", "Campos inválidos",
                         JOptionPane.WARNING_MESSAGE);
@@ -474,16 +473,16 @@ public class PainelAgendamentos extends JPanel {
                 return;
             }
 
-            Agendamento ag = new Agendamento();
-            ag.setCliente(clienteSel);
-            ag.setProfissional((Profissional) profSel);
+            AgendamentoEntity ag = new AgendamentoEntity();
+            ag.setCliente(clienteEntitySel);
+            ag.setProfissional((ProfissionalEntity) profSel);
             ag.setDataHoraInicio(inicio);
             ag.setDataHoraFim(fim);
 
             // monta a lista de AgendamentoServico conforme exemplo do guia
-            List<AgendamentoServico> agServicos = new ArrayList<>();
-            for (Servico s : selecionados) {
-                AgendamentoServico as = new AgendamentoServico();
+            List<AgendamentoServicoEntity> agServicos = new ArrayList<>();
+            for (ServicoEntity s : selecionados) {
+                AgendamentoServicoEntity as = new AgendamentoServicoEntity();
                 as.setServico(s);
                 as.setAgendamento(ag);
                 as.setPrecoAplicado(s.getValorBase());
@@ -492,7 +491,7 @@ public class PainelAgendamentos extends JPanel {
             }
             ag.setServicos(agServicos);
 
-            String erro = agendamentoService.criarAgendamento(ag);
+            String erro = agendamentoController.criarAgendamento(ag);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao criar agendamento",
                         JOptionPane.ERROR_MESSAGE);
