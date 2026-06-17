@@ -7,13 +7,13 @@ import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
 import org.cuticulados.pm.entity.TipoTransacao;
-import org.cuticulados.pm.entity.TransacaoFinanceira;
+import org.cuticulados.pm.entity.TransacaoFinanceiraEntity;
 
 import jakarta.persistence.EntityManager;
 
 public class TransacaoRepository {
 
-    public void salvar(TransacaoFinanceira transacao) {
+    public void salvar(TransacaoFinanceiraEntity transacao) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
             if (transacao.getId() == null) {
@@ -27,9 +27,9 @@ public class TransacaoRepository {
         }
     }
 
-    public Optional<TransacaoFinanceira> buscarPorId(Long id) {
+    public Optional<TransacaoFinanceiraEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            TransacaoFinanceira t = em.find(TransacaoFinanceira.class, id);
+            TransacaoFinanceiraEntity t = em.find(TransacaoFinanceiraEntity.class, id);
             return Optional.ofNullable(t);
         } catch (Exception e) {
             System.err.println("Erro ao buscar transacao: " + e.getMessage());
@@ -37,10 +37,10 @@ public class TransacaoRepository {
         }
     }
 
-    public List<TransacaoFinanceira> listarTodas() {
+    public List<TransacaoFinanceiraEntity> listarTodas() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "FROM TransacaoFinanceira t ORDER BY t.dataTransacao DESC", TransacaoFinanceira.class)
+                            "FROM TransacaoFinanceira t ORDER BY t.dataTransacao DESC", TransacaoFinanceiraEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar transacoes: " + e.getMessage());
@@ -48,11 +48,11 @@ public class TransacaoRepository {
         }
     }
 
-    public List<TransacaoFinanceira> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+    public List<TransacaoFinanceiraEntity> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT t FROM TransacaoFinanceira t WHERE t.dataTransacao BETWEEN :inicio AND :fim ORDER BY t.dataTransacao",
-                            TransacaoFinanceira.class)
+                            TransacaoFinanceiraEntity.class)
                     .setParameter("inicio", inicio)
                     .setParameter("fim", fim)
                     .getResultList();
@@ -62,11 +62,11 @@ public class TransacaoRepository {
         }
     }
 
-    public List<TransacaoFinanceira> buscarPorTipo(TipoTransacao tipo) {
+    public List<TransacaoFinanceiraEntity> buscarPorTipo(TipoTransacao tipo) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT t FROM TransacaoFinanceira t WHERE t.tipo = :tipo ORDER BY t.dataTransacao DESC",
-                            TransacaoFinanceira.class)
+                            TransacaoFinanceiraEntity.class)
                     .setParameter("tipo", tipo)
                     .getResultList();
         } catch (Exception e) {

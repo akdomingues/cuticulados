@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.cuticulados.pm.entity.Produto;
-import org.cuticulados.pm.entity.Profissional;
-import org.cuticulados.pm.entity.VendaAvulsa;
+import org.cuticulados.pm.entity.ProdutoEntity;
+import org.cuticulados.pm.entity.ProfissionalEntity;
+import org.cuticulados.pm.entity.VendaAvulsaEntity;
 import org.cuticulados.pm.repository.ProdutoRepository;
 import org.cuticulados.pm.repository.VendaAvulsaRepository;
 
@@ -16,29 +16,29 @@ public class VendaAvulsaService {
     private final VendaAvulsaRepository vendaRepo = new VendaAvulsaRepository();
     private final ProdutoRepository produtoRepo = new ProdutoRepository();
 
-    public void registrarVenda(VendaAvulsa venda) {
+    public void registrarVenda(VendaAvulsaEntity venda) {
         try {
-            Optional<Produto> opProduto = produtoRepo.buscarPorId(venda.getProduto().getId());
+            Optional<ProdutoEntity> opProduto = produtoRepo.buscarPorId(venda.getProduto().getId());
             if (opProduto.isEmpty()) {
                 System.out.println("Produto nao encontrado.");
                 return;
             }
 
-            Produto produto = opProduto.get();
+            ProdutoEntity produtoEntity = opProduto.get();
 
-            if (produto.getQuantidadeEstoque() < venda.getQuantidade()) {
-                System.out.println("Estoque insuficiente. Disponivel: " + produto.getQuantidadeEstoque());
+            if (produtoEntity.getQuantidadeEstoque() < venda.getQuantidade()) {
+                System.out.println("Estoque insuficiente. Disponivel: " + produtoEntity.getQuantidadeEstoque());
                 return;
             }
 
-            venda.setPrecoUnitario(produto.getPrecoVenda());
+            venda.setPrecoUnitario(produtoEntity.getPrecoVenda());
             venda.setTotal(venda.getPrecoUnitario().multiply(BigDecimal.valueOf(venda.getQuantidade())));
             venda.setDataVenda(LocalDateTime.now());
 
             vendaRepo.salvar(venda);
 
-            produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - venda.getQuantidade());
-            produtoRepo.salvar(produto);
+            produtoEntity.setQuantidadeEstoque(produtoEntity.getQuantidadeEstoque() - venda.getQuantidade());
+            produtoRepo.salvar(produtoEntity);
 
             System.out.println("Venda registrada com sucesso. Total: R$ " + venda.getTotal());
         } catch (Exception e) {
@@ -46,7 +46,7 @@ public class VendaAvulsaService {
         }
     }
 
-    public List<VendaAvulsa> listarTodas() {
+    public List<VendaAvulsaEntity> listarTodas() {
         try {
             return vendaRepo.listarTodas();
         } catch (Exception e) {
@@ -72,7 +72,7 @@ public class VendaAvulsaService {
         try {
             LocalDateTime inicio = LocalDateTime.now().toLocalDate().atStartOfDay();
             LocalDateTime fim = inicio.plusDays(1);
-            List<VendaAvulsa> vendas = vendaRepo.listarTodas().stream()
+            List<VendaAvulsaEntity> vendas = vendaRepo.listarTodas().stream()
                     .filter(v -> !v.getDataVenda().isBefore(inicio) && v.getDataVenda().isBefore(fim))
                     .toList();
             if (vendas.isEmpty()) {
@@ -91,11 +91,11 @@ public class VendaAvulsaService {
 
     public String fecharVenda(Long id) {
         try {
-            Optional<VendaAvulsa> op = vendaRepo.buscarPorId(id);
+            Optional<VendaAvulsaEntity> op = vendaRepo.buscarPorId(id);
             if (op.isEmpty()) {
                 return "Venda não encontrada.";
             }
-            VendaAvulsa venda = op.get();
+            VendaAvulsaEntity venda = op.get();
             if (venda.isFechado()) {
                 return "Esta venda já está fechada.";
             }
@@ -107,12 +107,12 @@ public class VendaAvulsaService {
         }
     }
 
-    public void fecharDia(Profissional profissional) {
+    public void fecharDia(ProfissionalEntity profissionalEntity) {
         try {
             LocalDateTime inicio = LocalDateTime.now().toLocalDate().atStartOfDay();
             LocalDateTime fim = inicio.plusDays(1);
-            List<VendaAvulsa> vendas = vendaRepo.listarTodas().stream()
-                    .filter(v -> v.getProfissional().equals(profissional)
+            List<VendaAvulsaEntity> vendas = vendaRepo.listarTodas().stream()
+                    .filter(v -> v.getProfissional().equals(profissionalEntity)
                             && !v.getDataVenda().isBefore(inicio)
                             && v.getDataVenda().isBefore(fim)
                             && !v.isFechado())

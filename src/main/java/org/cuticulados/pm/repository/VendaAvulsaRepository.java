@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
-import org.cuticulados.pm.entity.VendaAvulsa;
+import org.cuticulados.pm.entity.VendaAvulsaEntity;
 
 import jakarta.persistence.EntityManager;
 
 public class VendaAvulsaRepository {
 
     //salva e atualiza a venda
-    public void salvar(VendaAvulsa venda) {
+    public void salvar(VendaAvulsaEntity venda) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
             if (venda.getId() == null) {
@@ -27,9 +27,9 @@ public class VendaAvulsaRepository {
     }
 
     //buscar a venda por ID
-    public Optional<VendaAvulsa> buscarPorId(Long id) {
+    public Optional<VendaAvulsaEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            VendaAvulsa v = em.find(VendaAvulsa.class, id);
+            VendaAvulsaEntity v = em.find(VendaAvulsaEntity.class, id);
             return Optional.ofNullable(v);
         } catch (Exception e) {
             System.err.println("Erro ao buscar venda avulsa: " + e.getMessage());
@@ -38,11 +38,11 @@ public class VendaAvulsaRepository {
     }
 
     //lista todas as vendas
-    public List<VendaAvulsa> listarTodas() {
+    public List<VendaAvulsaEntity> listarTodas() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT v FROM VendaAvulsa v JOIN FETCH v.produto JOIN FETCH v.profissional ORDER BY v.dataVenda DESC",
-                            VendaAvulsa.class)
+                            VendaAvulsaEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar vendas avulsas: " + e.getMessage());
@@ -51,11 +51,11 @@ public class VendaAvulsaRepository {
     }
 
     //buscar a venda por data
-    public List<VendaAvulsa> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+    public List<VendaAvulsaEntity> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT v FROM VendaAvulsa v WHERE v.dataVenda BETWEEN :inicio AND :fim ORDER BY v.dataVenda",
-                            VendaAvulsa.class)
+                            VendaAvulsaEntity.class)
                     .setParameter("inicio", inicio)
                     .setParameter("fim", fim)
                     .getResultList();
@@ -69,7 +69,7 @@ public class VendaAvulsaRepository {
     public void deletar(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            VendaAvulsa v = em.find(VendaAvulsa.class, id);
+            VendaAvulsaEntity v = em.find(VendaAvulsaEntity.class, id);
             if (v != null) {
                 em.remove(v);
             }

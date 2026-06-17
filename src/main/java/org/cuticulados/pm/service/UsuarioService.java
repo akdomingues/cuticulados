@@ -3,7 +3,7 @@ package org.cuticulados.pm.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.cuticulados.pm.entity.Usuario;
+import org.cuticulados.pm.entity.UsuarioEntity;
 import org.cuticulados.pm.entity.TipoUsuario;
 import org.cuticulados.pm.repository.UsuarioRepository;
 
@@ -11,24 +11,24 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepo = new UsuarioRepository();
 
-    public String cadastrarUsuario(Usuario usuario) {
+    public String cadastrarUsuario(UsuarioEntity usuarioEntity) {
         try {
-            if (usuario.getLogin() == null || usuario.getLogin().isBlank()) {
+            if (usuarioEntity.getLogin() == null || usuarioEntity.getLogin().isBlank()) {
                 return "Login é obrigatório.";
             }
-            if (usuario.getSenha() == null || usuario.getSenha().length() < 4) {
+            if (usuarioEntity.getSenha() == null || usuarioEntity.getSenha().length() < 4) {
                 return "Senha deve ter no mínimo 4 caracteres.";
             }
-            usuarioRepo.salvar(usuario);
+            usuarioRepo.salvar(usuarioEntity);
             return null;
         } catch (Exception e) {
             return "Erro ao cadastrar usuário: " + e.getMessage();
         }
     }
 
-    public Optional<Usuario> autenticar(String login, String senha) {
+    public Optional<UsuarioEntity> autenticar(String login, String senha) {
         try {
-            Optional<Usuario> op = usuarioRepo.buscarPorLogin(login);
+            Optional<UsuarioEntity> op = usuarioRepo.buscarPorLogin(login);
             if (op.isPresent() && op.get().getSenha().equals(senha)) {
                 return op;
             }
@@ -40,7 +40,7 @@ public class UsuarioService {
         }
     }
 
-    public Usuario buscarPorLogin(String login) {
+    public UsuarioEntity buscarPorLogin(String login) {
         try {
             return usuarioRepo.buscarPorLogin(login).orElse(null);
         } catch (Exception e) {
@@ -49,7 +49,7 @@ public class UsuarioService {
         }
     }
 
-    public List<Usuario> listarTodos() {
+    public List<UsuarioEntity> listarTodos() {
         try {
             return usuarioRepo.listarTodos();
         } catch (Exception e) {
@@ -58,7 +58,7 @@ public class UsuarioService {
         }
     }
 
-    public List<Usuario> listarPorTipo(TipoUsuario tipo) {
+    public List<UsuarioEntity> listarPorTipo(TipoUsuario tipo) {
         try {
             return usuarioRepo.listarTodos().stream()
                     .filter(u -> u.getTipo() == tipo)

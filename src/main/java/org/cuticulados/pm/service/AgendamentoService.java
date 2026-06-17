@@ -3,17 +3,14 @@ package org.cuticulados.pm.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import org.cuticulados.pm.entity.Agendamento;
-import org.cuticulados.pm.entity.AgendamentoServico;
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Produto;
-import org.cuticulados.pm.entity.Profissional;
-import org.cuticulados.pm.entity.Servico;
-import org.cuticulados.pm.entity.ServicoProduto;
+import org.cuticulados.pm.entity.AgendamentoEntity;
+import org.cuticulados.pm.entity.AgendamentoServicoEntity;
+import org.cuticulados.pm.entity.ClienteEntity;
+import org.cuticulados.pm.entity.ProdutoEntity;
+import org.cuticulados.pm.entity.ServicoProdutoEntity;
 import org.cuticulados.pm.entity.StatusAgendamento;
 import org.cuticulados.pm.repository.AgendamentoRepository;
 import org.cuticulados.pm.repository.ProdutoRepository;
@@ -26,45 +23,45 @@ public class AgendamentoService {
     // --- CRUD basico ---
 
     // retorna null em caso de sucesso, ou a mensagem de erro para exibir na UI
-    public String criarAgendamento(Agendamento agendamento) {
+    public String criarAgendamento(AgendamentoEntity agendamentoEntity) {
         try {
-            if (agendamento.getCliente() == null || agendamento.getProfissional() == null) {
+            if (agendamentoEntity.getCliente() == null || agendamentoEntity.getProfissional() == null) {
                 return "Cliente e profissional são obrigatórios.";
             }
 
             // regra 1: conflito de horario
             boolean conflita = agendamentoRepo.existeConflito(
-                    agendamento.getProfissional(),
-                    agendamento.getDataHoraInicio(),
-                    agendamento.getDataHoraFim());
+                    agendamentoEntity.getProfissional(),
+                    agendamentoEntity.getDataHoraInicio(),
+                    agendamentoEntity.getDataHoraFim());
             if (conflita) {
                 return "Conflito de horário! O profissional já tem atendimento nesse período.";
             }
 
             // RF05: bloquear se insumos insuficientes
-            for (AgendamentoServico as : agendamento.getServicos()) {
+            for (AgendamentoServicoEntity as : agendamentoEntity.getServicos()) {
                 if (as.getServico() == null) continue;
-                List<ServicoProduto> insumos = produtoRepo.buscarServicoProdutos(as.getServico().getId());
-                for (ServicoProduto sp : insumos) {
-                    Produto produto = sp.getProduto();
-                    if (produto.getQuantidadeEstoque() < as.getQuantidade()) {
-                        return "Estoque insuficiente para o produto '" + produto.getNome()
-                                + "'. Disponível: " + produto.getQuantidadeEstoque()
+                List<ServicoProdutoEntity> insumos = produtoRepo.buscarServicoProdutos(as.getServico().getId());
+                for (ServicoProdutoEntity sp : insumos) {
+                    ProdutoEntity produtoEntity = sp.getProduto();
+                    if (produtoEntity.getQuantidadeEstoque() < as.getQuantidade()) {
+                        return "Estoque insuficiente para o produto '" + produtoEntity.getNome()
+                                + "'. Disponível: " + produtoEntity.getQuantidadeEstoque()
                                 + ", necessário: " + as.getQuantidade();
                     }
                 }
             }
 
-            calcularValorFinal(agendamento);
-            agendamento.setStatus(StatusAgendamento.PENDENTE);
-            agendamentoRepo.salvar(agendamento);
+            calcularValorFinal(agendamentoEntity);
+            agendamentoEntity.setStatus(StatusAgendamento.PENDENTE);
+            agendamentoRepo.salvar(agendamentoEntity);
             return null; // sucesso
         } catch (Exception e) {
             return "Erro ao criar agendamento: " + e.getMessage();
         }
     }
 
-    public Optional<Agendamento> buscarPorId(Long id) {
+    public Optional<AgendamentoEntity> buscarPorId(Long id) {
         try {
             return agendamentoRepo.buscarPorId(id);
         } catch (Exception e) {
@@ -73,7 +70,7 @@ public class AgendamentoService {
         }
     }
 
-    public List<Agendamento> listarTodos() {
+    public List<AgendamentoEntity> listarTodos() {
         try {
             return agendamentoRepo.listarTodos();
         } catch (Exception e) {
@@ -82,13 +79,13 @@ public class AgendamentoService {
         }
     }
 
-    public void atualizarAgendamento(Agendamento agendamento) {
+    public void atualizarAgendamento(AgendamentoEntity agendamentoEntity) {
         try {
-            if (agendamentoRepo.buscarPorId(agendamento.getId()).isEmpty()) {
+            if (agendamentoRepo.buscarPorId(agendamentoEntity.getId()).isEmpty()) {
                 System.out.println("Agendamento nao encontrado.");
                 return;
             }
-            agendamentoRepo.salvar(agendamento);
+            agendamentoRepo.salvar(agendamentoEntity);
             System.out.println("Agendamento atualizado.");
         } catch (Exception e) {
             System.out.println("Erro ao atualizar agendamento: " + e.getMessage());
@@ -97,12 +94,12 @@ public class AgendamentoService {
 
     public void removerAgendamento(Long id) {
         try {
-            Optional<Agendamento> existente = agendamentoRepo.buscarPorId(id);
+            Optional<AgendamentoEntity> existente = agendamentoRepo.buscarPorId(id);
             if (existente.isEmpty()) {
                 System.out.println("Agendamento nao encontrado.");
                 return;
             }
-            Agendamento a = existente.get();
+            AgendamentoEntity a = existente.get();
             if (a.getStatus() == StatusAgendamento.CONCLUIDO) {
                 System.out.println("Nao e permitido remover agendamento concluido.");
                 return;
@@ -115,36 +112,36 @@ public class AgendamentoService {
     }
 
     // --- regra de negocio 2: calcular valor final com desconto de fidelidade ---
-    public void calcularValorFinal(Agendamento agendamento) {
+    public void calcularValorFinal(AgendamentoEntity agendamentoEntity) {
         try {
             BigDecimal total = BigDecimal.ZERO;
-            if (agendamento.getServicos() != null) {
-                for (AgendamentoServico as : agendamento.getServicos()) {
+            if (agendamentoEntity.getServicos() != null) {
+                for (AgendamentoServicoEntity as : agendamentoEntity.getServicos()) {
                     BigDecimal parcial = as.getPrecoAplicado().multiply(BigDecimal.valueOf(as.getQuantidade()));
                     parcial = parcial.subtract(parcial.multiply(as.getDescontoAplicado()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
                     total = total.add(parcial);
                 }
             }
 
-            Cliente cliente = agendamento.getCliente();
-            total = cliente.calcularDesconto(total);
+            ClienteEntity clienteEntity = agendamentoEntity.getCliente();
+            total = clienteEntity.calcularDesconto(total);
 
-            agendamento.setValorFinal(total.doubleValue());
+            agendamentoEntity.setValorFinal(total.doubleValue());
         } catch (Exception e) {
             System.out.println("Erro ao calcular valor final: " + e.getMessage());
-            agendamento.setValorFinal(0.0);
+            agendamentoEntity.setValorFinal(0.0);
         }
     }
 
     // --- regra de negocio 3: concluir agendamento ---
     public void concluirAgendamento(Long id) {
         try {
-            Optional<Agendamento> op = agendamentoRepo.buscarPorId(id);
+            Optional<AgendamentoEntity> op = agendamentoRepo.buscarPorId(id);
             if (op.isEmpty()) {
                 System.out.println("Agendamento nao encontrado.");
                 return;
             }
-            Agendamento a = op.get();
+            AgendamentoEntity a = op.get();
             if (a.getStatus() == StatusAgendamento.CONCLUIDO) {
                 System.out.println("Agendamento ja esta concluido.");
                 return;
@@ -166,12 +163,12 @@ public class AgendamentoService {
     // --- regra de negocio 4: cancelar agendamento ---
     public void cancelarAgendamento(Long id) {
         try {
-            Optional<Agendamento> op = agendamentoRepo.buscarPorId(id);
+            Optional<AgendamentoEntity> op = agendamentoRepo.buscarPorId(id);
             if (op.isEmpty()) {
                 System.out.println("Agendamento nao encontrado.");
                 return;
             }
-            Agendamento a = op.get();
+            AgendamentoEntity a = op.get();
             if (a.getStatus() == StatusAgendamento.CONCLUIDO) {
                 System.out.println("Nao e possivel cancelar um agendamento concluido.");
                 return;
@@ -184,7 +181,7 @@ public class AgendamentoService {
         }
     }
 
-    public List<Agendamento> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+    public List<AgendamentoEntity> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         try {
             return agendamentoRepo.buscarPorPeriodo(inicio, fim);
         } catch (Exception e) {
@@ -193,7 +190,7 @@ public class AgendamentoService {
         }
     }
 
-    public List<Agendamento> buscarPorStatus(StatusAgendamento status) {
+    public List<AgendamentoEntity> buscarPorStatus(StatusAgendamento status) {
         try {
             return agendamentoRepo.buscarPorStatus(status);
         } catch (Exception e) {

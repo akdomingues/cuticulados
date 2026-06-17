@@ -4,20 +4,20 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
-import org.cuticulados.pm.entity.Cliente;
+import org.cuticulados.pm.entity.ClienteEntity;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 public class ClienteRepository {
 
-    public void salvar(Cliente cliente) {
+    public void salvar(ClienteEntity clienteEntity) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            if (cliente.getId() == null) {
-                em.persist(cliente);
+            if (clienteEntity.getId() == null) {
+                em.persist(clienteEntity);
             } else {
-                em.merge(cliente);
+                em.merge(clienteEntity);
             }
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -25,9 +25,9 @@ public class ClienteRepository {
         }
     }
 
-    public Optional<Cliente> buscarPorId(Long id) {
+    public Optional<ClienteEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Cliente c = em.find(Cliente.class, id);
+            ClienteEntity c = em.find(ClienteEntity.class, id);
             return Optional.ofNullable(c);
         } catch (Exception e) {
             System.err.println("Erro ao buscar cliente: " + e.getMessage());
@@ -35,10 +35,10 @@ public class ClienteRepository {
         }
     }
 
-    public Optional<Cliente> buscarPorCpf(String cpf) {
+    public Optional<ClienteEntity> buscarPorCpf(String cpf) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Cliente c = em.createQuery(
-                            "SELECT c FROM Cliente c WHERE c.cpf = :cpf", Cliente.class)
+            ClienteEntity c = em.createQuery(
+                            "SELECT c FROM Cliente c WHERE c.cpf = :cpf", ClienteEntity.class)
                     .setParameter("cpf", cpf)
                     .getSingleResult();
             return Optional.ofNullable(c);
@@ -50,10 +50,10 @@ public class ClienteRepository {
         }
     }
 
-    public List<Cliente> listarTodos() {
+    public List<ClienteEntity> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT c FROM Cliente c LEFT JOIN FETCH c.agendamentos", Cliente.class)
+                            "SELECT c FROM Cliente c LEFT JOIN FETCH c.agendamentos", ClienteEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar clientes: " + e.getMessage());
@@ -61,10 +61,10 @@ public class ClienteRepository {
         }
     }
 
-    public List<Cliente> buscarPorTipo(String tipo) {
+    public List<ClienteEntity> buscarPorTipo(String tipo) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT c FROM Cliente c WHERE c.tipoCliente = :tipo", Cliente.class)
+                            "SELECT c FROM Cliente c WHERE c.tipoCliente = :tipo", ClienteEntity.class)
                     .setParameter("tipo", tipo)
                     .getResultList();
         } catch (Exception e) {
@@ -76,7 +76,7 @@ public class ClienteRepository {
     public void deletar(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            Cliente c = em.find(Cliente.class, id);
+            ClienteEntity c = em.find(ClienteEntity.class, id);
             if (c != null) {
                 em.remove(c);
             }
