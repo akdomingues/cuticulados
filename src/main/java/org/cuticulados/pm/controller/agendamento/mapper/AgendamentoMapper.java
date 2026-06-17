@@ -18,7 +18,7 @@ public class AgendamentoMapper {
         profissional.setId(request.profissionalId());
         entity.setProfissional(profissional);
 
-        entity.setDataHoraInicio(request.dataHoraInicio());
+        entity.setDataHoraInicio(request.dataHoraInicio());//
         entity.setDataHoraFim(request.dataHoraFim());
 
         return entity;
