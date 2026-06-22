@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 
 //CRIA A TABELA NO BANCO
 
-@Entity
+@Entity(name = "Produto")
 @Table(name = "produto")
 public class ProdutoEntity {
 
@@ -53,7 +53,7 @@ public class ProdutoEntity {
 
     //RELACIONAMENTO UM PARA MTS
 
-    @OneToMany(mappedBy = "produto")
+    @OneToMany(mappedBy = "produtoEntity")
     private List<ServicoProdutoEntity> servicosAssociados = new ArrayList<>();
 
     //EXECUTA ANTES DE SALVAR

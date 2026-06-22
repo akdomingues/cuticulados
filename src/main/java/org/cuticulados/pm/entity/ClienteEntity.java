@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity(name = "Cliente")
 @Table(name = "cliente")
 public class ClienteEntity extends UsuarioEntity implements Descontavel {
 
@@ -25,7 +25,7 @@ public class ClienteEntity extends UsuarioEntity implements Descontavel {
     @Column(name = "total_atendimentos_mes", nullable = false)
     private Integer totalAtendimentosMes = 0;
 
-    @OneToMany(mappedBy = "cliente")
+    @OneToMany(mappedBy = "clienteEntity")
     private List<AgendamentoEntity> agendamentoEntities = new ArrayList<>();
 
     public String getCpf() { return cpf; }

@@ -21,7 +21,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 // entidade JPA
-@Entity
+@Entity(name = "Agendamento")
 @Table(name = "agendamento")
 public class AgendamentoEntity {
 
@@ -57,10 +57,10 @@ public class AgendamentoEntity {
     private ProfissionalEntity profissionalEntity;
 
     //serviços de agendamento
-    @OneToMany(mappedBy = "agendamento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "agendamentoEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AgendamentoServicoEntity> servicos = new ArrayList<>();
 
-    @OneToOne(mappedBy = "agendamento")
+    @OneToOne(mappedBy = "agendamentoEntity")
     private TransacaoFinanceiraEntity transacao;
 
     //controle da criação e as atualizações

@@ -41,7 +41,7 @@ public class VendaAvulsaRepository {
     public List<VendaAvulsaEntity> listarTodas() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT v FROM VendaAvulsa v JOIN FETCH v.produto JOIN FETCH v.profissional ORDER BY v.dataVenda DESC",
+                            "SELECT v FROM VendaAvulsa v JOIN FETCH v.produtoEntity JOIN FETCH v.profissionalEntity ORDER BY v.dataVenda DESC",
                             VendaAvulsaEntity.class)
                     .getResultList();
         } catch (Exception e) {

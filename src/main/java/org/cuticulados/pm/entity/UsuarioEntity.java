@@ -16,7 +16,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity(name = "Usuario")
 @Table(name = "usuario")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class UsuarioEntity {

@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 /**entidade responsável pra repesentar um agendamento
  e os serviços realizados dentro dele.
 */
-@Entity
+@Entity(name = "AgendamentoServico")
 @Table(name = "agendamento_servico")
 public class AgendamentoServicoEntity {
 

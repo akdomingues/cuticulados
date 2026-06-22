@@ -21,7 +21,7 @@ import jakarta.persistence.Table;
 
 //CRIA A TABELA NO BANCO
 
-@Entity
+@Entity(name = "Servico")
 @Table(name = "servico")
 public class ServicoEntity {
 
@@ -46,12 +46,12 @@ public class ServicoEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToMany(mappedBy = "servicos")
+    @ManyToMany(mappedBy = "servicoEntities")
     private List<ProfissionalEntity> profissionais = new ArrayList<>();
 
     //RELACIONAMENTO UM PARA MTS
 
-    @OneToMany(mappedBy = "servico")
+    @OneToMany(mappedBy = "servicoEntity")
     private List<ServicoProdutoEntity> produtosUtilizados = new ArrayList<>();
 
     //EXECUTA ANTES DE SALVAR
