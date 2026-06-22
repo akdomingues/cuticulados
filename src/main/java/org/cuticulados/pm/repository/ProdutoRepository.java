@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
-import org.cuticulados.pm.entity.Produto;
-import org.cuticulados.pm.entity.ServicoProduto;
+import org.cuticulados.pm.entity.ProdutoEntity;
+import org.cuticulados.pm.entity.ServicoProdutoEntity;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -16,13 +16,13 @@ public class ProdutoRepository {
 
     //SALVAR
 
-    public void salvar(Produto produto) {
+    public void salvar(ProdutoEntity produtoEntity) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            if (produto.getId() == null) {
-                em.persist(produto);
+            if (produtoEntity.getId() == null) {
+                em.persist(produtoEntity);
             } else {
-                em.merge(produto);
+                em.merge(produtoEntity);
             }
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -32,9 +32,9 @@ public class ProdutoRepository {
 
     //BUSCAR
 
-    public Optional<Produto> buscarPorId(Long id) {
+    public Optional<ProdutoEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Produto p = em.find(Produto.class, id);
+            ProdutoEntity p = em.find(ProdutoEntity.class, id);
             return Optional.ofNullable(p);
         } catch (Exception e) {
             System.err.println("Erro ao buscar produto: " + e.getMessage());
@@ -42,10 +42,10 @@ public class ProdutoRepository {
         }
     }
 
-    public Optional<Produto> buscarPorNome(String nome) {
+    public Optional<ProdutoEntity> buscarPorNome(String nome) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Produto p = em.createQuery(
-                            "SELECT p FROM Produto p WHERE LOWER(p.nome) = LOWER(:nome)", Produto.class)
+            ProdutoEntity p = em.createQuery(
+                            "SELECT p FROM Produto p WHERE LOWER(p.nome) = LOWER(:nome)", ProdutoEntity.class)
                     .setParameter("nome", nome)
                     .getSingleResult();
             return Optional.ofNullable(p);
@@ -59,19 +59,19 @@ public class ProdutoRepository {
 
     //LISTAR
 
-    public List<Produto> listarTodos() {
+    public List<ProdutoEntity> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            return em.createQuery("FROM Produto", Produto.class).getResultList();
+            return em.createQuery("FROM Produto", ProdutoEntity.class).getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar produtos: " + e.getMessage());
             return List.of();
         }
     }
 
-    public List<Produto> buscarEstoqueBaixo() {
+    public List<ProdutoEntity> buscarEstoqueBaixo() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT p FROM Produto p WHERE p.quantidadeEstoque <= p.quantidadeMinima", Produto.class)
+                            "SELECT p FROM Produto p WHERE p.quantidadeEstoque <= p.quantidadeMinima", ProdutoEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao buscar estoque baixo: " + e.getMessage());
@@ -79,11 +79,11 @@ public class ProdutoRepository {
         }
     }
 
-    public List<ServicoProduto> buscarServicoProdutos(Long servicoId) {
+    public List<ServicoProdutoEntity> buscarServicoProdutos(Long servicoId) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                     "SELECT sp FROM ServicoProduto sp JOIN FETCH sp.produto WHERE sp.servico.id = :sid",
-                    ServicoProduto.class)
+                    ServicoProdutoEntity.class)
                     .setParameter("sid", servicoId)
                     .getResultList();
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class ProdutoRepository {
     public void deletar(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            Produto p = em.find(Produto.class, id);
+            ProdutoEntity p = em.find(ProdutoEntity.class, id);
             if (p != null) {
                 em.remove(p);
             }

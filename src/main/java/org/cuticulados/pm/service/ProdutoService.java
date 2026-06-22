@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import org.cuticulados.pm.entity.Produto;
+import org.cuticulados.pm.entity.ProdutoEntity;
 import org.cuticulados.pm.repository.ProdutoRepository;
 
 public class ProdutoService {
@@ -15,22 +15,22 @@ public class ProdutoService {
 
 //CADASTRO
 
-    public String cadastrarProduto(Produto produto) {
+    public String cadastrarProduto(ProdutoEntity produtoEntity) {
         try {
-            if (produto.getNome() == null || produto.getNome().isBlank()) {
+            if (produtoEntity.getNome() == null || produtoEntity.getNome().isBlank()) {
                 return "Nome do produto é obrigatório.";
             }
-            if (produto.getPrecoVenda().compareTo(BigDecimal.ZERO) <= 0) {
+            if (produtoEntity.getPrecoVenda().compareTo(BigDecimal.ZERO) <= 0) {
                 return "Preço de venda deve ser maior que zero.";
             }
-            produtoRepo.salvar(produto);
+            produtoRepo.salvar(produtoEntity);
             return null;
         } catch (Exception e) {
             return "Erro ao cadastrar produto: " + e.getMessage();
         }
     }
 
-    public Optional<Produto> buscarPorId(Long id) {
+    public Optional<ProdutoEntity> buscarPorId(Long id) {
         try {
             return produtoRepo.buscarPorId(id);
         } catch (Exception e) {
@@ -39,7 +39,7 @@ public class ProdutoService {
         }
     }
 
-    public List<Produto> listarTodos() {
+    public List<ProdutoEntity> listarTodos() {
         try {
             return produtoRepo.listarTodos();
         } catch (Exception e) {
@@ -50,13 +50,13 @@ public class ProdutoService {
 
     //ATUALIZAR
 
-    public String atualizarProduto(Produto produto) {
+    public String atualizarProduto(ProdutoEntity produtoEntity) {
         try {
-            Optional<Produto> existente = produtoRepo.buscarPorId(produto.getId());
+            Optional<ProdutoEntity> existente = produtoRepo.buscarPorId(produtoEntity.getId());
             if (existente.isEmpty()) {
                 return "Produto não encontrado.";
             }
-            produtoRepo.salvar(produto);
+            produtoRepo.salvar(produtoEntity);
             return null;
         } catch (Exception e) {
             return "Erro ao atualizar produto: " + e.getMessage();
@@ -78,18 +78,18 @@ public class ProdutoService {
     }
 
     //BUSCA E VERIFICA O ESTOQUE
-    public List<Produto> verificarEstoqueBaixo() {
+    public List<ProdutoEntity> verificarEstoqueBaixo() {
         try {
-            List<Produto> produtos = produtoRepo.buscarEstoqueBaixo();
-            if (produtos.isEmpty()) {
+            List<ProdutoEntity> produtoEntities = produtoRepo.buscarEstoqueBaixo();
+            if (produtoEntities.isEmpty()) {
                 System.out.println("Nenhum produto com estoque baixo.");
             } else {
-                for (Produto p : produtos) {
+                for (ProdutoEntity p : produtoEntities) {
                     System.out.println(p.getNome() + " | estoque: " + p.getQuantidadeEstoque() + " | minimo: " +
                             p.getQuantidadeMinima());
                 }
             }
-            return produtos;
+            return produtoEntities;
         } catch (Exception e) {
             System.out.println("Erro ao verificar estoque baixo: " + e.getMessage());
             return List.of();

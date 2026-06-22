@@ -1,7 +1,7 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Produto;
-import org.cuticulados.pm.service.ProdutoService;
+import org.cuticulados.pm.entity.ProdutoEntity;
+import org.cuticulados.pm.controller.produto.ProdutoController;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -28,7 +28,7 @@ import java.util.List;
 public class PainelProdutos extends JPanel {
 
     // services
-    private final ProdutoService produtoService;
+    private final ProdutoController produtoController;
 
     // componentes principais
     private JTable tabela;
@@ -36,7 +36,7 @@ public class PainelProdutos extends JPanel {
     private JTextField campoBusca;
 
     // lista atual
-    private List<Produto> produtosAtuais;
+    private List<ProdutoEntity> produtosAtuais;
 
     // colunas
     private static final String[] COLUNAS = {"ID", "Nome", "Estoque", "Mínimo", "Preço Custo", "Preço Venda"};
@@ -47,7 +47,7 @@ public class PainelProdutos extends JPanel {
 
     // painel produtos
     public PainelProdutos() {
-        this.produtoService = new ProdutoService();
+        this.produtoController = new ProdutoController();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -248,13 +248,13 @@ public class PainelProdutos extends JPanel {
     // dados
     // recarrega a lista completa do banco e atualiza a tabela
     private void carregarDados() {
-        produtosAtuais = produtoService.listarTodos();
+        produtosAtuais = produtoController.listarTodos();
         preencherTabela(produtosAtuais);
     }
 
-    private void preencherTabela(List<Produto> lista) {
+    private void preencherTabela(List<ProdutoEntity> lista) {
         tableModel.setRowCount(0);
-        for (Produto p : lista) {
+        for (ProdutoEntity p : lista) {
             tableModel.addRow(new Object[]{
                     p.getId(),
                     p.getNome(),
@@ -273,7 +273,7 @@ public class PainelProdutos extends JPanel {
             return;
         }
         String low = termo.toLowerCase();
-        List<Produto> filtrados = produtosAtuais.stream()
+        List<ProdutoEntity> filtrados = produtosAtuais.stream()
                 .filter(p -> p.getNome().toLowerCase().contains(low))
                 .toList();
         preencherTabela(filtrados);
@@ -320,13 +320,13 @@ public class PainelProdutos extends JPanel {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            Produto p = new Produto();
+            ProdutoEntity p = new ProdutoEntity();
             p.setNome(nome);
             p.setPrecoCusto(BigDecimal.valueOf(((Number) fCusto.getValue()).doubleValue()));
             p.setPrecoVenda(BigDecimal.valueOf(((Number) fVenda.getValue()).doubleValue()));
             p.setQuantidadeEstoque(((Number) fEstoq.getValue()).intValue());
             p.setQuantidadeMinima(((Number) fMinimo.getValue()).intValue());
-            String erro = produtoService.cadastrarProduto(p);
+            String erro = produtoController.cadastrarProduto(p);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao cadastrar", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -353,7 +353,7 @@ public class PainelProdutos extends JPanel {
         }
 
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
-        Produto p = produtoService.buscarPorId(id).orElse(null);
+        ProdutoEntity p = produtoController.buscarPorId(id).orElse(null);
         if (p == null) {
             JOptionPane.showMessageDialog(this,
                     "Produto não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -387,7 +387,7 @@ public class PainelProdutos extends JPanel {
         btnSalvar.addActionListener(e -> {
             p.setPrecoVenda(BigDecimal.valueOf(((Number) fVenda.getValue()).doubleValue()));
             p.setQuantidadeEstoque(((Number) fEstoq.getValue()).intValue());
-            String erro = produtoService.atualizarProduto(p);
+            String erro = produtoController.atualizarProduto(p);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao atualizar", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -423,7 +423,7 @@ public class PainelProdutos extends JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            String erro = produtoService.removerProduto(id);
+            String erro = produtoController.removerProduto(id);
             if (erro != null) {
                 JOptionPane.showMessageDialog(this, erro, "Erro ao remover", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -437,7 +437,7 @@ public class PainelProdutos extends JPanel {
 
     // abre dialog listando apenas produtos abaixo do estoque mínimo
     private void abrirDialogAlertas() {
-        List<Produto> baixo = produtoService.verificarEstoqueBaixo();
+        List<ProdutoEntity> baixo = produtoController.verificarEstoqueBaixo();
 
         JDialog dialog = criarDialogBase("Alertas de Estoque Baixo", 500, 380);
 
@@ -452,7 +452,7 @@ public class PainelProdutos extends JPanel {
             DefaultTableModel alertModel = new DefaultTableModel(colAlerta, 0) {
                 @Override public boolean isCellEditable(int r, int c) { return false; }
             };
-            for (Produto p : baixo) {
+            for (ProdutoEntity p : baixo) {
                 alertModel.addRow(new Object[]{
                         p.getNome(), p.getQuantidadeEstoque(), p.getQuantidadeMinima()
                 });

@@ -1,8 +1,8 @@
 package org.cuticulados.pm.ui.frames;
 
-import org.cuticulados.pm.entity.Agendamento;
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Servico;
+import org.cuticulados.pm.entity.AgendamentoEntity;
+import org.cuticulados.pm.entity.ClienteEntity;
+import org.cuticulados.pm.entity.ServicoEntity;
 import org.cuticulados.pm.service.AgendamentoService;
 import org.cuticulados.pm.service.ServicoService;
 import org.cuticulados.pm.ui.theme.AppColors;
@@ -36,7 +36,7 @@ public class ClienteFrame extends JFrame {
     private final ServicoService     servicoService;
 
     // dados do usuário logado
-    private final Cliente clienteLogado;
+    private final ClienteEntity clienteEntityLogado;
 
     // layout central
     private JPanel painelCentral;
@@ -54,8 +54,8 @@ public class ClienteFrame extends JFrame {
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // cliente frame
-    public ClienteFrame(Cliente cliente) {
-        this.clienteLogado      = cliente;
+    public ClienteFrame(ClienteEntity clienteEntity) {
+        this.clienteEntityLogado = clienteEntity;
         this.agendamentoService = new AgendamentoService();
         this.servicoService     = new ServicoService();
 
@@ -208,13 +208,13 @@ public class ClienteFrame extends JFrame {
         painel.setOpaque(false);
 
         // avatarzinho em circulo com a inciial do nome
-        JPanel avatar = criarAvatar(clienteLogado.getNome());
+        JPanel avatar = criarAvatar(clienteEntityLogado.getNome());
 
         JPanel info = new JPanel();
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
         info.setOpaque(false);
 
-        JLabel lblNome = new JLabel(abreviarNome(clienteLogado.getNome()));
+        JLabel lblNome = new JLabel(abreviarNome(clienteEntityLogado.getNome()));
         lblNome.setFont(AppFonts.SMALL);
         lblNome.setForeground(new Color(255, 255, 255, 218));
 
@@ -309,10 +309,10 @@ public class ClienteFrame extends JFrame {
 
     private void carregarAgendamentos(DefaultTableModel model) {
         model.setRowCount(0);
-        List<Agendamento> todos = agendamentoService.listarTodos();
-        for (Agendamento ag : todos) {
+        List<AgendamentoEntity> todos = agendamentoService.listarTodos();
+        for (AgendamentoEntity ag : todos) {
             if (ag.getCliente() == null) continue;
-            if (!ag.getCliente().getId().equals(clienteLogado.getId())) continue;
+            if (!ag.getCliente().getId().equals(clienteEntityLogado.getId())) continue;
 
             String servicos = ag.getServicos().stream()
                     .map(as -> as.getServico().getDescricao())
@@ -419,7 +419,7 @@ public class ClienteFrame extends JFrame {
 
     private void carregarServicos(DefaultTableModel model) {
         model.setRowCount(0);
-        for (Servico s : servicoService.listarTodos()) {
+        for (ServicoEntity s : servicoService.listarTodos()) {
             model.addRow(new Object[]{
                     s.getDescricao(),
                     String.format("R$ %.2f", s.getValorBase()),
@@ -516,7 +516,7 @@ public class ClienteFrame extends JFrame {
         topbar.add(lbl, BorderLayout.WEST);
 
         // badge com nome do cliente
-        JLabel badge = new JLabel(clienteLogado.getNome());
+        JLabel badge = new JLabel(clienteEntityLogado.getNome());
         badge.setFont(AppFonts.SMALL);
         badge.setForeground(AppColors.BADGE_FREQ_FRENTE);
         badge.setOpaque(true);

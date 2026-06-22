@@ -1,13 +1,13 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Produto;
-import org.cuticulados.pm.entity.Profissional;
+import org.cuticulados.pm.entity.ProdutoEntity;
+import org.cuticulados.pm.entity.ProfissionalEntity;
 import org.cuticulados.pm.entity.TipoUsuario;
-import org.cuticulados.pm.entity.Usuario;
-import org.cuticulados.pm.entity.VendaAvulsa;
-import org.cuticulados.pm.service.ProdutoService;
-import org.cuticulados.pm.service.UsuarioService;
-import org.cuticulados.pm.service.VendaAvulsaService;
+import org.cuticulados.pm.entity.UsuarioEntity;
+import org.cuticulados.pm.entity.VendaAvulsaEntity;
+import org.cuticulados.pm.controller.produto.ProdutoController;
+import org.cuticulados.pm.controller.usuario.UsuarioController;
+import org.cuticulados.pm.controller.venda.VendaAvulsaController;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -33,16 +33,16 @@ import java.util.List;
 public class PainelVendasAvulsas extends JPanel {
 
     // services
-    private final VendaAvulsaService vendaAvulsaService;
-    private final ProdutoService     produtoService;
-    private final UsuarioService     usuarioService;
+    private final VendaAvulsaController vendaAvulsaController;
+    private final ProdutoController     produtoController;
+    private final UsuarioController     usuarioController;
 
     // componentes principais
     private JTable tabela;
     private DefaultTableModel tableModel;
 
     // lista atual
-    private List<VendaAvulsa> vendasAtuais;
+    private List<VendaAvulsaEntity> vendasAtuais;
 
     // formato de data exibido na tabela
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -56,9 +56,9 @@ public class PainelVendasAvulsas extends JPanel {
 
     // painel vendas avulsas
     public PainelVendasAvulsas() {
-        this.vendaAvulsaService = new VendaAvulsaService();
-        this.produtoService     = new ProdutoService();
-        this.usuarioService     = new UsuarioService();
+        this.vendaAvulsaController = new VendaAvulsaController();
+        this.produtoController     = new ProdutoController();
+        this.usuarioController     = new UsuarioController();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -211,13 +211,13 @@ public class PainelVendasAvulsas extends JPanel {
     // dados
     // recarrega todas as vendas e preenche a tabela
     private void carregarDados() {
-        vendasAtuais = vendaAvulsaService.listarTodas();
+        vendasAtuais = vendaAvulsaController.listarTodas();
         preencherTabela(vendasAtuais);
     }
 
-    private void preencherTabela(List<VendaAvulsa> lista) {
+    private void preencherTabela(List<VendaAvulsaEntity> lista) {
         tableModel.setRowCount(0);
-        for (VendaAvulsa v : lista) {
+        for (VendaAvulsaEntity v : lista) {
             String data    = v.getDataVenda() != null ? v.getDataVenda().format(FMT) : "—";
             String produto = v.getProduto() != null ? v.getProduto().getNome() : "—";
             String total   = v.getTotal() != null
@@ -257,7 +257,7 @@ public class PainelVendasAvulsas extends JPanel {
                 JOptionPane.QUESTION_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            String erro = vendaAvulsaService.fecharVenda(id);
+            String erro = vendaAvulsaController.fecharVenda(id);
             if (erro != null) {
                 JOptionPane.showMessageDialog(this, erro, "Erro ao fechar venda", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -286,7 +286,7 @@ public class PainelVendasAvulsas extends JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            vendaAvulsaService.removerVenda(id);
+            vendaAvulsaController.removerVenda(id);
             carregarDados();
             JOptionPane.showMessageDialog(this,
                     "Venda #" + id + " removida com sucesso!",
@@ -304,9 +304,9 @@ public class PainelVendasAvulsas extends JPanel {
         GridBagConstraints gbc = criarGbc();
 
         // combobox de produtos com nome e estoque disponível
-        List<Produto> produtos = produtoService.listarTodos();
-        JComboBox<Produto> cbProduto = new JComboBox<>();
-        produtos.forEach(cbProduto::addItem);
+        List<ProdutoEntity> produtoEntities = produtoController.listarTodos();
+        JComboBox<ProdutoEntity> cbProduto = new JComboBox<>();
+        produtoEntities.forEach(cbProduto::addItem);
         estilizarCombo(cbProduto);
         cbProduto.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
             String texto = value != null
@@ -320,9 +320,9 @@ public class PainelVendasAvulsas extends JPanel {
         });
 
         // combobox de profissionais ativos
-        List<Usuario> profissionais = usuarioService.listarPorTipo(TipoUsuario.PROFISSIONAL)
+        List<UsuarioEntity> profissionais = usuarioController.listarPorTipo(TipoUsuario.PROFISSIONAL)
                 .stream().filter(u -> !u.isDeleted()).toList();
-        JComboBox<Usuario> cbProfissional = new JComboBox<>();
+        JComboBox<UsuarioEntity> cbProfissional = new JComboBox<>();
         profissionais.forEach(cbProfissional::addItem);
         estilizarCombo(cbProfissional);
         cbProfissional.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
@@ -334,8 +334,8 @@ public class PainelVendasAvulsas extends JPanel {
         });
 
         // spinner de quantidade — máximo é o estoque do produto selecionado
-        Produto produtoAtual = (Produto) cbProduto.getSelectedItem();
-        int estoqueMax = produtoAtual != null ? produtoAtual.getQuantidadeEstoque() : 1;
+        ProdutoEntity produtoEntityAtual = (ProdutoEntity) cbProduto.getSelectedItem();
+        int estoqueMax = produtoEntityAtual != null ? produtoEntityAtual.getQuantidadeEstoque() : 1;
         SpinnerNumberModel modelQtd = new SpinnerNumberModel(1, 1, Math.max(1, estoqueMax), 1);
         JSpinner spQtd = criarSpinner(modelQtd);
 
@@ -372,8 +372,8 @@ public class PainelVendasAvulsas extends JPanel {
 
         btnCancelar.addActionListener(e -> dialog.dispose());
         btnConfirmar.addActionListener(e -> {
-            Produto prodSel  = (Produto) cbProduto.getSelectedItem();
-            Usuario profSel  = (Usuario) cbProfissional.getSelectedItem();
+            ProdutoEntity prodSel  = (ProdutoEntity) cbProduto.getSelectedItem();
+            UsuarioEntity profSel  = (UsuarioEntity) cbProfissional.getSelectedItem();
             int quantidade   = ((Number) spQtd.getValue()).intValue();
 
             if (prodSel == null || profSel == null) {
@@ -389,12 +389,12 @@ public class PainelVendasAvulsas extends JPanel {
                 return;
             }
 
-            VendaAvulsa venda = new VendaAvulsa();
+            VendaAvulsaEntity venda = new VendaAvulsaEntity();
             venda.setProduto(prodSel);
-            venda.setProfissional((Profissional) profSel);
+            venda.setProfissional((ProfissionalEntity) profSel);
             venda.setQuantidade(quantidade);
 
-            vendaAvulsaService.registrarVenda(venda);
+            vendaAvulsaController.registrarVenda(venda);
             dialog.dispose();
             carregarDados();
             JOptionPane.showMessageDialog(PainelVendasAvulsas.this,
@@ -408,11 +408,11 @@ public class PainelVendasAvulsas extends JPanel {
     }
 
     // recalcula o total em tempo real conforme produto e quantidade selecionados
-    private void atualizarTotal(JComboBox<Produto> cbProduto,
+    private void atualizarTotal(JComboBox<ProdutoEntity> cbProduto,
                                 JSpinner spQtd,
                                 SpinnerNumberModel modelQtd,
                                 JLabel lblTotal) {
-        Produto p = (Produto) cbProduto.getSelectedItem();
+        ProdutoEntity p = (ProdutoEntity) cbProduto.getSelectedItem();
         if (p == null) {
             lblTotal.setText("Total: R$ 0,00");
             return;
