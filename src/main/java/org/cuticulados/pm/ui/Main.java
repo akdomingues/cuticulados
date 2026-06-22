@@ -2,8 +2,11 @@ package org.cuticulados.pm.ui;
 
 import org.cuticulados.pm.config.FlywayConfig;
 import org.cuticulados.pm.config.JpaUtil;
-import org.cuticulados.pm.entity.*;
-import org.cuticulados.pm.service.*;
+import org.cuticulados.pm.entity.Profissional;
+import org.cuticulados.pm.entity.TipoUsuario;
+import org.cuticulados.pm.entity.Usuario;
+import org.cuticulados.pm.service.UsuarioService;
+import org.cuticulados.pm.service.VendaAvulsaService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,17 +24,9 @@ import java.util.Scanner;
  */
 public class Main {
 
-    private static final AgendamentoService  agendamentoService  = new AgendamentoService();
-    private static final ClienteService      clienteService      = new ClienteService();
     private static final UsuarioService      usuarioService      = new UsuarioService();
-    private static final ProdutoService      produtoService      = new ProdutoService();
-    private static final ServicoService      servicoService      = new ServicoService();
     private static final VendaAvulsaService  vendaAvulsaService  = new VendaAvulsaService();
-    private static final RelatorioService    relatorioService    = new RelatorioService();
-
     private static final Scanner scanner = new Scanner(System.in);
-    private static final DateTimeFormatter FMT_DATA      = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter FMT_DATA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     /**
      * Método principal: inicializa infraestrutura e inicia o fluxo de autenticação.
@@ -40,7 +35,7 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
-            System.out.println("=== Cuticulados — Sistema de Gestão ===");
+            System.out.println("=== Cuticulados — Inicializando Ambiente Visual ===");
             FlywayConfig.executarMigracoes();
             JpaUtil.inicializar();
 
@@ -191,7 +186,7 @@ public class Main {
                         System.out.printf(" [%d] %s — R$ %.2f (%dmin)%n",
                                 s.getId(), s.getDescricao(), s.getValorBase(), s.getDuracaoMinutos()));
                 case "0" -> loop = false;
-                default  -> System.out.println("Opção inválida.");
+                default  -> System.out.println("Acesse via Painel Visual.");
             }
         }
     }
