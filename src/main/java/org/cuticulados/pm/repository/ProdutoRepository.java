@@ -82,7 +82,7 @@ public class ProdutoRepository {
     public List<ServicoProdutoEntity> buscarServicoProdutos(Long servicoId) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                    "SELECT sp FROM ServicoProduto sp JOIN FETCH sp.produto WHERE sp.servico.id = :sid",
+                    "SELECT sp FROM ServicoProduto sp JOIN FETCH sp.produtoEntity WHERE sp.servicoEntity.id = :sid",
                     ServicoProdutoEntity.class)
                     .setParameter("sid", servicoId)
                     .getResultList();

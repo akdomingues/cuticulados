@@ -30,7 +30,7 @@ public class AgendamentoRepository {
     public Optional<AgendamentoEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             AgendamentoEntity a = em.createQuery(
-                            "SELECT a FROM Agendamento a LEFT JOIN FETCH a.servicos LEFT JOIN FETCH a.cliente WHERE a.id = :id",
+                            "SELECT a FROM Agendamento a LEFT JOIN FETCH a.servicos LEFT JOIN FETCH a.clienteEntity WHERE a.id = :id",
                             AgendamentoEntity.class)
                     .setParameter("id", id)
                     .getSingleResult();
@@ -74,8 +74,8 @@ public class AgendamentoRepository {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT a FROM Agendamento a " +
-                                    "JOIN a.cliente c " +
-                                    "JOIN a.profissional p " +
+                                    "JOIN a.clienteEntity c " +
+                                    "JOIN a.profissionalEntity p " +
                                     "WHERE a.dataHoraInicio BETWEEN :inicio AND :fim " +
                                     "ORDER BY a.dataHoraInicio", AgendamentoEntity.class)
                     .setParameter("inicio", inicio)
@@ -91,7 +91,7 @@ public class AgendamentoRepository {
     public boolean existeConflito(ProfissionalEntity profissionalEntity, LocalDateTime inicio, LocalDateTime fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             Long count = em.createQuery(
-                            "SELECT COUNT(a) FROM Agendamento a WHERE a.profissional = :prof " +
+                            "SELECT COUNT(a) FROM Agendamento a WHERE a.profissionalEntity = :prof " +
                                     "AND a.status <> 'CANCELADO' " +
                                     "AND a.dataHoraInicio < :fim AND a.dataHoraFim > :inicio", Long.class)
                     .setParameter("prof", profissionalEntity)

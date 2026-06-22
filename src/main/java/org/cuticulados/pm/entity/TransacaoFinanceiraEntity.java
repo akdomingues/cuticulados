@@ -16,7 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity(name = "TransacaoFinanceira")
 @Table(name = "transacao_financeira")
 public class TransacaoFinanceiraEntity {
 

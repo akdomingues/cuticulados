@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 
 //CRIA A TABELA NO BANCO
 
-@Entity
+@Entity(name = "ServicoProduto")
 @Table(name = "servico_produto")
 public class ServicoProdutoEntity {
 

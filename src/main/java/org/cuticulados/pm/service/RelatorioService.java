@@ -156,12 +156,12 @@ public class RelatorioService {
     public void gerarRankingServicos(LocalDate inicio, LocalDate fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             List<Object[]> resultado = em.createQuery(
-                    "SELECT aserv.servico.descricao, COUNT(aserv.id), SUM(aserv.precoAplicado * aserv.quantidade) " +
+                    "SELECT aserv.servicoEntity.descricao, COUNT(aserv.id), SUM(aserv.precoAplicado * aserv.quantidade) " +
                     "FROM AgendamentoServico aserv " +
-                    "JOIN aserv.agendamento ag " +
+                    "JOIN aserv.agendamentoEntity ag " +
                     "WHERE ag.dataHoraInicio BETWEEN :inicio AND :fim " +
                     "AND ag.status = 'CONCLUIDO' " +
-                    "GROUP BY aserv.servico.descricao " +
+                    "GROUP BY aserv.servicoEntity.descricao " +
                     "ORDER BY COUNT(aserv.id) DESC", Object[].class)
                     .setParameter("inicio", inicio.atStartOfDay())
                     .setParameter("fim", fim.atTime(23, 59, 59))

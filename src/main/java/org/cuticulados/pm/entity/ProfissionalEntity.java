@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity(name = "Profissional")
 @Table(name = "profissional")
 public class ProfissionalEntity extends UsuarioEntity {
 
@@ -26,7 +26,7 @@ public class ProfissionalEntity extends UsuarioEntity {
     )
     private List<ServicoEntity> servicoEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "profissional")
+    @OneToMany(mappedBy = "profissionalEntity")
     private List<AgendamentoEntity> agendamentoEntities = new ArrayList<>();
 
     public String getEspecialidade() { return especialidade; }

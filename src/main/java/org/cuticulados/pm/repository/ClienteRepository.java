@@ -53,7 +53,7 @@ public class ClienteRepository {
     public List<ClienteEntity> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
-                            "SELECT c FROM Cliente c LEFT JOIN FETCH c.agendamentos", ClienteEntity.class)
+                            "SELECT c FROM Cliente c LEFT JOIN FETCH c.agendamentoEntities", ClienteEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar clientes: " + e.getMessage());

@@ -15,7 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity(name = "VendaAvulsa")
 @Table(name = "venda_avulsa")
 public class VendaAvulsaEntity {
 
@@ -43,7 +43,7 @@ public class VendaAvulsaEntity {
     @JoinColumn(name = "profissional_id", nullable = false)
     private ProfissionalEntity profissionalEntity;
 
-    @OneToOne(mappedBy = "vendaAvulsa")
+    @OneToOne(mappedBy = "vendaAvulsaEntity")
     private TransacaoFinanceiraEntity transacao;
 
     @Column(nullable = false)
