@@ -7,16 +7,16 @@
 
     <persistence-unit name="cuticulados" transaction-type="RESOURCE_LOCAL">
         <!-- lista das entidades jpa do projeto -->
-        <class>org.cuticulados.pm.entity.Usuario</class>
-        <class>org.cuticulados.pm.entity.Profissional</class>
-        <class>org.cuticulados.pm.entity.Cliente</class>
-        <class>org.cuticulados.pm.entity.Servico</class>
-        <class>org.cuticulados.pm.entity.ServicoProduto</class>
-        <class>org.cuticulados.pm.entity.Produto</class>
-        <class>org.cuticulados.pm.entity.Agendamento</class>
-        <class>org.cuticulados.pm.entity.AgendamentoServico</class>
-        <class>org.cuticulados.pm.entity.VendaAvulsa</class>
-        <class>org.cuticulados.pm.entity.TransacaoFinanceira</class>
+        <class>org.cuticulados.pm.entity.UsuarioEntity</class>
+        <class>org.cuticulados.pm.entity.ProfissionalEntity</class>
+        <class>org.cuticulados.pm.entity.ClienteEntity</class>
+        <class>org.cuticulados.pm.entity.ServicoEntity</class>
+        <class>org.cuticulados.pm.entity.ServicoProdutoEntity</class>
+        <class>org.cuticulados.pm.entity.ProdutoEntity</class>
+        <class>org.cuticulados.pm.entity.AgendamentoEntity</class>
+        <class>org.cuticulados.pm.entity.AgendamentoServicoEntity</class>
+        <class>org.cuticulados.pm.entity.VendaAvulsaEntity</class>
+        <class>org.cuticulados.pm.entity.TransacaoFinanceiraEntity</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 

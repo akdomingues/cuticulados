@@ -1,8 +1,7 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.TipoUsuario;
-import org.cuticulados.pm.service.ClienteService;
+import org.cuticulados.pm.entity.ServicoEntity;
+import org.cuticulados.pm.controller.servico.ServicoController;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -18,16 +17,17 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Painel de gerenciamento de clientes do perfil ADMIN.
- * Exibe tabela com todos os clientes e permite cadastrar, atualizar e remover.
+ * Painel de gerenciamento de serviços do perfil ADMIN.
+ * Exibe tabela com todos os serviços e permite cadastrar, atualizar e remover.
  */
-public class PainelClientes extends JPanel {
+public class PainelServicos extends JPanel {
 
     // services
-    private final ClienteService clienteService;
+    private final ServicoController servicoController;
 
     // componentes principais
     private JTable tabela;
@@ -35,16 +35,14 @@ public class PainelClientes extends JPanel {
     private JTextField campoBusca;
 
     // lista atual
-    private List<Cliente> clientesAtuais;
+    private List<ServicoEntity> servicosAtuais;
 
-    // nomes das colunas
-    private static final String[] COLUNAS = {
-            "ID", "Nome", "CPF", "Telefone", "Tipo", "Atend/mês"
-    };
+    // colunas
+    private static final String[] COLUNAS = {"ID", "Descrição", "Valor Base (R$)", "Duração (min)"};
 
-    // painel cliente
-    public PainelClientes() {
-        this.clienteService = new ClienteService();
+    // painel servicos
+    public PainelServicos() {
+        this.servicoController = new ServicoController();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -57,7 +55,7 @@ public class PainelClientes extends JPanel {
         add(criarConteudo(), BorderLayout.CENTER);
     }
 
-    // topbar com titulo
+    // topbar com titulo e botões
     private JPanel criarTopbar() {
         JPanel topbar = new JPanel(new BorderLayout());
         topbar.setBackground(AppColors.FUNDO_CARD);
@@ -67,7 +65,7 @@ public class PainelClientes extends JPanel {
         ));
         topbar.setPreferredSize(new Dimension(0, AppDimensions.TOPBAR_HEIGHT));
 
-        JLabel titulo = new JLabel("Clientes");
+        JLabel titulo = new JLabel("Serviços");
         titulo.setFont(AppFonts.TITLE);
         titulo.setForeground(AppColors.TEXTO_TITULO);
         topbar.add(titulo, BorderLayout.WEST);
@@ -83,12 +81,11 @@ public class PainelClientes extends JPanel {
 
         JButton btnCadastrar = new JButton("+ Cadastrar");
         JButton btnAtualizar = new JButton("Atualizar");
-        JButton btnRemover = new JButton("Remover");
+        JButton btnRemover   = new JButton("Remover");
 
         AppTheme.stylePrimaryButton(btnCadastrar, false);
         AppTheme.styleOutlineButton(btnAtualizar, false);
         AppTheme.styleOutlineButton(btnRemover, false);
-
         btnRemover.setForeground(AppColors.PERIGO);
 
         btnCadastrar.addActionListener(e -> abrirDialogCadastro());
@@ -106,18 +103,13 @@ public class PainelClientes extends JPanel {
         JPanel conteudo = new JPanel(new BorderLayout(0, 12));
         conteudo.setOpaque(false);
         conteudo.setBorder(new EmptyBorder(16, 20, 16, 20));
-
         conteudo.add(criarBarraBusca(), BorderLayout.NORTH);
         conteudo.add(criarPainelTabela(), BorderLayout.CENTER);
         return conteudo;
     }
 
-    // campo de busca e filtro
+    // campo de busca com filtro em tempo real
     private JPanel criarBarraBusca() {
-        JPanel painel = new JPanel(new BorderLayout(6, 0));
-        painel.setOpaque(false);
-        painel.setMaximumSize(new Dimension(320, AppDimensions.INPUT_HEIGHT));
-
         JPanel wrapper = new JPanel(new BorderLayout(6, 0));
         wrapper.setBackground(AppColors.FUNDO_CARD);
         wrapper.setBorder(new CompoundBorder(
@@ -135,7 +127,6 @@ public class PainelClientes extends JPanel {
         campoBusca.setForeground(AppColors.TEXTO_CORPO);
         campoBusca.setBorder(BorderFactory.createEmptyBorder());
         campoBusca.setOpaque(false);
-
         campoBusca.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -199,40 +190,27 @@ public class PainelClientes extends JPanel {
             @Override
             public Component getTableCellRendererComponent(
                     JTable t, Object value, boolean selected, boolean focused, int row, int col) {
-
                 super.getTableCellRendererComponent(t, value, selected, focused, row, col);
                 setBorder(new EmptyBorder(0, 12, 0, 12));
                 setFont(AppFonts.TABLE);
-
                 if (!selected) {
                     setBackground(row % 2 == 0
                             ? AppColors.FUNDO_CARD
                             : AppColors.FUNDO_LINHA_ALTERNADA);
                     setForeground(AppColors.TEXTO_CORPO);
                 }
-
-                // coluna do tipo
-                if (col == 4 && value != null) {
-                    String tipo = value.toString().toLowerCase();
-                    if ("frequente".equals(tipo)) {
-                        setForeground(selected ? AppColors.TEXTO_TITULO : AppColors.BADGE_FREQ_FRENTE);
-                        if (!selected) setBackground(AppColors.BADGE_FREQ_FUNDO);
-                    } else {
-                        setForeground(selected ? AppColors.TEXTO_TITULO : AppColors.BADGE_NOVO_FRENTE);
-                        if (!selected) setBackground(AppColors.BADGE_NOVO_FUNDO);
-                    }
-                }
+                // coluna de valor em roxo claro
+                if (col == 2 && !selected) setForeground(AppColors.ROXO_CLARO);
                 return this;
             }
         };
-
         for (int i = 0; i < COLUNAS.length; i++) {
             tabela.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
     }
 
     private void configurarLargurasColunas() {
-        int[] larguras = {50, 200, 130, 120, 90, 80};
+        int[] larguras = {50, 280, 150, 120};
         for (int i = 0; i < larguras.length; i++) {
             tabela.getColumnModel().getColumn(i).setPreferredWidth(larguras[i]);
         }
@@ -242,109 +220,88 @@ public class PainelClientes extends JPanel {
     // dados
     // recarrega a lista completa do banco e atualiza a tabela
     private void carregarDados() {
-        clientesAtuais = clienteService.listarTodos();
-        preencherTabela(clientesAtuais);
+        servicosAtuais = servicoController.listarTodos();
+        preencherTabela(servicosAtuais);
     }
 
-    private void preencherTabela(List<Cliente> clientes) {
+    private void preencherTabela(List<ServicoEntity> lista) {
         tableModel.setRowCount(0);
-        for (Cliente c : clientes) {
+        for (ServicoEntity s : lista) {
             tableModel.addRow(new Object[]{
-                    c.getId(),
-                    c.getNome(),
-                    c.getCpf(),
-                    c.getTelefone(),
-                    c.getTipoCliente(),
-                    c.getTotalAtendimentosMes()
+                    s.getId(),
+                    s.getDescricao(),
+                    String.format("R$ %.2f", s.getValorBase()),
+                    s.getDuracaoMinutos() + " min"
             });
         }
     }
 
     private void filtrarTabela(String termo) {
-        if (clientesAtuais == null) return;
+        if (servicosAtuais == null) return;
         if (termo.isBlank()) {
-            preencherTabela(clientesAtuais);
+            preencherTabela(servicosAtuais);
             return;
         }
         String low = termo.toLowerCase();
-        List<Cliente> filtrados = clientesAtuais.stream()
-                .filter(c -> c.getNome().toLowerCase().contains(low)
-                        || c.getCpf().contains(low)
-                        || (c.getTelefone() != null && c.getTelefone().contains(low)))
+        List<ServicoEntity> filtrados = servicosAtuais.stream()
+                .filter(s -> s.getDescricao().toLowerCase().contains(low))
                 .toList();
         preencherTabela(filtrados);
     }
 
     // ações do crud
     private void abrirDialogCadastro() {
-        JDialog dialog = criarDialogBase("Cadastrar Cliente", 490, 380);
+        JDialog dialog = criarDialogBase("Cadastrar Serviço", 460, 310);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
         form.setBorder(new EmptyBorder(16, 16, 8, 16));
         GridBagConstraints gbc = criarGbc();
 
-        JTextField fNome = criarCampo();
-        JTextField fEmail = criarCampo();
-        JTextField fLogin = criarCampo();
-        JPasswordField fSenha = new JPasswordField();
-        estilizarCampo(fSenha);
-        JTextField fCpf = criarCampo();
-        JTextField fTelefone = criarCampo();
+        JTextField fDescricao = criarCampo();
 
-        adicionarCampoForm(form, gbc, "Nome", fNome, 0, 0, false);
-        adicionarCampoForm(form, gbc, "E-mail", fEmail, 0, 1, false);
-        adicionarCampoForm(form, gbc, "Login", fLogin, 1, 0, false);
-        adicionarCampoForm(form, gbc, "Senha", fSenha, 1, 1, false);
-        adicionarCampoForm(form, gbc, "CPF", fCpf, 2, 0, false);
-        adicionarCampoForm(form, gbc, "Telefone", fTelefone, 2, 1, false);
+        SpinnerNumberModel modelValor = new SpinnerNumberModel(0.0, 0.0, 99999.99, 0.5);
+        JSpinner fValor = criarSpinner(modelValor);
 
-        JButton btnSalvar = new JButton("Salvar");
+        SpinnerNumberModel modelDuracao = new SpinnerNumberModel(30, 1, 9999, 5);
+        JSpinner fDuracao = criarSpinner(modelDuracao);
+
+        adicionarCampoForm(form, gbc, "Descrição", fDescricao, 0, 0, true);
+        adicionarCampoForm(form, gbc, "Valor Base (R$)", fValor, 1, 0, false);
+        adicionarCampoForm(form, gbc, "Duração (min)", fDuracao, 1, 1, false);
+
+        JButton btnSalvar   = new JButton("Salvar");
         JButton btnCancelar = new JButton("Cancelar");
         AppTheme.stylePrimaryButton(btnSalvar, true);
         AppTheme.styleOutlineButton(btnCancelar, true);
 
         btnCancelar.addActionListener(e -> dialog.dispose());
         btnSalvar.addActionListener(e -> {
-            String nome = fNome.getText().trim();
-            String email = fEmail.getText().trim();
-            String login = fLogin.getText().trim();
-            String senha = new String(fSenha.getPassword()).trim();
-            String cpf = fCpf.getText().trim();
-            String telefone = fTelefone.getText().trim();
-
-            if (nome.isBlank() || email.isBlank() || login.isBlank()
-                    || senha.isBlank() || cpf.isBlank() || telefone.isBlank()) {
+            String descricao = fDescricao.getText().trim();
+            if (descricao.isBlank()) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Todos os campos são obrigatórios.", "Campos inválidos",
+                        "A descrição é obrigatória.", "Campo inválido",
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            Cliente c = new Cliente();
-            c.setNome(nome);
-            c.setEmail(email);
-            c.setLogin(login);
-            c.setSenha(senha);
-            c.setCpf(cpf);
-            c.setTelefone(telefone);
-            c.setTipo(TipoUsuario.CLIENTE);
-
-            String erro = clienteService.cadastrarCliente(c);
+            ServicoEntity s = new ServicoEntity();
+            s.setDescricao(descricao);
+            s.setValorBase(BigDecimal.valueOf(((Number) fValor.getValue()).doubleValue()));
+            s.setDuracaoMinutos(((Number) fDuracao.getValue()).intValue());
+            String erro = servicoController.cadastrarServico(s);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao cadastrar", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             dialog.dispose();
             carregarDados();
-            JOptionPane.showMessageDialog(PainelClientes.this,
-                    "Cliente \"" + nome + "\" cadastrado com sucesso!",
+            JOptionPane.showMessageDialog(PainelServicos.this,
+                    "Serviço \"" + descricao + "\" cadastrado com sucesso!",
                     "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         });
 
-        JPanel rodape = criarRodapeDialog(btnCancelar, btnSalvar);
         dialog.add(form, BorderLayout.CENTER);
-        dialog.add(rodape, BorderLayout.SOUTH);
+        dialog.add(criarRodapeDialog(btnCancelar, btnSalvar), BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
@@ -352,74 +309,72 @@ public class PainelClientes extends JPanel {
         int linhaSel = tabela.getSelectedRow();
         if (linhaSel < 0) {
             JOptionPane.showMessageDialog(this,
-                    "Selecione um cliente na tabela para atualizar.",
+                    "Selecione um serviço na tabela para atualizar.",
                     "Nenhuma seleção", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
-        Cliente c = clienteService.buscarPorId(id).orElse(null);
-        if (c == null) {
+        ServicoEntity s = servicoController.buscarPorId(id).orElse(null);
+        if (s == null) {
             JOptionPane.showMessageDialog(this,
-                    "Cliente não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    "Serviço não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        JDialog dialog = criarDialogBase("Atualizar Cliente", 490, 280);
+        JDialog dialog = criarDialogBase("Atualizar Serviço", 460, 310);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
         form.setBorder(new EmptyBorder(16, 16, 8, 16));
         GridBagConstraints gbc = criarGbc();
 
-        JTextField fNome = criarCampo();
-        JTextField fTelefone = criarCampo();
-        JTextField fEmail = criarCampo();
+        JTextField fDescricao = criarCampo();
+        fDescricao.setText(s.getDescricao());
 
-        fNome.setText(c.getNome());
-        fTelefone.setText(c.getTelefone());
-        fEmail.setText(c.getEmail());
+        SpinnerNumberModel modelValor = new SpinnerNumberModel(
+                s.getValorBase().doubleValue(), 0.0, 99999.99, 0.5);
+        JSpinner fValor = criarSpinner(modelValor);
 
-        adicionarCampoForm(form, gbc, "Nome", fNome, 0, 0, false);
-        adicionarCampoForm(form, gbc, "Telefone", fTelefone, 0, 1, false);
-        adicionarCampoForm(form, gbc, "E-mail", fEmail, 1, 0, true);
+        SpinnerNumberModel modelDuracao = new SpinnerNumberModel(
+                s.getDuracaoMinutos().intValue(), 1, 9999, 5);
+        JSpinner fDuracao = criarSpinner(modelDuracao);
 
-        JButton btnSalvar = new JButton("Salvar");
+        adicionarCampoForm(form, gbc, "Descrição", fDescricao, 0, 0, true);
+        adicionarCampoForm(form, gbc, "Valor Base (R$)", fValor, 1, 0, false);
+        adicionarCampoForm(form, gbc, "Duração (min)", fDuracao, 1, 1, false);
+
+        JButton btnSalvar   = new JButton("Salvar");
         JButton btnCancelar = new JButton("Cancelar");
         AppTheme.stylePrimaryButton(btnSalvar, true);
         AppTheme.styleOutlineButton(btnCancelar, true);
 
         btnCancelar.addActionListener(e -> dialog.dispose());
         btnSalvar.addActionListener(e -> {
-            String nome = fNome.getText().trim();
-            String telefone = fTelefone.getText().trim();
-            String email = fEmail.getText().trim();
-
-            if (nome.isBlank() || telefone.isBlank() || email.isBlank()) {
+            String descricao = fDescricao.getText().trim();
+            if (descricao.isBlank()) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Nome, Telefone e E-mail são obrigatório.",
-                        "Campo inválido", JOptionPane.WARNING_MESSAGE);
+                        "A descrição é obrigatória.", "Campo inválido",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            c.setNome(nome);
-            c.setTelefone(telefone);
-            c.setEmail(email);
-            String erro = clienteService.atualizarCliente(c);
+            s.setDescricao(descricao);
+            s.setValorBase(BigDecimal.valueOf(((Number) fValor.getValue()).doubleValue()));
+            s.setDuracaoMinutos(((Number) fDuracao.getValue()).intValue());
+            String erro = servicoController.atualizarServico(s);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao atualizar", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             dialog.dispose();
             carregarDados();
-            JOptionPane.showMessageDialog(PainelClientes.this,
-                    "Cliente atualizado com sucesso!",
+            JOptionPane.showMessageDialog(PainelServicos.this,
+                    "Serviço atualizado com sucesso!",
                     "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         });
 
-        JPanel rodape = criarRodapeDialog(btnCancelar, btnSalvar);
         dialog.add(form, BorderLayout.CENTER);
-        dialog.add(rodape, BorderLayout.SOUTH);
+        dialog.add(criarRodapeDialog(btnCancelar, btnSalvar), BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
@@ -427,35 +382,34 @@ public class PainelClientes extends JPanel {
         int linhaSel = tabela.getSelectedRow();
         if (linhaSel < 0) {
             JOptionPane.showMessageDialog(this,
-                    "Selecione um cliente na tabela para remover.",
+                    "Selecione um serviço na tabela para remover.",
                     "Nenhuma seleção", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        String nome = (String) tableModel.getValueAt(linhaSel, 1);
+        String descricao = (String) tableModel.getValueAt(linhaSel, 1);
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
 
         int resp = JOptionPane.showConfirmDialog(this,
-                "Deseja remover o cliente \"" + nome + "\"?\nEsta ação não pode ser desfeita.",
+                "Deseja remover o serviço \"" + descricao + "\"?\nEsta ação não pode ser desfeita.",
                 "Confirmar Remoção",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            String erro = clienteService.removerCliente(id);
+            String erro = servicoController.removerServico(id);
             if (erro != null) {
                 JOptionPane.showMessageDialog(this, erro, "Erro ao remover", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             carregarDados();
             JOptionPane.showMessageDialog(this,
-                    "Cliente \"" + nome + "\" removido com sucesso!",
+                    "Serviço \"" + descricao + "\" removido com sucesso!",
                     "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    // ajuda de ui
-
+    // ajuda de ui (msm padrão de PainelClientes)
     private JDialog criarDialogBase(String titulo, int largura, int altura) {
         Window owner = SwingUtilities.getWindowAncestor(this);
         JDialog dialog = (owner instanceof Frame)
@@ -485,11 +439,6 @@ public class PainelClientes extends JPanel {
 
     private JTextField criarCampo() {
         JTextField f = new JTextField();
-        estilizarCampo(f);
-        return f;
-    }
-
-    private void estilizarCampo(JTextField f) {
         f.setFont(AppFonts.BODY);
         f.setForeground(AppColors.TEXTO_CORPO);
         f.setBackground(AppColors.FUNDO_APP);
@@ -498,6 +447,20 @@ public class PainelClientes extends JPanel {
                 new EmptyBorder(5, 8, 5, 8)
         ));
         f.setPreferredSize(new Dimension(0, AppDimensions.INPUT_HEIGHT));
+        return f;
+    }
+
+    private JSpinner criarSpinner(SpinnerModel model) {
+        JSpinner spinner = new JSpinner(model);
+        spinner.setFont(AppFonts.BODY);
+        spinner.setPreferredSize(new Dimension(0, AppDimensions.INPUT_HEIGHT));
+        spinner.setBorder(new LineBorder(AppColors.BORDA, 1, false));
+        JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) spinner.getEditor();
+        editor.getTextField().setFont(AppFonts.BODY);
+        editor.getTextField().setForeground(AppColors.TEXTO_CORPO);
+        editor.getTextField().setBackground(AppColors.FUNDO_APP);
+        editor.getTextField().setBorder(new EmptyBorder(4, 6, 4, 6));
+        return spinner;
     }
 
     private GridBagConstraints criarGbc() {
@@ -508,17 +471,6 @@ public class PainelClientes extends JPanel {
         return g;
     }
 
-    /**
-     * Adiciona um par label + campo ao formulário em GridBagLayout.
-     *
-     * @param form  painel alvo
-     * @param gbc   constraints reutilizável
-     * @param label texto do rótulo
-     * @param campo componente de entrada
-     * @param linha linha lógica (par de linhas label+campo = linha*2)
-     * @param col   0 ou 1
-     * @param full  true para ocupar as 2 colunas (grid-column: 1/-1)
-     */
     private void adicionarCampoForm(JPanel form, GridBagConstraints gbc,
                                     String label, JComponent campo,
                                     int linha, int col, boolean full) {

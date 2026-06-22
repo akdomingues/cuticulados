@@ -1,8 +1,8 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Cliente;
+import org.cuticulados.pm.entity.ClienteEntity;
 import org.cuticulados.pm.entity.TipoUsuario;
-import org.cuticulados.pm.service.ClienteService;
+import org.cuticulados.pm.controller.cliente.ClienteController;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -27,7 +27,7 @@ import java.util.List;
 public class PainelClientes extends JPanel {
 
     // services
-    private final ClienteService clienteService;
+    private final ClienteController clienteController;
 
     // componentes principais
     private JTable tabela;
@@ -35,7 +35,7 @@ public class PainelClientes extends JPanel {
     private JTextField campoBusca;
 
     // lista atual
-    private List<Cliente> clientesAtuais;
+    private List<ClienteEntity> clientesAtuais;
 
     // nomes das colunas
     private static final String[] COLUNAS = {
@@ -44,7 +44,7 @@ public class PainelClientes extends JPanel {
 
     // painel cliente
     public PainelClientes() {
-        this.clienteService = new ClienteService();
+        this.clienteController = new ClienteController();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -242,13 +242,13 @@ public class PainelClientes extends JPanel {
     // dados
     // recarrega a lista completa do banco e atualiza a tabela
     private void carregarDados() {
-        clientesAtuais = clienteService.listarTodos();
+        clientesAtuais = clienteController.listarTodos();
         preencherTabela(clientesAtuais);
     }
 
-    private void preencherTabela(List<Cliente> clientes) {
+    private void preencherTabela(List<ClienteEntity> clienteEntities) {
         tableModel.setRowCount(0);
-        for (Cliente c : clientes) {
+        for (ClienteEntity c : clienteEntities) {
             tableModel.addRow(new Object[]{
                     c.getId(),
                     c.getNome(),
@@ -267,7 +267,7 @@ public class PainelClientes extends JPanel {
             return;
         }
         String low = termo.toLowerCase();
-        List<Cliente> filtrados = clientesAtuais.stream()
+        List<ClienteEntity> filtrados = clientesAtuais.stream()
                 .filter(c -> c.getNome().toLowerCase().contains(low)
                         || c.getCpf().contains(low)
                         || (c.getTelefone() != null && c.getTelefone().contains(low)))
@@ -321,7 +321,7 @@ public class PainelClientes extends JPanel {
                 return;
             }
 
-            Cliente c = new Cliente();
+            ClienteEntity c = new ClienteEntity();
             c.setNome(nome);
             c.setEmail(email);
             c.setLogin(login);
@@ -330,7 +330,7 @@ public class PainelClientes extends JPanel {
             c.setTelefone(telefone);
             c.setTipo(TipoUsuario.CLIENTE);
 
-            String erro = clienteService.cadastrarCliente(c);
+            String erro = clienteController.cadastrarCliente(c);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao cadastrar", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -358,7 +358,7 @@ public class PainelClientes extends JPanel {
         }
 
         Long id = (Long) tableModel.getValueAt(linhaSel, 0);
-        Cliente c = clienteService.buscarPorId(id).orElse(null);
+        ClienteEntity c = clienteController.buscarPorId(id).orElse(null);
         if (c == null) {
             JOptionPane.showMessageDialog(this,
                     "Cliente não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -405,7 +405,7 @@ public class PainelClientes extends JPanel {
             c.setNome(nome);
             c.setTelefone(telefone);
             c.setEmail(email);
-            String erro = clienteService.atualizarCliente(c);
+            String erro = clienteController.atualizarCliente(c);
             if (erro != null) {
                 JOptionPane.showMessageDialog(dialog, erro, "Erro ao atualizar", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -442,7 +442,7 @@ public class PainelClientes extends JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (resp == JOptionPane.YES_OPTION) {
-            String erro = clienteService.removerCliente(id);
+            String erro = clienteController.removerCliente(id);
             if (erro != null) {
                 JOptionPane.showMessageDialog(this, erro, "Erro ao remover", JOptionPane.ERROR_MESSAGE);
                 return;

@@ -5,21 +5,21 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cuticulados.pm.config.JpaUtil;
-import org.cuticulados.pm.entity.Agendamento;
-import org.cuticulados.pm.entity.Profissional;
+import org.cuticulados.pm.entity.AgendamentoEntity;
+import org.cuticulados.pm.entity.ProfissionalEntity;
 import org.cuticulados.pm.entity.StatusAgendamento;
 
 import jakarta.persistence.EntityManager;
 
 public class AgendamentoRepository {
 
-    public void salvar(Agendamento agendamento) {
+    public void salvar(AgendamentoEntity agendamentoEntity) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            if (agendamento.getId() == null) {
-                em.persist(agendamento);
+            if (agendamentoEntity.getId() == null) {
+                em.persist(agendamentoEntity);
             } else {
-                em.merge(agendamento);
+                em.merge(agendamentoEntity);
             }
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -27,11 +27,11 @@ public class AgendamentoRepository {
         }
     }
 
-    public Optional<Agendamento> buscarPorId(Long id) {
+    public Optional<AgendamentoEntity> buscarPorId(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
-            Agendamento a = em.createQuery(
+            AgendamentoEntity a = em.createQuery(
                             "SELECT a FROM Agendamento a LEFT JOIN FETCH a.servicos LEFT JOIN FETCH a.cliente WHERE a.id = :id",
-                            Agendamento.class)
+                            AgendamentoEntity.class)
                     .setParameter("id", id)
                     .getSingleResult();
             return Optional.ofNullable(a);
@@ -41,14 +41,14 @@ public class AgendamentoRepository {
         }
     }
 
-    public List<Agendamento> listarTodos() {
+    public List<AgendamentoEntity> listarTodos() {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             // DISTINCT evita duplicatas causadas pelo JOIN FETCH na coleção servicos.
             // Não fazemos JOIN FETCH de cliente/profissional pois ambos usam herança JOINED
             // no Hibernate 6, o que gera SQL incorreto quando combinado com JOIN FETCH.
             return em.createQuery(
                             "SELECT DISTINCT a FROM Agendamento a LEFT JOIN FETCH a.servicos ORDER BY a.dataHoraInicio DESC",
-                            Agendamento.class)
+                            AgendamentoEntity.class)
                     .getResultList();
         } catch (Exception e) {
             System.err.println("Erro ao listar agendamentos: " + e.getMessage());
@@ -56,11 +56,11 @@ public class AgendamentoRepository {
         }
     }
 
-    public List<Agendamento> buscarPorStatus(StatusAgendamento status) {
+    public List<AgendamentoEntity> buscarPorStatus(StatusAgendamento status) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT a FROM Agendamento a WHERE a.status = :status ORDER BY a.dataHoraInicio",
-                            Agendamento.class)
+                            AgendamentoEntity.class)
                     .setParameter("status", status)
                     .getResultList();
         } catch (Exception e) {
@@ -70,14 +70,14 @@ public class AgendamentoRepository {
     }
 
     /** JOIN entre Agendamento, Cliente e Profissional */
-    public List<Agendamento> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+    public List<AgendamentoEntity> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             return em.createQuery(
                             "SELECT a FROM Agendamento a " +
                                     "JOIN a.cliente c " +
                                     "JOIN a.profissional p " +
                                     "WHERE a.dataHoraInicio BETWEEN :inicio AND :fim " +
-                                    "ORDER BY a.dataHoraInicio", Agendamento.class)
+                                    "ORDER BY a.dataHoraInicio", AgendamentoEntity.class)
                     .setParameter("inicio", inicio)
                     .setParameter("fim", fim)
                     .getResultList();
@@ -88,13 +88,13 @@ public class AgendamentoRepository {
     }
 
     /** Verifica se profissional tem conflito de horario */
-    public boolean existeConflito(Profissional profissional, LocalDateTime inicio, LocalDateTime fim) {
+    public boolean existeConflito(ProfissionalEntity profissionalEntity, LocalDateTime inicio, LocalDateTime fim) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             Long count = em.createQuery(
                             "SELECT COUNT(a) FROM Agendamento a WHERE a.profissional = :prof " +
                                     "AND a.status <> 'CANCELADO' " +
                                     "AND a.dataHoraInicio < :fim AND a.dataHoraFim > :inicio", Long.class)
-                    .setParameter("prof", profissional)
+                    .setParameter("prof", profissionalEntity)
                     .setParameter("inicio", inicio)
                     .setParameter("fim", fim)
                     .getSingleResult();
@@ -108,7 +108,7 @@ public class AgendamentoRepository {
     public void deletar(Long id) {
         try (EntityManager em = JpaUtil.getEntityManager()) {
             em.getTransaction().begin();
-            Agendamento a = em.find(Agendamento.class, id);
+            AgendamentoEntity a = em.find(AgendamentoEntity.class, id);
             if (a != null) {
                 em.remove(a);
             }

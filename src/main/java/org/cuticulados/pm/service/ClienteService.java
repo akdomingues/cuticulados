@@ -3,8 +3,7 @@ package org.cuticulados.pm.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.cuticulados.pm.entity.Cliente;
-import org.cuticulados.pm.entity.Usuario;
+import org.cuticulados.pm.entity.ClienteEntity;
 import org.cuticulados.pm.repository.ClienteRepository;
 
 public class ClienteService {
@@ -13,25 +12,25 @@ public class ClienteService {
 
     // --- CRUD basico ---
 
-    public String cadastrarCliente(Cliente cliente) {
+    public String cadastrarCliente(ClienteEntity clienteEntity) {
         try {
-            if (cliente.getCpf() == null || cliente.getCpf().isBlank()) {
+            if (clienteEntity.getCpf() == null || clienteEntity.getCpf().isBlank()) {
                 return "CPF é obrigatório.";
             }
-            Optional<Cliente> existente = clienteRepo.buscarPorCpf(cliente.getCpf());
+            Optional<ClienteEntity> existente = clienteRepo.buscarPorCpf(clienteEntity.getCpf());
             if (existente.isPresent()) {
                 return "Já existe um cliente com esse CPF.";
             }
-            cliente.setTipoCliente("novo");
-            cliente.setTotalAtendimentosMes(0);
-            clienteRepo.salvar(cliente);
+            clienteEntity.setTipoCliente("novo");
+            clienteEntity.setTotalAtendimentosMes(0);
+            clienteRepo.salvar(clienteEntity);
             return null;
         } catch (Exception e) {
             return "Erro ao cadastrar cliente: " + e.getMessage();
         }
     }
 
-    public Optional<Cliente> buscarPorId(Long id) {
+    public Optional<ClienteEntity> buscarPorId(Long id) {
         try {
             return clienteRepo.buscarPorId(id);
         } catch (Exception e) {
@@ -40,7 +39,7 @@ public class ClienteService {
         }
     }
 
-    public List<Cliente> listarTodos() {
+    public List<ClienteEntity> listarTodos() {
         try {
             return clienteRepo.listarTodos();
         } catch (Exception e) {
@@ -49,13 +48,13 @@ public class ClienteService {
         }
     }
 
-    public String atualizarCliente(Cliente cliente) {
+    public String atualizarCliente(ClienteEntity clienteEntity) {
         try {
-            Optional<Cliente> existente = clienteRepo.buscarPorId(cliente.getId());
+            Optional<ClienteEntity> existente = clienteRepo.buscarPorId(clienteEntity.getId());
             if (existente.isEmpty()) {
                 return "Cliente não encontrado.";
             }
-            clienteRepo.salvar(cliente);
+            clienteRepo.salvar(clienteEntity);
             return null;
         } catch (Exception e) {
             return "Erro ao atualizar cliente: " + e.getMessage();
@@ -64,7 +63,7 @@ public class ClienteService {
 
     public String removerCliente(Long id) {
         try {
-            Optional<Cliente> existente = clienteRepo.buscarPorId(id);
+            Optional<ClienteEntity> existente = clienteRepo.buscarPorId(id);
             if (existente.isEmpty()) {
                 return "Cliente não encontrado.";
             }
@@ -76,9 +75,9 @@ public class ClienteService {
     }
 
     // --- regra de negocio 1: verificar fidelidade (sem ser CRUD) ---
-    public String verificarFidelidade(Cliente cliente) {
+    public String verificarFidelidade(ClienteEntity clienteEntity) {
         try {
-            Integer atendimentos = cliente.getTotalAtendimentosMes();
+            Integer atendimentos = clienteEntity.getTotalAtendimentosMes();
             if (atendimentos == null) atendimentos = 0;
             if (atendimentos >= 3) {
                 return "frequente";

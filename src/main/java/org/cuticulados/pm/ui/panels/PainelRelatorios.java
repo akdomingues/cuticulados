@@ -1,9 +1,9 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Produto;
-import org.cuticulados.pm.service.ProdutoService;
-import org.cuticulados.pm.service.RelatorioService;
-import org.cuticulados.pm.service.VendaAvulsaService;
+import org.cuticulados.pm.entity.ProdutoEntity;
+import org.cuticulados.pm.controller.produto.ProdutoController;
+import org.cuticulados.pm.controller.relatorio.RelatorioController;
+import org.cuticulados.pm.controller.venda.VendaAvulsaController;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
 import org.cuticulados.pm.ui.theme.AppFonts;
@@ -31,15 +31,15 @@ import java.util.List;
 public class PainelRelatorios extends JPanel {
 
     // services
-    private final RelatorioService   relatorioService;
-    private final VendaAvulsaService vendaAvulsaService;
-    private final ProdutoService     produtoService;
+    private final RelatorioController   relatorioController;
+    private final VendaAvulsaController vendaAvulsaController;
+    private final ProdutoController     produtoController;
 
     // painel relatorios
     public PainelRelatorios() {
-        this.relatorioService   = new RelatorioService();
-        this.vendaAvulsaService = new VendaAvulsaService();
-        this.produtoService     = new ProdutoService();
+        this.relatorioController   = new RelatorioController();
+        this.vendaAvulsaController = new VendaAvulsaController();
+        this.produtoController     = new ProdutoController();
         setLayout(new BorderLayout());
         setBackground(AppColors.FUNDO_APP);
         inicializarComponentes();
@@ -99,7 +99,7 @@ public class PainelRelatorios extends JPanel {
             LocalDate inicio = spinnerParaLocalDate(spInicio);
             LocalDate fim    = spinnerParaLocalDate(spFim);
             area.setText(capturarSaida(() ->
-                    relatorioService.gerarRelatorioAgendamentos(inicio, fim)));
+                    relatorioController.gerarRelatorioAgendamentos(inicio, fim)));
         });
 
         painel.add(criarBarraFiltro("Início", spInicio, "Fim", spFim, btnGerar), BorderLayout.NORTH);
@@ -121,7 +121,7 @@ public class PainelRelatorios extends JPanel {
             LocalDate inicio = spinnerParaLocalDate(spInicio);
             LocalDate fim    = spinnerParaLocalDate(spFim);
             area.setText(capturarSaida(() ->
-                    relatorioService.gerarRelatorioFinanceiro(inicio, fim)));
+                    relatorioController.gerarRelatorioFinanceiro(inicio, fim)));
         });
 
         painel.add(criarBarraFiltro("Início", spInicio, "Fim", spFim, btnGerar), BorderLayout.NORTH);
@@ -157,8 +157,8 @@ public class PainelRelatorios extends JPanel {
 
     private void carregarEstoque(DefaultTableModel model) {
         model.setRowCount(0);
-        List<Produto> lista = produtoService.listarTodos();
-        for (Produto p : lista) {
+        List<ProdutoEntity> lista = produtoController.listarTodos();
+        for (ProdutoEntity p : lista) {
             String status = p.getQuantidadeEstoque() <= p.getQuantidadeMinima() ? "⚠ BAIXO" : "OK";
             model.addRow(new Object[]{
                     p.getNome(),
@@ -179,7 +179,7 @@ public class PainelRelatorios extends JPanel {
         JButton btnAtualizar = new JButton("↻ Atualizar");
         AppTheme.styleOutlineButton(btnAtualizar, true);
         btnAtualizar.addActionListener(e ->
-                area.setText(capturarSaida(() -> relatorioService.imprimirSaldo())));
+                area.setText(capturarSaida(() -> relatorioController.imprimirSaldo())));
 
         JPanel barra = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         barra.setOpaque(false);
@@ -189,7 +189,7 @@ public class PainelRelatorios extends JPanel {
         painel.add(new JScrollPane(area), BorderLayout.CENTER);
 
         // carrega automaticamente ao abrir
-        area.setText(capturarSaida(() -> relatorioService.imprimirSaldo()));
+        area.setText(capturarSaida(() -> relatorioController.imprimirSaldo()));
         return painel;
     }
 
@@ -202,7 +202,7 @@ public class PainelRelatorios extends JPanel {
         JButton btnAtualizar = new JButton("↻ Atualizar");
         AppTheme.styleOutlineButton(btnAtualizar, true);
         btnAtualizar.addActionListener(e ->
-                area.setText(capturarSaida(() -> vendaAvulsaService.relatorioVendasDoDia())));
+                area.setText(capturarSaida(() -> vendaAvulsaController.relatorioVendasDoDia())));
 
         JPanel barra = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         barra.setOpaque(false);
@@ -211,7 +211,7 @@ public class PainelRelatorios extends JPanel {
         painel.add(barra, BorderLayout.NORTH);
         painel.add(new JScrollPane(area), BorderLayout.CENTER);
 
-        area.setText(capturarSaida(() -> vendaAvulsaService.relatorioVendasDoDia()));
+        area.setText(capturarSaida(() -> vendaAvulsaController.relatorioVendasDoDia()));
         return painel;
     }
 
@@ -235,7 +235,7 @@ public class PainelRelatorios extends JPanel {
             LocalDate fim    = spinnerParaLocalDate(spFim);
 
             // captura saída do terminal e exibe em tabela simples de texto
-            String saida = capturarSaida(() -> relatorioService.gerarRankingServicos(inicio, fim));
+            String saida = capturarSaida(() -> relatorioController.gerarRankingServicos(inicio, fim));
             model.setRowCount(0);
             String[] linhas = saida.split("\n");
             int pos = 1;

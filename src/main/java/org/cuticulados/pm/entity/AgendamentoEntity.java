@@ -23,7 +23,7 @@ import jakarta.persistence.Table;
 // entidade JPA
 @Entity
 @Table(name = "agendamento")
-public class Agendamento {
+public class AgendamentoEntity {
 
     //o id e a chave primaria e o identity e o banco que gera automatico auto increment
     @Id
@@ -49,19 +49,19 @@ public class Agendamento {
     //relacionamento com o cliente
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente;
+    private ClienteEntity clienteEntity;
 
     //relacionamento com o profissional
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "profissional_id", nullable = false)
-    private Profissional profissional;
+    private ProfissionalEntity profissionalEntity;
 
     //serviços de agendamento
     @OneToMany(mappedBy = "agendamento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AgendamentoServico> servicos = new ArrayList<>();
+    private List<AgendamentoServicoEntity> servicos = new ArrayList<>();
 
     @OneToOne(mappedBy = "agendamento")
-    private TransacaoFinanceira transacao;
+    private TransacaoFinanceiraEntity transacao;
 
     //controle da criação e as atualizações
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -87,14 +87,14 @@ public class Agendamento {
     public void setStatus(StatusAgendamento status) { this.status = status; }
     public Double getValorFinal() { return valorFinal; }
     public void setValorFinal(Double valor) { this.valorFinal = valor; }
-    public Cliente getCliente() { return cliente; }
-    public void setCliente(Cliente cliente) { this.cliente = cliente; }
-    public Profissional getProfissional() { return profissional; }
-    public void setProfissional(Profissional p) { this.profissional = p; }
-    public List<AgendamentoServico> getServicos() { return servicos; }
-    public void setServicos(List<AgendamentoServico> servicos) { this.servicos = servicos; }
-    public TransacaoFinanceira getTransacao() { return transacao; }
-    public void setTransacao(TransacaoFinanceira t) { this.transacao = t; }
+    public ClienteEntity getCliente() { return clienteEntity; }
+    public void setCliente(ClienteEntity clienteEntity) { this.clienteEntity = clienteEntity; }
+    public ProfissionalEntity getProfissional() { return profissionalEntity; }
+    public void setProfissional(ProfissionalEntity p) { this.profissionalEntity = p; }
+    public List<AgendamentoServicoEntity> getServicos() { return servicos; }
+    public void setServicos(List<AgendamentoServicoEntity> servicos) { this.servicos = servicos; }
+    public TransacaoFinanceiraEntity getTransacao() { return transacao; }
+    public void setTransacao(TransacaoFinanceiraEntity t) { this.transacao = t; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -102,7 +102,7 @@ public class Agendamento {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Agendamento a = (Agendamento) o;
+        AgendamentoEntity a = (AgendamentoEntity) o;
         return Objects.equals(id, a.id);
     }
 

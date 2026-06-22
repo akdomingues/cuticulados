@@ -1,8 +1,8 @@
 package org.cuticulados.pm.ui.panels;
 
-import org.cuticulados.pm.entity.Profissional;
+import org.cuticulados.pm.entity.ProfissionalEntity;
 import org.cuticulados.pm.entity.TipoUsuario;
-import org.cuticulados.pm.entity.Usuario;
+import org.cuticulados.pm.entity.UsuarioEntity;
 import org.cuticulados.pm.service.UsuarioService;
 import org.cuticulados.pm.ui.theme.AppColors;
 import org.cuticulados.pm.ui.theme.AppDimensions;
@@ -36,7 +36,7 @@ public class PainelProfissionais extends JPanel {
     private JTextField campoBusca;
 
     // profissionais atuais
-    private List<Usuario> profissionaisAtuais;
+    private List<UsuarioEntity> profissionaisAtuais;
 
     // colunas
     private static final String[] COLUNAS = {"ID", "Nome", "Login", "Especialidade"};
@@ -213,10 +213,10 @@ public class PainelProfissionais extends JPanel {
         preencherTabela(profissionaisAtuais);
     }
 
-    private void preencherTabela(List<Usuario> lista) {
+    private void preencherTabela(List<UsuarioEntity> lista) {
         tableModel.setRowCount(0);
-        for (Usuario u : lista) {
-            String especialidade = (u instanceof Profissional p) ? p.getEspecialidade() : "—";
+        for (UsuarioEntity u : lista) {
+            String especialidade = (u instanceof ProfissionalEntity p) ? p.getEspecialidade() : "—";
             tableModel.addRow(new Object[]{u.getId(), u.getNome(), u.getLogin(), especialidade});
         }
     }
@@ -228,10 +228,10 @@ public class PainelProfissionais extends JPanel {
             return;
         }
         String low = termo.toLowerCase();
-        List<Usuario> filtrados = profissionaisAtuais.stream()
+        List<UsuarioEntity> filtrados = profissionaisAtuais.stream()
                 .filter(u -> u.getNome().toLowerCase().contains(low)
                         || u.getLogin().toLowerCase().contains(low)
-                        || (u instanceof Profissional p
+                        || (u instanceof ProfissionalEntity p
                         && p.getEspecialidade() != null
                         && p.getEspecialidade().toLowerCase().contains(low)))
                 .toList();
@@ -281,7 +281,7 @@ public class PainelProfissionais extends JPanel {
                 return;
             }
 
-            Profissional p = new Profissional();
+            ProfissionalEntity p = new ProfissionalEntity();
             p.setNome(nome);
             p.setEmail(email);
             p.setLogin(login);
