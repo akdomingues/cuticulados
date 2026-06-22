@@ -1,15 +1,48 @@
 # NailGestor
 
-Sistema de gestão para salão de beleza/estética, desenvolvido em Java 17 com Swing e JPA/Hibernate + PostgreSQL.
+> Sistema de gestão para salão de beleza/estética desenvolvido em **Java 17** com **Swing** e **JPA/Hibernate + PostgreSQL**.
 
-## Pré-requisitos
+![Status](https://img.shields.io/badge/status-conclu%C3%ADdo-success)
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Maven](https://img.shields.io/badge/build-Maven-blue)
+
+---
+
+## 📚 Sobre o projeto
+
+Trabalho acadêmico do curso de **Engenharia de Software da UniAmérica**.
+
+O **NailGestor** é um sistema desktop para gestão completa de um salão de beleza,
+cobrindo o cadastro de clientes, profissionais, serviços e produtos, além do
+agendamento de atendimentos, registro de vendas avulsas e geração de relatórios.
+
+> **Status do projeto: ✅ 100% concluído.**
+
+## 👥 Integrantes
+
+- **JP** (João Pedro)
+- **Leo** (Leonardo)
+- **Cauã**
+- **Chris**
+
+## 🛠️ Tecnologias
+
+- **Java 17**
+- **Swing** — interface gráfica desktop
+- **JPA / Hibernate** — mapeamento objeto-relacional
+- **PostgreSQL** — banco de dados
+- **Flyway** — versionamento e migrations do banco
+- **Maven** — build e gerenciamento de dependências
+- **Docker / docker-compose** — execução do banco em container
+
+## ✅ Pré-requisitos
 
 - Java 17 ou superior (JDK)
 - Maven 3.8+
 - PostgreSQL 14+ rodando na porta **5432**
 - Docker (opcional, para subir o banco via docker-compose)
 
-## Configuração do Banco de Dados
+## 🗄️ Configuração do Banco de Dados
 
 ### Com Docker
 ```bash
@@ -26,7 +59,7 @@ GRANT ALL PRIVILEGES ON DATABASE nailgestor TO nailgestor;
 
 O Flyway aplica as migrations automaticamente na primeira execução.
 
-## Como Executar
+## ▶️ Como Executar
 
 ### Windows (recomendado)
 Dê duplo clique em `rodar.bat` ou execute no terminal:
@@ -39,7 +72,7 @@ rodar.bat
 mvn clean compile exec:java
 ```
 
-## Usuários padrão (criados pelas migrations)
+## 🔑 Usuários padrão (criados pelas migrations)
 
 | Login | Senha | Perfil |
 |-------|-------|--------|
@@ -47,13 +80,13 @@ mvn clean compile exec:java
 | prof1 | 1234 | Profissional |
 | cliente1 | 1234 | Cliente |
 
-## Funcionalidades
+## ✨ Funcionalidades
 
 - **Admin**: gerenciar clientes, profissionais, serviços, produtos, agendamentos e vendas avulsas
 - **Profissional**: visualizar agendamentos do dia e registrar vendas avulsas
 - **Cliente**: visualizar e agendar serviços
 
-## Arquitetura
+## 🏛️ Arquitetura
 
 O projeto segue uma separação em camadas: a interface (Swing) e o `Main` conversam com
 os **controllers**, que recebem dados em **Requests (DTOs)**, convertem para entidades
@@ -62,7 +95,11 @@ persistem os dados via **repositories** (JPA/Hibernate). Cada domínio (agendame
 cliente, produto, serviço, relatório, usuário e venda) tem seu próprio controller, request
 e mapper.
 
-## Estrutura do Projeto
+```
+UI (Swing) → Controller → Mapper → Service → Repository → Banco (PostgreSQL)
+```
+
+## 📁 Estrutura do Projeto
 
 ```
 src/main/java/org/cuticulados/pm/
@@ -78,3 +115,7 @@ src/main/java/org/cuticulados/pm/
     ├── panels/      # Painéis de cada seção
     └── theme/       # Cores, fontes e estilos (AppColors, AppFonts, AppTheme)
 ```
+
+---
+
+<p align="center">Projeto desenvolvido para fins acadêmicos — UniAmérica · Engenharia de Software</p>
