@@ -53,6 +53,15 @@ mvn clean compile exec:java
 - **Profissional**: visualizar agendamentos do dia e registrar vendas avulsas
 - **Cliente**: visualizar e agendar serviços
 
+## Arquitetura
+
+O projeto segue uma separação em camadas: a interface (Swing) e o `Main` conversam com
+os **controllers**, que recebem dados em **Requests (DTOs)**, convertem para entidades
+através dos **mappers** e delegam as regras de negócio aos **services**, que por sua vez
+persistem os dados via **repositories** (JPA/Hibernate). Cada domínio (agendamento,
+cliente, produto, serviço, relatório, usuário e venda) tem seu próprio controller, request
+e mapper.
+
 ## Estrutura do Projeto
 
 ```
@@ -61,6 +70,9 @@ src/main/java/org/cuticulados/pm/
 ├── entity/          # Entidades JPA
 ├── repository/      # Acesso a dados (JPA)
 ├── service/         # Regras de negócio
+├── controller/      # Controllers por domínio (agendamento, cliente, produto,
+│                    #   relatorio, servico, usuario, venda) com Requests (DTOs)
+│                    #   e mappers de conversão DTO <-> entidade
 └── ui/
     ├── frames/      # Janelas principais (MainFrame, LoginFrame, ...)
     ├── panels/      # Painéis de cada seção
